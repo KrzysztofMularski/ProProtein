@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../components/head/_head.ejs') %>
+
+<body class="_body">
+
+    <!-- content -->
+    <div class="_content">
+
+        <!-- background absolute -->
+        <div class="_bg_orange"></div>
+
+        <!-- main content -->
+        <div class="_auth_form_wrapper">
+            <form class="_auth_form" action="/register" method="post">
+                <%- include('contents/register.ejs') %>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "target": "es5",
+        "alwaysStrict": false,
+        "noImplicitAny": false,
+        "noImplicitThis": true,
+        "sourceMap": true,
+        "noUnusedLocals": false,
+        "strictNullChecks": false,
+        "strictFunctionTypes": true,
+        "skipLibCheck": true,
+        "module": "esnext",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "importHelpers": true,
+        "noEmitHelpers": true,
+        "allowSyntheticDefaultImports": true,
+        "jsx": "react-jsx",
+        "lib": [ "es6", "dom", "esnext.asynciterable", "es2016" ],
+        "rootDir": "src/molstar/lib/raw",
+        "outDir": "src/molstar/lib/coloring"
+    },
+    "include": [ "src/molstar/lib/raw/*" ]
+}

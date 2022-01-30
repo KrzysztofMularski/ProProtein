@@ -1,0 +1,18 @@
+<div class="h-full w-full py-10 px-40">
+    <div class="h-full w-full bg-white rounded-xl flex flex-col p-10 gap-4 shadow-xl">
+        <!-- title -->
+        <%- include('components/title', { p: 'Projects' }) %>
+
+        <!-- navigation -->
+        <%- include('components/nav', { selected: 'projects' }) %>
+
+        <!-- search bar -->
+        <!-- <div></div> -->
+
+        <!-- table -->
+        <%- include('components/table') %>
+
+        <!-- pagination -->
+        <%- include('components/pagination', { route: 'projects' }) %>
+    </div>
+</div>

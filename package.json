@@ -1,0 +1,22 @@
+{
+  "name": "inzynierka",
+  "version": "1.0.0",
+  "description": "Projekt dotyczy strony internetowej, która pomaga w analizie wyników symulacji struktury molekularnej białek.",
+  "main": "index.js",
+  "scripts": {
+    "server": "cd server/app && npm start",
+    "queue": "cd queue_manager/app && npm start",
+    "gromacs": "cd gromacs_api/app && npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KrzysztofMularski/ProProtein.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KrzysztofMularski/ProProtein/issues"
+  },
+  "homepage": "https://github.com/KrzysztofMularski/ProProtein#readme"
+}

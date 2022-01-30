@@ -1,0 +1,53 @@
+<!-- <meta http-equiv="refresh" content="2"> -->
+<div class="flex flex-row justify-between font-quicksand font-medium">
+    <div class="flex flex-row gap-2">
+        <p>Rows per page:</p>
+        <select id="rowsPerPage" onchange="paginationChanged()" class="bg-coolgray-200 px-2 rounded">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+    <div class="flex flex-row gap-6">
+        <div class="flex flex-row items-center gap-2">
+            <a href="/projects?page=<%= pg.currentPage - 1 %>" class="w-3 <%= pg.paginationArrows.left ? '_arrow_disabled' : 'text-coolgray-700' %>">
+                <%- include (`../../../../../public/icons/left.svg`) %>
+            </a>
+            
+            <p><%= pg.currentPage + "/" + pg.pagesCount %></p>
+            
+            <a href="/projects?page=<%= pg.currentPage + 1 %>" class="w-3 <%= pg.paginationArrows.right ? '_arrow_disabled' : 'text-coolgray-700' %>">
+                <%- include (`../../../../../public/icons/right.svg`) %>
+            </a>
+        </div>
+
+        <label class="flex flex-row gap-2">
+            <p>Go to page:</p>
+            <input id="goToPage" type="number" min="1" max="<%= pg.pagesCount %>" onchange="paginationChanged()" value="<%= pg.currentPage %>" class="w-16 bg-coolgray-200 px-2 rounded focus:outline-none">
+        </label>
+
+    </div>
+    
+</div>
+
+<script type="text/javascript">
+
+    const rowsPerPageElement = document.getElementById('rowsPerPage')
+    const goToPageElement = document.getElementById('goToPage')
+
+    const options = Array.from(rowsPerPageElement.options)
+    options.forEach((option, id) => {
+        if (option.value === '<%= pg.rowsPerPage %>')
+            rowsPerPageElement.selectedIndex = id;
+    })
+
+    const paginationChanged = () => {
+        const rowsPerPage = rowsPerPageElement.value
+        const currentPage = goToPageElement.value
+        window.location.href = `/<%= route %>?rowscount=${rowsPerPage}&page=${currentPage}`
+    }
+
+</script>

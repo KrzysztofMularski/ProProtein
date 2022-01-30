@@ -1,0 +1,64 @@
+version: '3'
+services:
+  server:
+    build: server
+    image: server:1.0
+    env_file:
+      - ./server/app/.env
+    ports:
+      - 80:80
+    depends_on:
+      - mongo
+    container_name: server
+    restart: unless-stopped
+  gromacs_api:
+    build: gromacs_api
+    image: gromacs_api:1.0
+    env_file:
+      - ./gromacs_api/app/.env
+    ports:
+      - 4000:4000
+    container_name: gromacs_api
+    volumes:
+      - simulation_dirs:/home/app/simulation_dirs
+    restart: unless-stopped
+  queue_manager:
+    build: queue_manager
+    image: queue_manager:1.0
+    env_file:
+      - ./queue_manager/app/.env
+    ports:
+      - 5000:5000
+    depends_on:
+      - mongo
+    container_name: queue_manager
+    volumes:
+      - simulation_dirs:/home/app/simulation_dirs
+    restart: unless-stopped
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=admin
+    #   - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
+    container_name: mongo
+  mongo-express:
+    image: mongo-express
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongo
+    # environment:
+    #   - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+    #   - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+    #   - ME_CONFIG_MONGODB_SERVER=mongodb
+    container_name: mongo-express
+    restart: unless-stopped
+volumes:
+  mongo-data:
+    driver: local
+  simulation_dirs:
+    driver: local

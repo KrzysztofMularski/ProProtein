@@ -1,0 +1,15 @@
+<%- include('components/title.ejs', { p: 'Sign In' }) %>
+
+<%- include('components/input.ejs', { p: 'Email', type: 'text', name: 'email', required: true, value: '' }) %>
+<%- include('components/input.ejs', { p: 'Password', type: 'password', name: 'password', required: true, value: '' }) %>
+<%- include('components/forgot.ejs') %>
+
+<%- include('components/button.ejs', { p: 'Sign In' }) %>
+
+<%- include('components/separator.ejs') %>
+
+<%- include('components/subtitle.ejs', { p: "Don't have an account yet?" }) %>
+<%- include('components/link.ejs', { p: 'Sign Up', destination: 'register' }) %>
+
+<%- include('components/subtitle.ejs', { p: "Return to Home"}) %>
+<%- include('components/link.ejs', { p: 'Home', destination: 'home' }) %>

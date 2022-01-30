@@ -1,0 +1,45 @@
+<div class="flex flex-row items-center gap-4">
+    <div class="border border-orange-500 mt-2 flex-grow"></div>
+    <p class="text-2xl text-center"><%= p %></p>
+    <div class="border border-orange-500 mt-2 flex-grow"></div>
+</div>
+
+<% if (successes) { %>
+    <% successes.forEach((success, id) => { %>
+        <div id="success<%=id%>" class="absolute top-5 right-5 w-1/4 bg-green-400 shadow-lg flex flex-col justify-around items-center">
+            <div onclick="document.getElementById('success<%=id%>').parentElement.removeChild(document.getElementById('success<%=id%>'))"
+                class="p-2 text-green-800 self-end cursor-pointer hover:text-green-900"
+            >
+                <div class="w-4">
+                    <%- include (`../../../../../public/icons/cross.svg`) %>
+                </div>
+            </div>
+            <p class="mb-2 p-2 h-full flex-grow whitespace-wrap w-full font-quicksand text-center">
+                <%= success %>
+            </p>
+            <button onclick="document.getElementById('success<%=id%>').parentElement.removeChild(document.getElementById('success<%=id%>'))"
+                class="flex-shrink-0 w-32 h-8 bg-green-700 hover:bg-green-800 text-white mb-2"
+            >OK</button>
+        </div>
+    <% }) %>
+<% } %>
+
+<% if (errors) { %>
+    <% errors.forEach((error, id) => { %>
+        <div id="error<%=id%>" class="absolute top-5 right-5 w-1/4 bg-red-400 shadow-lg flex flex-col justify-around items-center">
+            <div onclick="document.getElementById('error<%=id%>').parentElement.removeChild(document.getElementById('error<%=id%>'))"
+                class="p-2 text-red-800 self-end cursor-pointer hover:text-red-900"
+            >
+                <div class="w-4">
+                    <%- include (`../../../../../public/icons/cross.svg`) %>
+                </div>
+            </div>
+            <p class="mb-2 p-2 h-full flex-grow whitespace-wrap w-full font-quicksand text-center">
+                <%= error %>
+            </p>
+            <button onclick="document.getElementById('error<%=id%>').parentElement.removeChild(document.getElementById('error<%=id%>'))"
+                class="flex-shrink-0 w-32 h-8 bg-red-700 hover:bg-red-800 text-white mb-2"
+            >OK</button>
+        </div>
+    <% }) %>
+<% } %>

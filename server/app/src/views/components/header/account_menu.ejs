@@ -1,0 +1,63 @@
+<div tabindex="1" class="self-end">
+    <div onclick="accountClick()" class="flex items-center justify-center h-12 w-12 cursor-pointer rounded-xl hover:bg-coolgray-200">
+        <div class="text-coolgray-700 w-5">
+            <%- include ('../../../../public/icons/profile.svg') %>
+        </div>
+    </div>
+    <div id="_account_menu" class="transform translate-x-full transition-all duration-700 fixed top-0 right-0 w-60 h-52 bg-coolgray-700 rounded-bl-xl flex flex-col items-center">
+        <div onclick="accountClick()" class="self-end flex flex-row items-center justify-center m-4 h-12 w-12 rounded-xl overflow-hidden cursor-pointer text-coolgray-100 hover:text-coolgray-700 hover:bg-coolgray-300">
+            <div class="w-5">
+                <%- include ('../../../../public/icons/profile.svg') %>
+            </div>
+        </div>
+        <a id="login" href="login" class="_account_menu_element">
+            <p>Sign In</p>
+            <div class="w-6">
+                <%- include ('../../../../public/icons/sign-in.svg') %>
+            </div>
+        </a>
+        <a id="register" href="register" class="_account_menu_element">
+            <p>Sign Up</p>
+            <div class="w-6">
+                <%- include ('../../../../public/icons/sign-up.svg') %>
+            </div>
+        </a>
+        <a id="profile" href="profile" class="_account_menu_element">
+            <p>Profile</p>
+            <div class="w-6">
+                <%- include ('../../../../public/icons/profile-settings.svg') %>
+            </div>
+        </a>
+        <form id="logout" class="w-full" action="/logout?_method=DELETE" method="post">
+            <button type="submit" class="_account_menu_element">
+                <p>Sign Out</p>
+                <div class="w-6">
+                    <%- include ('../../../../public/icons/sign-out.svg') %>
+                </div>
+            </button>
+        </form>
+    </div>
+</div>
+<script>
+    const logged = '<%= logged %>'
+
+    const menu = document.getElementById('_account_menu')
+    const login = document.getElementById('login')
+    const register = document.getElementById('register')
+    const profile = document.getElementById('profile')
+    const logout = document.getElementById('logout')
+
+    if (logged === 'true') {
+        login.classList.add('hidden')
+        register.classList.add('hidden')
+    } else {
+        profile.classList.add('hidden')
+        logout.classList.add('hidden')
+    }
+
+    const accountClick = () => {
+        menu.classList.toggle('translate-x-full')
+    }
+
+
+</script>

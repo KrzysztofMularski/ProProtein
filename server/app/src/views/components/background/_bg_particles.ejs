@@ -1,0 +1,26 @@
+<style>
+    .bg-wrapper {
+        width: calc(100% + 4rem);
+        height: calc(100% + 4rem);
+    }
+</style>
+
+<div class="absolute w-full h-full inset-0 -z-10">
+    <div class="overflow-hidden w-full h-full">
+        <div class="bg-wrapper -m-8">
+            <canvas id="canvas" class="background w-full h-full"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = () => {
+        Particles.init({
+            selector: '.background',
+            color: '#888888',
+            connectParticles: true,
+            maxParticles: 150
+        })
+    }
+</script>
+<script src="particles.min.js"></script>

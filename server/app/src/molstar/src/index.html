@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <title>Molstar Viewer</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body, html {
+                width: 100%;
+                height: 100%;
+            }
+
+            #wrapper {
+                display: flex;
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
+
+            #app {
+                position: absolute;
+                left: 200px;
+                top: 0;
+                width: calc(100% - 200px);
+                height: 100%;
+            }
+
+            #controls {
+                display: flex;
+                flex-direction: column;
+                padding-top: 10px;
+                width: 200px;
+                
+            }
+
+            .filename {
+                font-family: "Quicksand", sans-serif;
+                font-weight: 300;
+                padding: 10px;
+                justify-content: center;
+                word-wrap: break-word;
+                text-align: center;
+            }
+
+            .text-xl {
+                font-size: 1.25rem/* 20px */;
+                line-height: 1.75rem/* 28px */;
+            }
+
+            #buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px 33px;
+            }
+
+            #return_link {
+                display: flex;
+                color: white;
+                background-color: rgba(107, 114, 128, 1);
+                cursor: pointer;
+                padding: 0.5rem 0.75rem;
+                border-radius: 0.375rem;
+                font-family: "Quicksand", sans-serif;
+                font-weight: 300;
+                text-decoration: none;
+                font-size: 16px;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #return_link:hover {
+                background-color: rgba(75, 85, 99, 1);
+            }
+
+            #coloring_button {
+                display: flex;
+                color: white;
+                background-color: rgba(107, 114, 128, 1);
+                cursor: pointer;
+                padding: 0.5rem 0.75rem;
+                border-radius: 0.375rem;
+                font-family: "Quicksand", sans-serif;
+                font-weight: 300;
+                text-decoration: none;
+                font-size: 16px;
+                align-items: center;
+                justify-content: center;
+                border: none;
+            }
+
+            #coloring_button:hover {
+                background-color: rgba(75, 85, 99, 1);
+            }
+
+        </style>
+        <link rel="stylesheet" type="text/css" href="./molstar_bundle/molstar.css" />
+        <script type="text/javascript" src="./molstar_bundle/index.min.js"></script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <div id="controls">
+                <span class="filename text-xl">Structure File:</span>
+                <span class="filename"><%= filename %></span>
+                <div id="buttons">
+                    <a id="return_link" href="/project?id=<%= projectId %>">Back to project</a>
+                    <% if (fileType === 'trajectory') { %>
+                        <button id="coloring_button" onclick="toggleColoring()">Coloring</button>
+                    <% } %>
+                </div>
+            </div>
+            <div id="app"></div>
+        </div>
+        <script>
+            // function $(id) { return document.getElementById(id); }
+            const project_id = '<%= projectId %>'
+            const structure_url = '<%= structureUrl %>'
+            const server_address = '<%= serverAddress %>'
+            const file_type = '<%= fileType %>'
+            const isStructure = file_type === 'structure' ? true : false
+            
+            let isColoring = false
+
+
+            BasicMolStarWrapper.init('app');
+            BasicMolStarWrapper.setBackground(0xffffff);
+
+            BasicMolStarWrapper.load({ url: `${server_address}/${structure_url}`, format: 'pdb' })
+            
+            if (!isStructure) {
+                const residuesIndexesPath = `download/file/${project_id}/residues_indexes`
+                BasicMolStarWrapper.downloadAndSetResiduesIndexes(`${server_address}/${residuesIndexesPath}`)
+            }
+
+            function toggleColoring() {
+                if (!isColoring) {
+                    BasicMolStarWrapper.coloring.applySpecial2()
+                    BasicMolStarWrapper.coloring.applySpecial()
+                } else {
+                    BasicMolStarWrapper.coloring.applyDefault()
+                    setTimeout(() => BasicMolStarWrapper.coloring.applyDefault(), 20)
+                }
+                isColoring = !isColoring                
+            }
+
+            let interval
+            if (!isStructure)
+                interval = setInterval(checkingButtons, 100)
+
+            function checkingButtons() {
+                const len = document.getElementsByClassName('msp-btn').length
+                if (len === 8) {
+                    clearInterval(interval)
+                    buttons()
+                }
+            }
+
+            function buttons() {
+                const onlyNavButtonsTitles = ['First Model', 'Previous Model', 'Next Model']
+                let navButtonsCollection = document.getElementsByClassName('msp-btn')
+                let navButtons = [].slice.call(navButtonsCollection)
+                navButtons = navButtons.filter(button => onlyNavButtonsTitles.includes(button.title))
+                navButtons.forEach(button => button.addEventListener('click', refresh))
+            }
+
+            function refresh() {
+                if (!isColoring)
+                    return
+                setTimeout(() => {
+                    BasicMolStarWrapper.coloring.applySpecial2()
+                    BasicMolStarWrapper.coloring.applySpecial()
+                }, 70)
+            }
+
+        </script>
+    </body>
+</html>

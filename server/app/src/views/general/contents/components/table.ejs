@@ -1,0 +1,229 @@
+<div class="h-full w-full flex flex-col">
+
+    <% if (table.content.length) { %>
+
+    <!-- headers -->
+    <div class="w-full flex flex-row font-quicksand font-medium text-coolgray-400 h-14">
+        
+        <p class="w-16 flex flex-row items-center justify-center p-4">No.</p>
+
+        <% table.headers.forEach(element => { %>
+            <div class="flex-1 flex flex-row items-center justify-center p-4 overflow-hidden">
+                <p class="overflow-hidden"><%= element %></p>
+            </div>
+        <% }) %>
+
+        <p class="flex-1 p-4"></p>  <!-- Action buttons column -->
+
+    </div>
+
+    <!-- content -->
+    <div class="h-full w-full flex flex-col">
+
+        <% table.content.forEach((row, id) => { %>
+
+            <!-- row -->
+            <div class="w-full flex flex-row font-quicksand font-medium text-coolgray-700 h-14 odd:bg-coolgray-100">
+                
+                <p class="w-16 flex flex-row items-center justify-center p-4 overflow-hidden"><%= (pg.currentPage-1)*pg.rowsPerPage+id+1 %></p>
+
+                <% Object.values(row).forEach((value, idd) => { %>
+
+                    <!-- cell -->
+                    <% if (idd === 2) { %>
+                        <!-- status -->
+                        <div class="flex-1 flex flex-row items-center justify-center p-4">
+                            <div
+                                <% if (value === 'Initial') { %>
+                                    class="rounded-full px-3 bg-green-300 text-green-800"
+                                <% } else if (value === 'Waiting') { %>
+                                    class="rounded-full px-3 bg-blue-300 text-blue-800"
+                                <% } else if (value === 'Processing') { %>
+                                    class="rounded-full px-3 bg-purple-300 text-purple-800"
+                                <% } else if (value === 'Finished') { %>
+                                    class="rounded-full px-3 bg-coolgray-300 text-coolgray-800"
+                                <% } else if (value === 'Error') { %>
+                                    class="rounded-full px-3 bg-red-300 text-red-800"
+                                <% } %>   
+                            >
+                                <%= value %>
+                            </div>
+                        </div>
+                        
+                    <% } else if (idd === 3) { %>
+                        <!-- description -->
+                        <div class="flex-1 flex flex-row items-center justify-center p-4 overflow-hidden gap-4">
+                            <div class="w-full overflow-hidden flex flex-row justify-end">
+                                <p><%= value %></p>
+                            </div>
+                            <div onclick="editDescription('<%= Object.values(row)[4] %>', '<%= Object.values(row)[5] %>')" class="flex items-center justify-center w-8 h-8 flex-shrink-0 text-white bg-blue-500 rounded-xl cursor-pointer hover:bg-blue-600">
+                                <div class="w-4">
+                                    <%- include (`../../../../../public/icons/edit.svg`) %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else if (idd === 4) { %>
+                        <!-- actions (last column) -->
+                        <div class="flex-1 flex items-center justify-center p-4 gap-4 ">
+
+                            <div
+                                <% if (Object.values(row)[2] === 'Waiting' || Object.values(row)[2] === 'Processing') { %>
+                                    class="flex h-0 overflow-hidden"
+                                <% } %>
+                            >
+                                <div onclick="deleteProject('<%=value%>', '<%= Object.values(row)[0] %>')" class="flex items-center justify-center w-8 h-8 text-white bg-red-500 rounded-xl cursor-pointer hover:bg-red-600">
+                                    <div class="w-4">
+                                        <%- include (`../../../../../public/icons/trash.svg`) %>
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                            <div onclick="openProject('<%=value%>')" class="w-8 h-8 text-white bg-coolgray-500 rounded-xl cursor-pointer hover:bg-coolgray-600">
+                                <div class="group h-full w-full flex items-center justify-center">
+                                    <div class="w-4 group-hover:hidden ">
+                                        <%- include (`../../../../../public/icons/folder.svg`) %>
+                                    </div>
+                                    <div class="w-5 hidden group-hover:block">
+                                        <%- include (`../../../../../public/icons/folder-open.svg`) %>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    <% } else if (idd < 5) { %>
+                        <div class="flex-1 flex flex-row items-center justify-center p-4 overflow-hidden">
+                            <p class="whitespace-nowrap overflow-hidden"><%= value %></p>
+                        </div>
+                    <% } %>
+                
+                <% }) %>
+
+            </div>
+
+        <% }) %>
+    
+    </div>
+
+    <% } else { %>
+    <div class="w-full h-full grid place-items-center pb-40">
+        <p class="text-4xl font-bold text-coolgray-300">Your projects list is empty</p>
+    </div>
+
+    <% } %>
+
+    <!-- description modal -->
+
+    <div id="edit_description_modal_wrapper" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-coolgray-500 bg-opacity-50 flex flex-col overflow-hidden">
+        <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
+            <div class="w-full h-full grid place-items-center">
+                <form id="edit_description_form" class="flex flex-col w-2/5 gap-6" action="/edit_description?rowscount=<%=reqQuery.rowscount%>&page=<%=reqQuery.page%>" method="post">
+                    <p class="text-4xl whitespace-nowrap">Project description</p>
+                    <label class="flex flex-row gap-4 items-center w-full overflow-hidden">
+                        <p class="whitespace-nowrap w-36 flex-shrink-0">Project description:</p>
+                        <textarea id="edit_description_textarea" class="bg-coolgray-300 w-full h-24 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4 py-2 resize-none" name="project_description"></textarea>
+                    </label>
+                    <input id="edit_description_project_id" type="hidden" name="project_id">
+                    <input type="hidden" name="route" value=<%=reqQuery.route%>>
+                    <div class="flex flex-row text-white justify-between gap-4 mt-4">
+                        <button type="button" onclick="editDescription()" class="w-20 h-8 rounded bg-red-500 hover:bg-red-600">
+                            Cancel
+                        </button>
+                        <button type="submit" class="w-20 h-8 rounded bg-green-500 hover:bg-green-600">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- delete project modal -->
+
+    <div id="delete_project_modal_wrapper" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-coolgray-500 bg-opacity-50 flex flex-col overflow-hidden">
+        <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
+            <div class="w-full h-full grid place-items-center">
+                <form id="delete_project_form" class="flex flex-col w-2/5 gap-6" action="/delete_project?_method=DELETE&rowscount=<%=reqQuery.rowscount%>&page=<%=reqQuery.page%>" method="post">
+                    <p class="text-4xl whitespace-nowrap">Delete project</p>
+                    <p>Type project name: <span id="project_name_span" class="font-bold"></span> and click <span class="font-bold">Delete Project</span> to permanently erase this project from your projects list</p>
+                    <label class="flex flex-row gap-4 items-center w-full mt-4">
+                        <p class="whitespace-nowrap w-36 flex-shrink-0">Project name:</p>
+                        <input id="project_name" onchange="onChangeInput()" class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="text" name="project_name">
+                    </label>
+                    <pre id="errorText" class="text-base text-center text-red-500 font-quicksand font-normal">Provided Project name is not correct</pre>
+                    <input id="delete_project_project_id" type="hidden" name="project_id">
+                    <input type="hidden" name="route" value=<%=reqQuery.route%>>
+                    <div class="flex flex-row text-white justify-between gap-8 mt-4">
+                        <div>
+                            <button type="button" onclick="deleteProject()" class="w-20 h-8 rounded bg-red-500 hover:bg-red-600">
+                                Cancel
+                            </button>
+                        </div>
+                        <div class="flex flex-row gap-4">
+                            <button type="button" onclick="delete_project_form_submit()" class="w-32 h-8 rounded bg-coolgray-500 hover:bg-coolgray-600">
+                                Delete Project
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    const edit_description_modal_wrapper = document.getElementById('edit_description_modal_wrapper')
+    const delete_project_modal_wrapper = document.getElementById('delete_project_modal_wrapper')
+    const edit_description_textarea = document.getElementById('edit_description_textarea')
+    const edit_description_project_id = document.getElementById('edit_description_project_id')
+
+    const project_name_span = document.getElementById('project_name_span')
+    const project_name = document.getElementById('project_name')
+
+    const delete_project_form = document.getElementById('delete_project_form')
+    const delete_project_project_id = document.getElementById('delete_project_project_id')
+
+    const errorText = document.getElementById('errorText')
+
+    const editDescription = (id, description) => {
+        if (description !== undefined) {
+            edit_description_textarea.innerText = description
+            edit_description_project_id.value = id
+        }
+        edit_description_modal_wrapper.classList.toggle('w-0')
+        edit_description_modal_wrapper.classList.toggle('w-full')
+        edit_description_modal_wrapper.classList.toggle('left-1/2')
+        edit_description_modal_wrapper.classList.toggle('left-0')
+    }
+
+    const deleteProject = (id, project_name) => {
+        if (project_name !== undefined) {
+            project_name_span.textContent = project_name
+            delete_project_project_id.value = id
+        }
+        delete_project_modal_wrapper.classList.toggle('w-0')
+        delete_project_modal_wrapper.classList.toggle('w-full')
+        delete_project_modal_wrapper.classList.toggle('left-1/2')
+        delete_project_modal_wrapper.classList.toggle('left-0')
+    }
+
+    const onChangeInput = () => {
+        if (project_name.value !== project_name_span.textContent)
+            errorText.classList.remove('hidden')
+        else
+            errorText.classList.add('hidden')
+    }
+
+    const delete_project_form_submit = () => {
+        if (project_name.value === project_name_span.textContent) {
+            delete_project_form.submit()
+        }
+    }
+
+    const openProject = id => {
+        window.location.href = `/project?id=${id}`
+    }
+
+</script>
