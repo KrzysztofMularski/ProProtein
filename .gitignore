@@ -4,4 +4,4 @@ package-lock.json
 **/public/molstar_bundle
 **/src/molstar/lib
 **.rest
-**.env
+.env
