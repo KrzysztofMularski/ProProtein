@@ -29,7 +29,7 @@ function sendAuthMail(username, email) {
                         console.log(err)
                     else {
                         transporter.sendMail({
-                            from: '"ProProtein Simulation App" <email@address.com>',
+                            from: `"ProProtein" <${process.env.MAILER_USER}>`,
                             to: email,
                             subject: 'Account Confirmation',
                             html: str
@@ -62,7 +62,7 @@ function sendPasswordReset(username, email) {
                         console.log(err)
                     else {
                         transporter.sendMail({
-                            from: '"Protein Simulation App" <email@address.com>',
+                            from: `"ProProtein" <${process.env.MAILER_USER}>`,
                             to: email,
                             subject: 'Reseting Password',
                             html: str
@@ -96,7 +96,7 @@ function sendNotificationSimFinished(username, email, project_id, sim_status) {
                             console.log(err)
                         else {
                             transporter.sendMail({
-                                from: '"Protein Simulation App" <email@address.com>',
+                                from: `"ProProtein" <${process.env.MAILER_USER}>`,
                                 to: email,
                                 subject: 'Your simulation processing is Finished!',
                                 html: str
@@ -111,7 +111,7 @@ function sendNotificationSimFinished(username, email, project_id, sim_status) {
                             console.log(err)
                         else {
                             transporter.sendMail({
-                                from: '"Protein Simulation App" <email@address.com>',
+                                from: `"ProProtein" <${process.env.MAILER_USER}>`,
                                 to: email,
                                 subject: 'Your simulation processing is Finished!',
                                 html: str
