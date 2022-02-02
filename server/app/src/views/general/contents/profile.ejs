@@ -37,15 +37,15 @@
                                 </label>
                                 <label class="flex flex-row gap-4 items-center w-full">
                                     <p class="whitespace-nowrap w-36 flex-shrink-0">Changing password:</p>
-                                    <input class="bg-coolgray-300 w-4 h-4 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="checkbox" name="changing_password" value="yes">
+                                    <input id="radio_button_password" onchange="togglePassword(this.checked)" class="bg-coolgray-300 w-4 h-4 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="checkbox" name="changing_password" value="yes" autocomplete="off">
                                 </label>
                                 <label class="flex flex-row gap-4 items-center w-full">
                                     <p class="whitespace-nowrap w-36 flex-shrink-0">Password:</p>
-                                    <input class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="password" name="password">
+                                    <input id="pass1_input" class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4 disabled:bg-coolgray-400" type="password" name="password">
                                 </label>
                                 <label class="flex flex-row gap-4 items-center w-full">
                                     <p class="whitespace-nowrap w-36 flex-shrink-0">Repeat password:</p>
-                                    <input class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="password" name="password2">
+                                    <input id="pass2_input" class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4 disabled:bg-coolgray-400" type="password" name="password2">
                                 </label>
                                 <input type="hidden" name="user_id" value="<%= user._id %>">
                                 <div class="flex flex-row text-white justify-between gap-8 mt-4">
@@ -99,6 +99,9 @@
 
 <script>
     const edit_profile_modal = document.getElementById('edit_profile_modal')
+    const radio_button_password = document.getElementById('radio_button_password')
+    const pass1_input = document.getElementById('pass1_input')
+    const pass2_input = document.getElementById('pass2_input')
 
     const openEditProfileForm = () => {
         edit_profile_modal.classList.toggle('w-0')
@@ -106,6 +109,13 @@
         edit_profile_modal.classList.toggle('left-1/2')
         edit_profile_modal.classList.toggle('left-0')
     }
+
+    const togglePassword = value => {
+        pass1_input.disabled = !value
+        pass2_input.disabled = !value
+    }
+
+    togglePassword(radio_button_password.checked)
 
 
 </script>
