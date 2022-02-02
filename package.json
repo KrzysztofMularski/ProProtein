@@ -6,7 +6,11 @@
   "scripts": {
     "server": "cd server/app && npm start",
     "queue": "cd queue_manager/app && npm start",
-    "gromacs": "cd gromacs_api/app && npm start"
+    "gromacs": "cd gromacs_api/app && npm start",
+    "i-all": "npm run i-server && npm run i-queue_manager && npm run i-gromacs_api",
+    "i-server": "cd server/app && npm i",
+    "i-queue_manager": "cd queue_manager/app && npm i",
+    "i-gromacs_api": "cd gromacs_api/app && npm i"
   },
   "repository": {
     "type": "git",

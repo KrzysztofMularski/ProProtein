@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = 80
+const port = 3000
 const routing = require('./routing')
 const path = require('path')
 const bodyParser = require('body-parser')
@@ -19,9 +19,22 @@ app.use('/icons', express.static('public/icons'))
 const start = async () => {
     try {
         await connectDB()
-        app.listen(port, () => {
-            console.log(`Server listening at http://localhost:${port}/`)
-        })
+        if (process.env.NODE_ENV === 'production') {
+            require('dotenv').config();
+            const fs = require('fs')
+            const https = require('https')
+            options = {
+                key: fs.readFileSync(path.join(__dirname, process.env.PRIVKEY_PATH), 'utf-8'),
+                cert: fs.readFileSync(path.join(__dirname, process.env.FULLCHAIN_PATH), 'utf-8')
+            };
+            https.createServer(options, app).listen(port, () => {
+                console.log(`Server listening on port ${port}/`)
+            })
+        } else {
+            app.listen(port, () => {
+                console.log(`Server listening at http://localhost:${port}/`)
+            })
+        }
     } catch (err) {
         console.log(err)
     }
