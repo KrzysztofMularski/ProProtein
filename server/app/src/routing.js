@@ -79,12 +79,12 @@ router.post('/submit_simulation', midd.checkAuthenticated, auth.postSubmitSimula
 router.post('/nofify_user', auth.postNotifyUser)
 
 // debug - only for uploading/deleting files, normally should not be visible
-router.get('/debug', debug.getDebugPage)
-router.post('/debug/upload', midd.upload.single('file'), debug.postUploadDebug, midd.deleteFile)
-router.post('/debug/delete', debug.postDeleteDebug, midd.deleteFile)
-router.post('/debug/upload_demo', midd.upload.single('file'), debug.postUploadDemoDebug)
-router.post('/debug/delete_demo', debug.postDeleteDemoDebug, midd.deleteFile)
-router.post('/debug/upload_template', midd.upload_templates.single('file'), debug.postUploadTemplateDebug)
-router.post('/debug/delete_template', debug.postDeleteTemplateDebug, midd.deleteTemplateFile)
+//router.get('/debug', debug.getDebugPage)
+//router.post('/debug/upload', midd.upload.single('file'), debug.postUploadDebug, midd.deleteFile)
+//router.post('/debug/delete', debug.postDeleteDebug, midd.deleteFile)
+//router.post('/debug/upload_demo', midd.upload.single('file'), debug.postUploadDemoDebug)
+//router.post('/debug/delete_demo', debug.postDeleteDemoDebug, midd.deleteFile)
+//router.post('/debug/upload_template', midd.upload_templates.single('file'), debug.postUploadTemplateDebug)
+//router.post('/debug/delete_template', debug.postDeleteTemplateDebug, midd.deleteTemplateFile)
 
 module.exports = router

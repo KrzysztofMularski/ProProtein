@@ -10,4 +10,5 @@ RUN npm install\
     && npm run build-css-minified\
     && npm run build-molstar-bundle
 
+#CMD ["sleep", "3h"]
 CMD ["node", "/home/app/src/app.js"]

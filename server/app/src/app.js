@@ -1,11 +1,20 @@
 const express = require('express')
 const app = express()
-const port = 80
+const port = 3000
 const routing = require('./routing')
 const path = require('path')
 const bodyParser = require('body-parser')
 const connectDB = require('./db/connect')
 const cors = require('cors')
+
+const fs = require('fs')
+const http = require('http')
+const https = require('https')
+
+const options = {
+    key: fs.readFileSync(path.join(__dirname, '../letsencrypt/live/proprotein.cs.put.poznan.pl/privkey.pem'), 'utf-8'),
+    cert: fs.readFileSync(path.join(__dirname, '../letsencrypt/live/proprotein.cs.put.poznan.pl/fullchain.pem'), 'utf-8')
+};
 
 app.use('/', routing)
 app.use(cors())
@@ -19,8 +28,8 @@ app.use('/icons', express.static('public/icons'))
 const start = async () => {
     try {
         await connectDB()
-        app.listen(port, () => {
-            console.log(`Server listening at http://localhost:${port}/`)
+	https.createServer(options, app).listen(port, () => {
+            console.log(`Server listening on port ${port}/`)
         })
     } catch (err) {
         console.log(err)
