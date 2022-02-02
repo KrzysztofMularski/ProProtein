@@ -32,7 +32,11 @@
     }
 
     ._bg_gray {
-        @apply w-full h-full absolute bg-no-repeat bg-cover -z-10 bg-triangles-gray-mirrored;
+        @apply w-full h-full absolute bg-no-repeat bg-cover -z-10 bg-triangles-gray;
+    }
+
+    ._bg_gray_long {
+        @apply w-full h-full absolute bg-repeat-y bg-contain -z-10 bg-triangles-gray-mirrored;
     }
 
     ._nav_link_selected {
