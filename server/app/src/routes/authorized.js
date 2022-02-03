@@ -243,6 +243,10 @@ const postNewProject = async (req, res) => {
     try {
         const route = req.body.route
         const buttonAction = req.body.new_project_button
+        if (!req.body.project_name) {
+            req.flash('error', 'To create new project You need to provide project name')
+            return res.redirect(`/${route}`)
+        }
         const newProject = new Project({
             owner_id: req.user._id,
             name: req.body.project_name,
@@ -352,6 +356,10 @@ const postUploadStructure = async (req, res, next) => {
     try {
         const fileType = req.params.file_type
         const projectId = req.body.project_id
+        if (!req.file) {
+            req.flash('error', 'No file choosen')
+            return res.redirect(`/project?id=${projectId}`)
+        }
         const project = await Project.findById(projectId)
         if (project.owner_id.toString() !== req.user._id.toString())
             return res.redirect('/')
