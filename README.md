@@ -60,7 +60,7 @@ David Sehnal, Sebastian Bittrich, Mandar Deshpande, Radka Svobodová, Karel Berk
 
 ## How does it work under the hood?
 
-```mermaid
+<!-- ```mermaid
 sequenceDiagram
 Note left of User: Defining<br>new<br>simulation
 User->>Server: Requesting<br>simulation
@@ -76,7 +76,9 @@ Queue Manager->>Server: Notifying about<br>finished simulation
 Server->>User: Notifying about<br>finished simulation<br>via email address
 Note left of User: Can access<br>project via<br>link provided<br>in the email<br>or<br>searching<br>for it in our<br>service
 Note left of User: Can access results<br>of the simulation<br>in form of Mol*<br>visualization
-```
+``` -->
+![uml diagram](https://github.com/KrzysztofMularski/ProProtein/blob/main/server/app/public/images/uml.png?raw=true)
+
 \* Queue Manager and GROMACS API containers are connected by Docker volume. This makes accessing the same files more easily without having to sending them via HTTP requests.
 
 ## Citing
