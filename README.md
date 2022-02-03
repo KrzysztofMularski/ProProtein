@@ -42,8 +42,12 @@ Every logged in user has the ability to create projects. Each project defines an
 
 All of these is possible with great tools such as:
 
-![GROMACS logo](https://github.com/KrzysztofMularski/ProProtein/blob/main/server/app/public/images/GROMACS.webp?raw=true)[GROMACS](https://www.gromacs.org)
+![GROMACS logo](https://github.com/KrzysztofMularski/ProProtein/blob/main/server/app/public/images/GROMACS.webp?raw=true)
+
+[GROMACS](https://www.gromacs.org)
+
 [GROMACS documentation](https://doi.org/10.5281/zenodo.5849961)
+
 - [Bekker et al. (1993)](https://manual.gromacs.org/current/reference-manual/references.html#refbekker93a)
 - [Berendsen et al. (1995)](https://manual.gromacs.org/current/reference-manual/references.html#refberendsen95a)
 - [Lindahl et al. (2001)](https://manual.gromacs.org/current/reference-manual/references.html#reflindahl2001a)
@@ -54,6 +58,7 @@ All of these is possible with great tools such as:
 - [Abraham et al. (2015)](https://manual.gromacs.org/current/reference-manual/references.html#refabraham2015)
 ---
 ![Molstar logo](https://github.com/KrzysztofMularski/ProProtein/blob/main/server/app/public/images/molstar-logo.png?raw=true)
+
 [Mol*](https://molstar.org/)
 David Sehnal, Sebastian Bittrich, Mandar Deshpande, Radka Svobodová, Karel Berka, Václav Bazgier, Sameer Velankar, Stephen K Burley, Jaroslav Koča, Alexander S Rose:
 [Mol* Viewer: modern web app for 3D visualization and analysis of large biomolecular structures](https://doi.org/10.1093/nar/gkab314), Nucleic Acids Research, 2021; [https://doi.org/10.1093/nar/gkab314](https://doi.org/10.1093/nar/gkab314).
@@ -78,6 +83,8 @@ Note left of User: Can access<br>project via<br>link provided<br>in the email<br
 Note left of User: Can access results<br>of the simulation<br>in form of Mol*<br>visualization
 ``` -->
 ![uml diagram](https://github.com/KrzysztofMularski/ProProtein/blob/main/server/app/public/images/uml.png?raw=true)
+
+\* Uml diagram made with help of [mermaid](https://github.com/mermaid-js/mermaid)
 
 \* Queue Manager and GROMACS API containers are connected by Docker volume. This makes accessing the same files more easily without having to sending them via HTTP requests.
 
