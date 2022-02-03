@@ -2,7 +2,7 @@
 
 Web service for making and visualizing molecular dynamics simulations which speeds up conducting research.
 
-This project is the result of Engineering Thesis made at the Poznań University of Technology.
+This project is the result of Engineering Thesis made at the Poznań University of Technology, WIiT, 2022.
 
 This project wouldn't be possible without great help and support from our thesis supervisor **dr hab. inż. Aleksandra Świercz**.
 
@@ -92,4 +92,4 @@ Note left of User: Can access results<br>of the simulation<br>in form of Mol*<br
 
 When using ProProtein, please cite:
 
-Daria Głębowska, Dawid Makałowski, Krzysztof Mularski, Marcin Okonek, dr hab. inż. Aleksandra Świercz, dr hab. inż. Maciej Antczak: ProProtein: Web service for making and visualizing molecular dynamics simulations which speeds up conducting research, Engineering Thesis, Politechnika Poznańska, 2022.
+Daria Głębowska, Dawid Makałowski, Krzysztof Mularski, Marcin Okonek, dr hab. inż. Aleksandra Świercz, dr hab. inż. Maciej Antczak: ProProtein: Web service for making and visualizing molecular dynamics simulations which speeds up conducting research, Engineering Thesis, Politechnika Poznańska, WIiT, 2022.
