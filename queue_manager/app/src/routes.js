@@ -28,8 +28,15 @@ const postNotifyNew = async (req, res) => {
     try {
         const projectId = req.body.project_id
         const project = await Project.findById(projectId)
-        if (project.owner_id.toString() !== '61f6fb75daad5477ced86458')
+        console.log('project.owner_id', project.owner_id)
+        console.log('typeof project.owner_id', typeof project.owner_id)
+        console.log('project.owner_id.toString()', project.owner_id.toString())
+        if (project.owner_id.toString() !== '61f6fb75daad5477ced86458') {
+            console.log('blocked')
             return res.sendStatus(200)
+        } else {
+            console.log('passed')
+        }
         const newEntry = {
             _id: project._id,
             waiting_since: project.waiting_since,
