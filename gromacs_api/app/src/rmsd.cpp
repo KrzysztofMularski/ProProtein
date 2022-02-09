@@ -362,6 +362,7 @@ void chooseHighestRMSDquick()
             highestRMSDbase[counter].frame = i;
             highestRMSDbase[counter].index = j;
             highestRMSDbase[counter].RMSD = C[i][j];
+            counter++;
         }
     }
     timestamp = std::chrono::system_clock::now();
