@@ -1,4 +1,5 @@
-﻿#include <chrono>
+#include <chrono>
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -6,10 +7,10 @@
 using namespace std;
 
 //default input values
-string inputFile = "#traj.pdb.16#";
+string inputFile = "trajBig.pdb";
 string outputFile = "output.txt";
 int spheresAllocationFrame = 0;
-double RMSDThreshPercent = 10;
+double RMSDThreshPercent = 50;
 
 //additional parameters
 double sphereRadius = 8;
@@ -31,9 +32,24 @@ vector<int> sphereCA;
 //Numer of atoms in [<sphere>]
 vector<int> sphereSize;
 
+struct sphere
+{
+    int frame;
+    int index;
+    double RMSD;
+};
+
 vector<vector<int>> sphereAtoms;
 vector<vector<int>> atomToSphere;
 vector<vector<double>> highestRMSD;
+vector<sphere> highestRMSDbase;
+
+
+
+bool operator <(const sphere& lhs, const sphere& rhs)
+{
+    return lhs.RMSD < rhs.RMSD;
+}
 
 vector<string> result;
 
@@ -47,7 +63,7 @@ void readFile(string filename)
     ifstream myfile(filename);
     if (myfile.is_open())
     {
-        int frame;
+        int frame = 0;
         int atom;
         SPHERES = 0;
         FRAMES = 0;
@@ -105,6 +121,9 @@ double atomsDistanceCalc(int atom1, int atom2)
 //allocating atoms into spheres, based on sphereRadius
 void atomsAllocation()
 {
+    auto timestamp = std::chrono::system_clock::now();
+    std::time_t timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    int checkpoint = 0;
     sphereAtoms = {};
     atomToSphere = {};
     for (int i = 0; i < SPHERES; i++)
@@ -122,6 +141,13 @@ void atomsAllocation()
                 sphereAtoms[j].push_back(i);
                 sphereSize[j]++;
             }
+        }
+        if ((i - checkpoint) >= 0.1 * ATOMS)
+        {
+            checkpoint = i;
+            timestamp = std::chrono::system_clock::now();
+            timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+            cout << "[RMSD] Atom number " << i + 1 << " of " << ATOMS << " allocated to spheres at " << std::ctime(&timestamp_print) << endl;
         }
     }
 }
@@ -237,6 +263,9 @@ void calculateRMSDSuperpose()
     vector<vector<vector<double>>> sphereMatrix;
     vector<vector<double>> tempMatrix;
     double tempRMSD;
+    auto timestamp = std::chrono::system_clock::now();
+    std::time_t timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    int checkpoint = 0;
     for (int s = 0; s < SPHERES; s++)
     {
         int atomsInSphere = sphereAtoms[s].size();
@@ -260,9 +289,16 @@ void calculateRMSDSuperpose()
                         C[i - 1][s] += tempRMSD;
                     }
                 }
-                C[i - 1][s] /= ((long int)atomsInSphere * (long int)3);
+                C[i - 1][s] /= ((long)atomsInSphere * (long)3);
                 C[i - 1][s] = sqrt(C[i - 1][s]);
             }
+        }
+        if ((s - checkpoint) >= 0.1 * SPHERES)
+        {
+            checkpoint = s;
+            timestamp = std::chrono::system_clock::now();
+            timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+            cout << "[RMSD] RMSD calculated for " << s + 1 << " of " << SPHERES << " spheres at " << std::ctime(&timestamp_print) << endl;
         }
     }
 }
@@ -272,7 +308,7 @@ void initializeHighestRMSD()
 {
     highestRMSD = {};
     highestSize = (double)SPHERES / 100;
-    highestSize *= FRAMES;
+    highestSize *= (long)(FRAMES - 1);
     highestSize *= RMSDThreshPercent;
     for (int i = 0; i < highestSize; i++)
     {
@@ -290,7 +326,7 @@ void chooseHighestRMSD()
     {
         for (int j = 0; j < SPHERES; j++)
         {
-            for (int k = 0; k < highestRMSD.size(); k++)
+            for (unsigned int k = 0; k < highestRMSD.size(); k++)
             {
                 if (C[i][j] > highestRMSD[k][2])
                 {
@@ -308,6 +344,38 @@ void chooseHighestRMSD()
                 }
             }
         }
+    }
+}
+
+//choosing frames and spheres with highest RMSD, they will be colored later
+void chooseHighestRMSDquick()
+{
+    auto timestamp = std::chrono::system_clock::now();
+    std::time_t timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    initializeHighestRMSD();
+    int counter = 0;
+    for (int i = 0; i < FRAMES - 1; i++)
+    {
+        for (int j = 0; j < SPHERES; j++)
+        {
+            highestRMSDbase.push_back(sphere());
+            highestRMSDbase[counter].frame = i;
+            highestRMSDbase[counter].index = j;
+            highestRMSDbase[counter].RMSD = C[i][j];
+        }
+    }
+    timestamp = std::chrono::system_clock::now();
+    timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    cout << "[RMSD] RMSD started being sorted at " << std::ctime(&timestamp_print) << endl;
+    sort(highestRMSDbase.begin(), highestRMSDbase.end());
+    timestamp = std::chrono::system_clock::now();
+    timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    cout << "[RMSD] RMSD sorted at " << std::ctime(&timestamp_print) << endl;
+    for (unsigned int k = 0; k < highestRMSD.size(); k++)
+    {
+        highestRMSD[k][0] = highestRMSDbase[k].frame;
+        highestRMSD[k][1] = highestRMSDbase[k].index;
+        highestRMSD[k][2] = highestRMSDbase[k].RMSD;
     }
 }
 
@@ -354,7 +422,7 @@ void saveToFile(string filename)
         {
             if (!result[i].empty())
             {
-                myfile << i + 1 << ' ' << result[i] << endl;
+                myfile << i << ' ' << result[i] << endl;
             }
         }
         myfile.close();
@@ -411,7 +479,7 @@ void makePDB(string filename)
             {
                 atom = stoi(line.substr(6, 5));
                 atom--;
-                for (int i = 0; i < sphereAtoms[0].size(); i++)
+                for (unsigned int i = 0; i < sphereAtoms[0].size(); i++)
                 {
                     if (sphereAtoms[0][i] == atom)
                     {
@@ -457,13 +525,24 @@ int main(int argc, char* argv[])
     {
         spheresAllocationFrame = FRAMES - 1;
     }
+    auto timestamp = std::chrono::system_clock::now();
+    std::time_t timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    cout << "[RMSD] Input file: " << inputFile << " loaded at " << std::ctime(&timestamp_print) << endl;
     atomsAllocation();
+    timestamp = std::chrono::system_clock::now();
+    timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    cout << "[RMSD] Atoms allocated to spheres at " << std::ctime(&timestamp_print) << endl;
     calculateRMSDSuperpose();
-    chooseHighestRMSD();
+    chooseHighestRMSDquick();
     calculateResult();
     saveToFile(outputFile);
+    timestamp = std::chrono::system_clock::now();
+    timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    cout << "[RMSD] Output file: " << outputFile << " saved at " << std::ctime(&timestamp_print) << endl;
     //makePDB(inputFile);
     auto stop = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = stop - start;
-    cout << "Elapsed time: " << elapsed.count() << " s\n";
+    timestamp = std::chrono::system_clock::now();
+    timestamp_print = std::chrono::system_clock::to_time_t(timestamp);
+    cout << "[RMSD] Computation time: " << elapsed.count() << "s, ended at: " << std::ctime(&timestamp_print) << endl;
 }
