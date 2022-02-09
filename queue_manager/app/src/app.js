@@ -81,8 +81,8 @@ mongoose.connection.once('open', () => {
 const start = async () => {
     try {
         await connectDB()
-        const projects_processing = await Project.find({ status: 'Processing' }).sort({ waiting_since: 'asc' })
-        let projects = await Project.find({ status: 'Waiting' }).sort({ waiting_since: 'asc' })
+        const projects_processing = await Project.find({ status: 'Processing', owner_id: '61f6fb75daad5477ced86458' }).sort({ waiting_since: 'asc' })
+        let projects = await Project.find({ status: 'Waiting', owner_id: '61f6fb75daad5477ced86458' }).sort({ waiting_since: 'asc' })
         projects = [...projects_processing, ...projects]
         queue = projects.map(project => ({
             _id: project._id,
