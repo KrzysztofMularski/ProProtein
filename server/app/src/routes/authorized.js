@@ -596,7 +596,7 @@ const postSaveParameters = async (req, res, next) => {
             }
             
             const gmx2pdb1 = parseInt(req.body.gmx2pdb1)
-            let gmx2pdb2
+            let gmx2pdb2 = -1
             if (gmx2pdb1 >= 1 && gmx2pdb1 <= 8)
                 gmx2pdb2 = req.body.gmx2pdb2_v1
             else if (gmx2pdb1 >= 9 && gmx2pdb1 <= 14)
