@@ -36,7 +36,7 @@ class BasicWrapper {
             },
             config: [
                 [PluginConfig.Viewport.ShowExpand, false],
-                //[PluginConfig.Viewport.ShowAnimation, false]
+                [PluginConfig.Viewport.ShowAnimation, false]
             ]
         });
 
