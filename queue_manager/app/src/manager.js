@@ -22,7 +22,6 @@ const setGridFSBucketsToManager = (fsbucket, fsbucket_templates) => {
 
 let defaultFiles = []
 
-let getQueueLength
 let getFirstEntry
 let updateProject
 
@@ -49,7 +48,6 @@ const makeFileFromString = (currentEntry, dir, strType, fileExt) => {
         const template = defaultFiles.find(defaultFile => defaultFile.template_type === 'pdb2gmx_params').content
 
         const templateArrStr = template.split(',')
-        const templateArrInt = templateArrStr.map(v => parseInt(v))
         const paramArrStr = paramStr.split(',')
         const paramArrInt = paramArrStr.map(v => parseInt(v))
 
