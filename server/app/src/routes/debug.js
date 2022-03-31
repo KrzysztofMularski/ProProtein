@@ -2,6 +2,7 @@ const Project = require('../db/models/project')
 const User = require('../db/models/user')
 const TemplateFile = require('../db/models/templateFile')
 const DemoFile = require('../db/models/demoFile')
+const bcrypt = require('bcryptjs')
 
 const mongoose = require('mongoose')
 
