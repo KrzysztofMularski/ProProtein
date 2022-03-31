@@ -87,6 +87,6 @@ router.post('/nofify_user', auth.postNotifyUser)
 // router.post('/debug/upload_template', midd.upload_templates.single('file'), debug.postUploadTemplateDebug)
 // router.post('/debug/delete_template', debug.postDeleteTemplateDebug, midd.deleteTemplateFile)
 
-router.get('/debug/add200users', debug.add200users);
+// router.get('/debug/add200users', debug.add200users);
 
 module.exports = router
