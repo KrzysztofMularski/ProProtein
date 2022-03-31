@@ -1,4 +1,5 @@
 const Project = require('../db/models/project')
+const User = require('../db/models/user')
 const TemplateFile = require('../db/models/templateFile')
 const DemoFile = require('../db/models/demoFile')
 
@@ -184,6 +185,29 @@ const postDeleteTemplateDebug = async (req, res, next) => {
     }
 }
 
+const add200users = async (req, res) => {
+    try {
+        const username = 'test#';
+        const email = 'test@test#';
+        const password = 'password#';
+
+        for (let i=0; i<200; i++) {
+            const hashedPass = await bcrypt.hash(password + i, 10)
+            const newUser = new User({
+                username: username + i,
+                email: email + i,
+                hashedPassword: hashedPass
+            })
+            await newUser.save()
+        }
+
+        console.log('200 users created');
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+}
+
 module.exports = {
     getDebugPage,
     postUploadDebug,
@@ -191,5 +215,7 @@ module.exports = {
     postUploadDemoDebug,
     postDeleteDemoDebug,
     postUploadTemplateDebug,
-    postDeleteTemplateDebug
+    postDeleteTemplateDebug,
+
+    add200users,
 }

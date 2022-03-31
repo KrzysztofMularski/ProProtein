@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     },
     accountVerified: {
         type: Boolean,
-        default: false,
+        default: true,
     },
     created: {
         type: Date,

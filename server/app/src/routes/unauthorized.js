@@ -54,8 +54,9 @@ const postRegister = async (req, res) => {
             hashedPassword: hashedPass
         })
         await newUser.save()
-        sendAuthMail(req.body.username, req.body.email)
-        req.flash('success', 'New account successfully created. Check your mailbox to verify it')
+        // sendAuthMail(req.body.username, req.body.email)
+        // req.flash('success', 'New account successfully created. Check your mailbox to verify it')
+        req.flash('success', 'New account successfully created.')
         res.redirect('/login')
     } catch (err) {
         console.log(err)
