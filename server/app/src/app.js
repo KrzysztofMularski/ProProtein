@@ -11,11 +11,6 @@ const fs = require('fs')
 const http = require('http')
 const https = require('https')
 
-const options = {
-    key: fs.readFileSync(path.join(__dirname, '../letsencrypt/live/proprotein.cs.put.poznan.pl/privkey.pem'), 'utf-8'),
-    cert: fs.readFileSync(path.join(__dirname, '../letsencrypt/live/proprotein.cs.put.poznan.pl/fullchain.pem'), 'utf-8')
-};
-
 app.use('/', routing)
 app.use(cors())
 app.use(bodyParser.json())
