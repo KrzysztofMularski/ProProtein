@@ -335,11 +335,11 @@ const deleteProject = async (req, res) => {
         const rowscount = req.query.rowscount
         const page = req.query.page
         const route = req.body.route
-        if (project.status === 'Waiting')
-            req.flash('error', 'Project cannot be deleted, beacuse of "Waiting" status')
-        else if (project.status === 'Processing')
-            req.flash('error', 'Project cannot be deleted, beacuse of "Processing" status')
-        else if (project.name !== req.body.project_name && project.owner_id.toString() === req.user._id.toString()) {
+        // if (project.status === 'Waiting')
+        //     req.flash('error', 'Project cannot be deleted, beacuse of "Waiting" status')
+        // else if (project.status === 'Processing')
+        //     req.flash('error', 'Project cannot be deleted, beacuse of "Processing" status')
+        if (project.name !== req.body.project_name && project.owner_id.toString() === req.user._id.toString()) {
             req.flash('error', 'Project cannot be deleted')
         } else {
             await Project.deleteOne({ _id: projectId })
