@@ -6,6 +6,8 @@ const path = require('path')
 const bodyParser = require('body-parser')
 const connectDB = require('./db/connect')
 const cors = require('cors')
+// const mongo_express = require('mongo-express/lib/middleware')
+// const mongo_express_config = require('./mongo_express_config')
 
 app.use('/', routing)
 app.use(cors())
@@ -15,6 +17,8 @@ app.set('views', path.join(__dirname, 'views'))
 app.use(express.static(path.join(__dirname, '../public')))
 app.use('/css', express.static('public/css'))
 app.use('/icons', express.static('public/icons'))
+
+// app.use('/mongo_express', mongo_express(mongo_express_config))
 
 const start = async () => {
     try {

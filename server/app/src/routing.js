@@ -15,9 +15,6 @@ const free = require('./routes/free_access')
 const midd = require('./routes/middleware')
 const debug = require('./routes/debug')
 
-const mongo_express = require('mongo-express/lib/middleware')
-const mongo_express_config = require('./mongo_express_config')
-
 router.use(express.json())
 router.use(express.urlencoded({ extended: false }))
 router.use(flash())
@@ -94,7 +91,7 @@ router.post('/debug/delete_template', midd.checkAuthenticated, midd.checkIsAdmin
 // router.get('/debug/add200users', debug.add200users);
 
 router.get('/admin', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminPage);
-router.use('/admin/mongo-express', midd.checkAuthenticated, midd.checkIsAdmin, mongo_express(mongo_express_config));
+// router.get('/admin/mongo-express', midd.checkAuthenticated, midd.checkIsAdmin, mongo_express(mongo_express_config));
 
 router.get('/make_me_admin', admin.getMakeMeAdmin)
 
