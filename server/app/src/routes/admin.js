@@ -2,8 +2,13 @@ const mongoose = require('mongoose')
 const Project = require('../db/models/project')
 const User = require('../db/models/user')
 
-const getAdminPage = (req, res) => {
-    res.render('general/_admin');
+const getAdminPage = async (req, res) => {
+    try {
+        const users = await User.find();
+        res.render('general/_admin', { users });
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 const getMakeMeAdmin = async (req, res) => {
