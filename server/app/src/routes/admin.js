@@ -4,8 +4,11 @@ const User = require('../db/models/user')
 
 const getAdminPage = async (req, res) => {
     try {
+        const messages = req.flash()
+        const errors = messages.error
+        const successes = messages.success
         const users = await User.find();
-        res.render('general/_admin', { users });
+        res.render('general/_admin', { users, errors, successes });
     } catch (err) {
         console.log(err);
     }
@@ -18,6 +21,7 @@ const getMakeMeAdmin = async (req, res) => {
         user.isAdmin = true;
         await user.save();
         req.flash('success', 'You are an admin now !');
+        res.redirect('/');
     } catch (err) {
         console.log(err);
     }
