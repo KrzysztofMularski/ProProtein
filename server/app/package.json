@@ -34,6 +34,7 @@
     "mini-css-extract-plugin": "^2.4.6",
     "molstar": "^2.4.1",
     "moment": "^2.29.1",
+    "mongo-express": "^1.0.0-alpha.4",
     "mongodb": "^4.1.2",
     "mongoose": "^6.0.11",
     "multer": "^1.4.3",
