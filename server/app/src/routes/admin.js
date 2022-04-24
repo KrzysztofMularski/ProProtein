@@ -7,8 +7,12 @@ const getAdminPage = async (req, res) => {
         const messages = req.flash()
         const errors = messages.error
         const successes = messages.success
+        const reqQuery = {
+            route: '/'
+        }
+
         const users = await User.find();
-        res.render('general/_admin', { users, selected: '', logged: true, errors, successes });
+        res.render('general/_admin', { users, selected: '', logged: true, errors, successes, reqQuery });
     } catch (err) {
         console.log(err);
     }
