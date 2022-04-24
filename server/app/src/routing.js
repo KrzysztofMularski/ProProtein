@@ -93,6 +93,6 @@ router.post('/debug/delete_template', midd.checkAuthenticated, midd.checkIsAdmin
 router.get('/admin', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminPage);
 // router.get('/admin/mongo-express', midd.checkAuthenticated, midd.checkIsAdmin, mongo_express(mongo_express_config));
 
-router.get('/make_me_admin', admin.getMakeMeAdmin)
+// router.get('/make_me_admin', admin.getMakeMeAdmin)
 
 module.exports = router
