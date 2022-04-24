@@ -8,11 +8,15 @@ const session = require('cookie-session')
 const initializePassport = require('./passport_config')
 const methodOverride = require('method-override')
 
+const admin = require('./routes/admin')
 const auth = require('./routes/authorized')
 const unauth = require('./routes/unauthorized')
 const free = require('./routes/free_access')
 const midd = require('./routes/middleware')
 const debug = require('./routes/debug')
+
+const mongo_express = require('mongo-express/lib/middleware')
+const mongo_express_config = require('./mongo_express_config')
 
 router.use(express.json())
 router.use(express.urlencoded({ extended: false }))
@@ -79,14 +83,19 @@ router.post('/submit_simulation', midd.checkAuthenticated, auth.postSubmitSimula
 router.post('/nofify_user', auth.postNotifyUser)
 
 // debug - only for uploading/deleting files, normally should not be visible
-router.get('/debug', debug.getDebugPage)
-router.post('/debug/upload', midd.upload.single('file'), debug.postUploadDebug, midd.deleteFile)
-router.post('/debug/delete', debug.postDeleteDebug, midd.deleteFile)
-router.post('/debug/upload_demo', midd.upload.single('file'), debug.postUploadDemoDebug)
-router.post('/debug/delete_demo', debug.postDeleteDemoDebug, midd.deleteFile)
-router.post('/debug/upload_template', midd.upload_templates.single('file'), debug.postUploadTemplateDebug)
-router.post('/debug/delete_template', debug.postDeleteTemplateDebug, midd.deleteTemplateFile)
+router.get('/debug', midd.checkAuthenticated, midd.checkIsAdmin, debug.getDebugPage)
+router.post('/debug/upload', midd.checkAuthenticated, midd.checkIsAdmin, midd.upload.single('file'), debug.postUploadDebug, midd.deleteFile)
+router.post('/debug/delete', midd.checkAuthenticated, midd.checkIsAdmin, debug.postDeleteDebug, midd.deleteFile)
+router.post('/debug/upload_demo', midd.checkAuthenticated, midd.checkIsAdmin, midd.upload.single('file'), debug.postUploadDemoDebug)
+router.post('/debug/delete_demo', midd.checkAuthenticated, midd.checkIsAdmin, debug.postDeleteDemoDebug, midd.deleteFile)
+router.post('/debug/upload_template', midd.checkAuthenticated, midd.checkIsAdmin, midd.upload_templates.single('file'), debug.postUploadTemplateDebug)
+router.post('/debug/delete_template', midd.checkAuthenticated, midd.checkIsAdmin, debug.postDeleteTemplateDebug, midd.deleteTemplateFile)
+
 // router.get('/debug/add200users', debug.add200users);
 
-module.exports = router
+router.get('/admin', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminPage);
+router.get('/admin/mongo-express', midd.checkAuthenticated, midd.checkIsAdmin, mongo_express(mongo_express_config));
 
+router.get('/make_me_admin', admin.getMakeMeAdmin)
+
+module.exports = router

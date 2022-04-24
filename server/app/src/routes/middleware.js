@@ -106,6 +106,13 @@ const checkNotAuthenticated = (req, res, next) => {
     next()
 }
 
+const checkIsAdmin = (req, res, next) => {
+    if (!req.user.isAdmin) {
+        return res.redirect('/')
+    }
+    next();
+}
+
 const checkIfNotFinished = async (req, res, next) => {
     try {
         const projectId = req.body.project_id
@@ -132,5 +139,6 @@ module.exports = {
     downloadTemplateFile,
     checkAuthenticated,
     checkNotAuthenticated,
+    checkIsAdmin,
     checkIfNotFinished,
 }
