@@ -6,7 +6,14 @@
         <!-- <a href="/admin/mongo-express">Mongo Express</a> -->
         <a href="/debug">Debug Page</a>
 
-        
+        <p class="text-2xl font-quicksand">Users:</p>
+        <% users.forEach((user, id) => { %>
+            <div class="bg-coolgray-500 rounded p-4">
+                <p><%= id %></p>
+                <p><%= user._id %></p>
+                <p><%= user.email %></p>
+            </div>
+        <% }) %>
 
     </div>
 </div>
