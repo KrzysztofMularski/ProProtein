@@ -524,6 +524,7 @@ const getMolstar = async (req, res, next) => {
 
 const postSaveParameters = async (req, res, next) => {
     try {
+        console.log(req.body);
         const projectId = req.body.project_id
         const project = await Project.findById(projectId)
         if (project.status !== 'Initial')
@@ -622,7 +623,7 @@ const postSaveParameters = async (req, res, next) => {
             else if (gmx2pdb1 >= 9 && gmx2pdb1 <= 14)
                 gmx2pdb2 = req.body.gmx2pdb2_v2
             else if (gmx2pdb1 === 15)
-                gmx2pdb2 = req.body.gmxwpdb2_v3
+                gmx2pdb2 = req.body.gmx2pdb2_v3
             project.input.extra.pdb2gmx_params = `${req.body.gmx2pdb1},${gmx2pdb2}`
             project.input.extra.traj_params = req.body.group_for_output
             project.input.extra.genion_params = req.body.continuous_group_of_solvent_molecules
