@@ -53,6 +53,7 @@ router.get('/waiting', midd.checkAuthenticated, auth.getWaitingPage)
 router.get('/history', midd.checkAuthenticated, auth.getHistoryPage)
 router.get('/profile', midd.checkAuthenticated, auth.getProfilePage)
 router.post('/edit_profile', midd.checkAuthenticated, auth.postEditProfile)
+router.post('/delete_account', midd.checkAuthenticated, auth.deleteAccount)
 
 router.delete('/logout', midd.checkAuthenticated, auth.logout)
 

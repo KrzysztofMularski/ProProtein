@@ -21,6 +21,9 @@
                 <button onclick="openEditProfileForm()" class="h-8 w-32 bg-green-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-green-600">
                     Edit
                 </button>
+                <button onclick="openDeleteAccountDialog()" class="h-8 w-32 bg-red-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-red-600">
+                    Delete Account
+                </button>
                 <div id="edit_profile_modal" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-coolgray-500 bg-opacity-50 flex flex-col overflow-hidden">
                     <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
                         <div class="w-full h-full grid place-items-center">
@@ -61,6 +64,30 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="delete_account_modal" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-coolgray-500 bg-opacity-50 flex flex-col overflow-hidden">
+                    <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
+                        <div class="w-full h-full grid place-items-center">
+                            <form class="flex flex-col w-2/5 gap-2" action="/delete_account" method="post">
+
+                                <p class="text-4xl whitespace-nowrap">Delete this account?</p>
+                                
+                                <input type="hidden" name="user_id" value="<%= user._id %>">
+                                <div class="flex flex-row text-white justify-between gap-8 mt-4">
+                                    <button type="button" onclick="openDeleteAccountDialog()" class="w-20 h-8 rounded bg-blue-500 hover:bg-blue-600">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="w-20 h-8 rounded bg-red-500 hover:bg-red-600">
+                                        Delete
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
 
             <!-- users's projects info -->
@@ -103,6 +130,8 @@
     const pass1_input = document.getElementById('pass1_input')
     const pass2_input = document.getElementById('pass2_input')
 
+    const delete_account_modal = document.getElementById('delete_account_modal')
+
     const openEditProfileForm = () => {
         edit_profile_modal.classList.toggle('w-0')
         edit_profile_modal.classList.toggle('w-full')
@@ -117,5 +146,11 @@
 
     togglePassword(radio_button_password.checked)
 
+    const openDeleteAccountDialog = () => {
+        delete_account_modal.classList.toggle('w-0')
+        delete_account_modal.classList.toggle('w-full')
+        delete_account_modal.classList.toggle('left-1/2')
+        delete_account_modal.classList.toggle('left-0')
+    }
 
 </script>
