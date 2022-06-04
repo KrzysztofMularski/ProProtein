@@ -9,6 +9,7 @@ const serverAddress = process.env.SERVER_ADDRESS
 const queueManagerUrl = process.env.QUEUE_MANAGER_ADDRESS
 const { sendNotificationSimFinished } = require('../mailing')
 const bcrypt = require('bcryptjs')
+const project = require('../db/models/project')
 
 const setPagination = (query, route) => {
 
@@ -227,6 +228,25 @@ const postEditProfile = async (req, res) => {
     }
 }
 
+const deleteAccount = async (req, res) => {
+    try {
+        const user = req.user
+        const projects = await Project.find({ owner_id: user._id.toString() })
+        if (projects.length === 0) {
+            await user.delete();
+            req.flash('success', 'Successfully deleted an account');
+            return logout(req, res);
+        } else {
+            req.flash('error', 'Cannot delete this account because it contains some projects');
+            return res.redirect('/profile');
+        }
+    } catch (err) {
+        req.flash('error', 'Cannot delete account')
+        console.log(err)
+        res.sendStatus(500)
+    }
+}
+
 const logout = (req, res) => {
     try {
         req.flash('success', 'Successfully signed out')
@@ -339,7 +359,7 @@ const deleteProject = async (req, res) => {
         //     req.flash('error', 'Project cannot be deleted, beacuse of "Waiting" status')
         // else if (project.status === 'Processing')
         //     req.flash('error', 'Project cannot be deleted, beacuse of "Processing" status')
-        if (project.name !== req.body.project_name && project.owner_id.toString() === req.user._id.toString()) {
+        if (project.name !== req.body.project_name || project.owner_id.toString() !== req.user._id.toString()) {
             req.flash('error', 'Project cannot be deleted')
         } else {
             await Project.deleteOne({ _id: projectId })
@@ -668,6 +688,7 @@ module.exports = {
     getHistoryPage,
     getProfilePage,
     postEditProfile,
+    deleteAccount,
 
     logout,
     postNewProject,
