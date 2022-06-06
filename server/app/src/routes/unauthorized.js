@@ -13,7 +13,7 @@ const getLoginPage = (req, res) => {
 
 const postLogin = passport => 
     passport.authenticate('local', {
-        successRedirect: '/projects',
+        successRedirect: '/projects?rowscount=5&page=1',
         failureRedirect: '/login',
         failureFlash: true,
         successFlash: true

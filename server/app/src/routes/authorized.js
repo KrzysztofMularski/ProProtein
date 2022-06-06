@@ -292,7 +292,7 @@ const getProject = async (req, res) => {
         const projectId = req.query.id
         if (!mongoose.isValidObjectId(projectId)) {
             req.flash('error', 'There is no project with such id')
-            return res.redirect('/projects')
+            return res.redirect('/projects?rowscount=5&page=1')
         }
         const project = await Project.findOne({ _id: projectId, owner_id: req.user._id })
         if (project) {
@@ -527,7 +527,6 @@ const getMolstar = async (req, res, next) => {
 
 const postSaveParameters = async (req, res, next) => {
     try {
-        console.log(req.body);
         const projectId = req.body.project_id
         const project = await Project.findById(projectId)
         if (project.status !== 'Initial')
@@ -665,7 +664,7 @@ const postSubmitSimulation = async (req, res) => {
                 "Content-type": "application/json; charset=UTF-8"
             }
         })
-        res.redirect('/projects')
+        res.redirect('/projects?rowscount=5&page=1')
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
