@@ -261,7 +261,9 @@ const logout = (req, res) => {
 
 const postNewProject = async (req, res) => {
     try {
-        const route = req.body.route
+        let route = req.body.route
+        if (route === 'projects')
+            route += '?rowscount=5&page=1';
         const buttonAction = req.body.new_project_button
         if (!req.body.project_name) {
             req.flash('error', 'To create new project You need to provide project name')
