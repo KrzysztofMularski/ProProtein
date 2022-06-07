@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon src/app.js",
-    "build-css": "tailwindcss build src/styles.css -o public/css/styles.css",
-    "build-css-minified": "tailwindcss build src/styles.css -o public/css/styles.css --minify",
+    "build-css": "tailwindcss -i src/styles.css -o public/css/styles.css",
+    "build-css-minified": "tailwindcss -i src/styles.css -o public/css/styles.css --minify",
     "build-molstar-bundle": "npm run copy-lib && npm run copy-coloring && npm run copy-extra && npm run build-tsc && npm run build-webpack",
     "copy-lib": "cpx \"node_modules/molstar/lib/**\" \"src/molstar/lib\"",
     "copy-coloring": "cpx \"src/molstar/src/*\" \"src/molstar/lib/raw\"",
@@ -49,7 +49,7 @@
     "sass": "^1.48.0",
     "sass-loader": "^12.4.0",
     "style-loader": "^3.3.1",
-    "tailwindcss": "^2.2.16",
+    "tailwindcss": "^3.0.24",
     "typescript": "^4.5.4",
     "webpack": "^5.66.0",
     "webpack-cli": "^4.9.1"
