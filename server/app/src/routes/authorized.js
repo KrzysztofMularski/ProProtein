@@ -353,6 +353,10 @@ const postEditDescription = async (req, res) => {
 const deleteProject = async (req, res) => {
     try {
         const projectId = req.body.project_id
+        if (!mongoose.isValidObjectId(projectId)) {
+            req.flash('error', 'Invalid project id');
+            return res.redirect(`/${route}?rowscount=5&page=1`);
+        }
         const project = await Project.findById(projectId)
         const rowscount = req.query.rowscount
         const page = req.query.page
