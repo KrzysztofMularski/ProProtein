@@ -350,9 +350,6 @@ const postEditDescription = async (req, res) => {
 
 const deleteProject = async (req, res) => {
     try {
-        console.log("body", req.body);
-	console.log("user", req.user);
-	    
 	const projectId = req.body.project_id
         const project = await Project.findById(projectId)
         const rowscount = req.query.rowscount
