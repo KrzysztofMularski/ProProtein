@@ -1,5 +1,8 @@
 FROM gromacs/gromacs
 
+RUN rm /etc/apt/sources.list.d/cuda.list
+RUN rm /etc/apt/sources.list.d/nvidia-ml.list
+
 RUN apt-get update\
 	&& apt-get upgrade -y\
 	&& apt install curl -y\
