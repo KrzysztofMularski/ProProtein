@@ -680,7 +680,10 @@ const postNotifyUser = async (req, res) => {
         const simulationStatus = req.body.sim_status
         const project = await Project.findById(projectId)
         const user = await User.findById(project.owner_id)
+        console.log(user.username, user.email, projectId, simulationStatus)
+        
         sendNotificationSimFinished(user.username, user.email, projectId, simulationStatus)
+        
         res.sendStatus(200)
     } catch (err) {
         console.log(err)
