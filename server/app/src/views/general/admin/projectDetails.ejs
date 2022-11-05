@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../../components/head/_head.ejs') %>
+<body class="flex flex-row bg-gray-200 font-quicksand relative">
+    
+    <!-- toasts -->
+    <%- include('components/toast.ejs') %>
+
+    <!-- left panel -->
+    <%- include('components/navbar.ejs') %>
+    
+    <!-- main content -->
+    <div class="flex flex-col px-8 py-4 flex-grow gap-8 mb-8">
+
+        <p class="text-2xl">Project Details</p>
+
+        <div class="flex flex-row gap-2 text-gray-500 items-center">
+            <a href="/admin/projects">projects</a>
+            <div class="w-4">
+                <%- include('components/icons/nav_right.svg') %>
+            </div>
+            <a href="/admin/projects/<%=project._id%>"><%=project._id%></a>
+        </div>
+
+        <!-- action buttons -->
+        <div class="flex flex-row gap-4">
+            <button onclick="toggleModalEdit()" class="flex flex-row gap-2 cursor-pointer items-center bg-gray-500 self-start px-4 py-2 text-white rounded-xl -mb-4 hover:bg-gray-600">
+                <div class="w-6">
+                    <%- include('components/icons/edit.svg') %>
+                </div>
+                <p>Edit project details</p>
+            </button>
+            <button onclick="toggleModalManageFiles()" class="flex flex-row gap-2 cursor-pointer items-center bg-gray-500 self-start px-4 py-2 text-white rounded-xl -mb-4 hover:bg-gray-600">
+                <div class="w-6">
+                    <%- include('components/icons/files.svg') %>
+                </div>
+                <p>Manage project files</p>
+            </button>
+            <button onclick="toggleModalChangeParameters()" class="flex flex-row gap-2 cursor-pointer items-center bg-gray-500 self-start px-4 py-2 text-white rounded-xl -mb-4 hover:bg-gray-600">
+                <div class="w-6">
+                    <%- include('components/icons/change.svg') %>
+                </div>
+                <p>Change project parameters</p>
+            </button>
+            <button onclick="toggleModalDelete()" class="flex flex-row gap-2 cursor-pointer items-center bg-red-500 self-start px-4 py-2 text-white rounded-xl -mb-4 hover:bg-red-600">
+                <div class="w-6">
+                    <%- include('components/icons/trash.svg') %>
+                </div>
+                <p>Delete this project</p>
+            </button>
+        </div>
+
+        <!-- modals -->
+        <div id="modal_edit" class="hidden place-items-center bg-gray-500 fixed top-0 right-0 left-0 w-full h-full bg-opacity-50">
+            <form action="/admin/projects/edit/<%= project._id %>" method="post" class="bg-gray-200 px-6 py-8 relative rounded-xl flex flex-col gap-6">
+                <div class="w-4 text-gray-400 absolute top-4 right-4 cursor-pointer" onclick="toggleModalEdit()">
+                    <%- include('components/icons/cross.svg') %>
+                </div>
+                <p class="text-2xl">Edit project details</p>
+                <div class="flex flex-row gap-6">
+
+                    <div class="grid grid-cols-[120px_300px] items-center gap-y-2">
+
+                        <label for="id" class="text-md">ID</label>
+                        <input type="text" name="id" id="id" value="<%= project._id %>" class="p-2 rounded-lg bg-gray-200" disabled>
+
+                        <label for="owner_id" class="text-md">Owner ID</label>
+                        <input type="text" name="owner_id" id="owner_id" value="<%= project.owner_id %>" class="p-2 rounded-lg">
+
+                        <label for="name" class="text-md">Name</label>
+                        <input type="text" name="name" id="name" value="<%= project.name %>" class="p-2 rounded-lg">
+
+                        <label for="status" class="text-md">Status</label>
+                        <select name="status" id="status" class="p-2 rounded-lg bg-white">
+                            <option value="Initial" <% if (project.status === 'Initial') { %> selected <% } %>>Initial</option>
+                            <option value="Waiting" <% if (project.status === 'Waiting') { %> selected <% } %>>Waiting</option>
+                            <option value="Processing" <% if (project.status === 'Processing') { %> selected <% } %>>Processing</option>
+                            <option value="Finished" <% if (project.status === 'Finished') { %> selected <% } %>>Finished</option>
+                            <option value="Error" <% if (project.status === 'Error') { %> selected <% } %>>Error</option>
+                        </select>
+
+                        <label for="description" class="text-md">Description</label>
+                        <input type="text" name="description" id="description" value="<%= project.description %>" class="p-2 rounded-lg">
+
+                    </div>
+
+                    <div class="grid grid-cols-[120px_300px] items-center content-start gap-y-2">
+
+                        <label for="created" class="text-md">Created At</label>
+                        <div class="grid grid-cols-[3fr_2fr] gap-2">
+                            <input type="date" name="created" id="created" value="<%= project.dateInput %>" class="p-2 rounded-lg">
+                            <input type="time" name="created_time" id="created_time" value="<%= project.dateInputTime %>" step=1 class="p-2 rounded-lg">
+                        </div>
+
+                        <label for="waiting_since" class="text-md">Waiting since</label>
+                        <div class="grid grid-cols-[3fr_2fr] gap-2">
+                            <input type="date" name="waiting_since" id="waiting_since" value="<%= project.dateInputWaitingSince %>" class="p-2 rounded-lg">
+                            <input type="time" name="waiting_since_time" id="waiting_since_time" value="<%= project.dateInputWaitingSinceTime %>" step=1 class="p-2 rounded-lg">
+                        </div>
+
+                        <label for="processing_since" class="text-md">Processing since</label>
+                        <div class="grid grid-cols-[3fr_2fr] gap-2">
+                            <input type="date" name="processing_since" id="processing_since" value="<%= project.dateInputProcessingSince %>" class="p-2 rounded-lg">
+                            <input type="time" name="processing_since_time" id="processing_since_time" value="<%= project.dateInputProcessingSinceTime %>" step=1 class="p-2 rounded-lg">
+                        </div>
+
+                        <label for="finished_since" class="text-md">Finished since</label>
+                        <div class="grid grid-cols-[3fr_2fr] gap-2">
+                            <input type="date" name="finished_since" id="finished_since" value="<%= project.dateInputFinishedSince %>" class="p-2 rounded-lg">
+                            <input type="time" name="finished_since_time" id="finished_since_time" value="<%= project.dateInputFinishedSinceTime %>" step=1 class="p-2 rounded-lg">
+                        </div>
+                        
+                        <label for="parameters_default" class="text-md">Parameters Default</label>
+                        <input type="checkbox" name="parameters_default" id="parameters_default" <% if (project.parameters_default) { %> checked <% } %> class="rounded-lg justify-self-start h-4 w-4 ml-2">
+                    </div>
+
+                </div>
+                <div class="flex flex-row gap-8">
+
+                    <button type="submit" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
+                        Save changes
+                    </button>
+                    
+                    <button type="button" onclick="toggleModalEdit()" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="modal_files" class="hidden place-items-center bg-gray-500 fixed top-0 right-0 left-0 w-full h-full bg-opacity-50">
+            <form id="modal_files_form" action="/admin/projects/edit_files/<%= project._id %>" enctype="multipart/form-data" method="post" class="bg-gray-200 px-6 py-8 relative rounded-xl flex flex-col gap-6">
+                <div class="w-4 text-gray-400 absolute top-4 right-4 cursor-pointer" onclick="toggleModalManageFiles()">
+                    <%- include('components/icons/cross.svg') %>
+                </div>
+                <p class="text-2xl">Manage project files</p>
+
+                <div class="flex flex-row gap-6 mb-4">
+
+                    <% file_types_groups.forEach(file_types => { %>
+                     
+                    <div class="grid grid-cols-[160px_360px] items-start gap-y-2 content-start">
+
+                        <% file_types.forEach((file_type, id) => { %>
+                        <% if (id !== 0) { %>
+                        <div class="border-t-2 border-gray-300 my-4"></div>
+                        <div class="border-t-2 border-gray-300 my-4"></div>
+                        <% } %>
+                        <div>
+                            <input id="<%= file_type %>_checkbox" type="checkbox" name="<%= file_type %>">
+                            <label for="<%= file_type %>_checkbox" class="text-md"><%= file_type %></label>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex flex-row gap-2">
+                                <input type="radio" name="<%= file_type %>_option" value="delete" class="<%= file_type %>" disabled>
+                                <p>unlink and delete current file</p>
+                            </div>
+                            <div class="flex flex-row gap-2">
+                                <input type="radio" name="<%= file_type %>_option" value="unlink" class="<%= file_type %>" disabled>
+                                <p>unlink current file</p>
+                            </div>
+                            <% if (file_type === 'structure') { %>
+                            <div class="flex flex-row gap-2">
+                                <input type="radio" name="<%= file_type %>_option" value="demo" class="<%= file_type %>" disabled>
+                                <select name="<%= file_type %>_select" class="p-2 rounded-lg bg-white <%= file_type %> disabled:bg-gray-100" disabled>
+                                    <% demos.forEach(({ file_id, filename }) => { %>
+                                        <option value="<%= file_id %>"><%= filename %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <% } %>
+                            <div class="flex flex-row gap-2">
+                                <input id="<%= file_type %>_radio" type="radio" name="<%= file_type %>_option" class="<%= file_type %>" value="file" disabled>
+                                <div class="flex flex-row items-center overflow-hidden">
+                                    <input id="<%= file_type %>_file" type="file" name="<%= file_type %>_file" class="<%= file_type %>" disabled>
+                                    <div class="w-3 text-gray-500 flex-shrink-0" onclick="document.getElementById('<%= file_type %>_file').value=''">
+                                        <%- include('components/icons/cross.svg') %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                    </div>
+                    <% }) %>
+                </div>
+                   
+                <div class="flex flex-row gap-8">
+
+                    <button type="submit" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
+                        Save changes
+                    </button>
+                    
+                    <button type="button" onclick="toggleModalManageFiles()" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="modal_change_parameters" class="hidden place-items-center bg-gray-500 fixed top-0 right-0 left-0 w-full h-full bg-opacity-50">
+            <form action="/admin/projects/edit_parameters/<%= project._id %>" method="post" class="bg-gray-200 px-6 py-8 relative rounded-xl flex flex-col gap-6">
+                <div class="w-4 text-gray-400 absolute top-4 right-4 cursor-pointer" onclick="toggleModalChangeParameters()">
+                    <%- include('components/icons/cross.svg') %>
+                </div>
+                <p class="text-2xl">Change project parameters</p>
+
+                <div class="grid grid-cols-[220px_100px] items-center gap-y-2">
+
+                    <% parameterTypes.forEach(parameter => { %>
+                        <label for="<%= parameter %>" class="text-md"><%= parameter %></label>
+                        <input type="text" name="<%= parameter %>" id="<%= parameter %>" value="<%= project.input.extra[parameter] %>" class="p-2 rounded-lg">
+                    <% }) %>
+
+                </div>
+
+                <div class="flex flex-row gap-8">
+
+                    <button type="submit" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
+                        Save changes
+                    </button>
+                    
+                    <button type="button" onclick="toggleModalChangeParameters()" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="modal_delete" class="hidden place-items-center bg-gray-500 fixed top-0 right-0 left-0 w-full h-full bg-opacity-50">
+            <form action="/admin/projects/delete/<%= project._id %>?_method=DELETE" method="post" class="bg-gray-200 px-12 py-10 relative rounded-xl flex flex-col gap-6">
+                <div class="w-4 text-gray-400 absolute top-4 right-4 cursor-pointer" onclick="toggleModalDelete()">
+                    <%- include('components/icons/cross.svg') %>
+                </div>
+
+                <div class="w-16 text-red-500 self-center">
+                    <%- include('components/icons/warning.svg') %>
+                </div>
+
+                <p class="text-lg">Do you want to delete this project?</p>
+
+                <div class="flex flex-row gap-8">
+                    <button type="submit" class="flex flex-row w-full cursor-pointer bg-red-500 px-4 py-2 text-white rounded-xl hover:bg-red-600 justify-center">
+                        Delete
+                    </button>
+                    <button type="button" onclick="toggleModalDelete()" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-[150px_300px] w-96 items-baseline">
+            
+            <p class="text-gray-500 text-sm">ID</p>
+            <p class="text-black text-lg"><%= project._id %></p>
+
+            <p class="text-gray-500 text-sm">Owner ID</p>
+            <a href="/admin/users/<%= project.owner_id %>" class="underline text-blue-500 hover:text-blue-600 text-lg"><%= project.owner_id %></a>
+            
+            <p class="text-gray-500 text-sm">Name</p>
+            <p class="text-black text-lg"><%= project.name %></p>
+            
+            <p class="text-gray-500 text-sm">Status</p>
+            <div class="flex-1 flex text-lg">
+                <div class="rounded-full px-3 bg-<%= project.statusColor %>-300 text-<%= project.statusColor %>-800">
+                    <p><%= project.status %></p>
+                </div>
+            </div>
+            
+            <p class="text-gray-500 text-sm">Created At</p>
+            <p class="text-black text-lg"><%= project.createdStr %></p>
+
+            <p class="text-gray-500 text-sm">Default Parameters</p>
+            <p class="text-black text-lg"><%= project.parameters_default %></p>
+
+            <% if (project.description) { %>
+            <p class="text-gray-500 text-sm">Description</p>
+            <p class="text-black text-lg"><%= project.description %></p>
+            <% } %>
+
+        </div>
+
+        <p class="text-xl">Simulation Files and Parameters</p>
+
+        <% if (project.waiting_since_str || project.processing_since_str || project.finished_since_str) { %>
+
+            <div class="grid grid-cols-[150px_300px] w-96 items-baseline">
+    
+                <% if (project.waiting_since_str) { %>
+                <p class="text-gray-500 text-sm">Waiting since</p>
+                <p class="text-black text-lg"><%= project.waiting_since_str %></p>
+                <% } %>
+    
+                <% if (project.processing_since_str) { %>
+                <p class="text-gray-500 text-sm">Processing since</p>
+                <p class="text-black text-lg"><%= project.processing_since_str %></p>
+                <% } %>
+    
+                <% if (project.finished_since_str) { %>
+                <p class="text-gray-500 text-sm">Finished since</p>
+                <p class="text-black text-lg"><%= project.finished_since_str %></p>
+                <% } %>
+    
+            </div>
+            <% } %>
+        
+        <%- include('components/table.ejs') %>
+    </div>
+
+    <script defer>
+        const toggleModalEdit = () => {
+            const modal_edit = document.getElementById('modal_edit');
+            modal_edit.classList.toggle('hidden');
+            modal_edit.classList.toggle('grid');
+        }
+
+        const toggleModalManageFiles = () => {
+            const modal_files = document.getElementById('modal_files');
+            modal_files.classList.toggle('hidden');
+            modal_files.classList.toggle('grid');
+        }
+        
+        const toggleModalDelete = () => {
+            const modal_delete = document.getElementById('modal_delete');
+            modal_delete.classList.toggle('hidden');
+            modal_delete.classList.toggle('grid');
+        }
+
+        const toggleModalChangeParameters = () => {
+            const modal_change_parameters = document.getElementById('modal_change_parameters');
+            modal_change_parameters.classList.toggle('hidden');
+            modal_change_parameters.classList.toggle('grid');
+        }
+
+        const file_types = '<%= file_types_groups %>'.split(',');
+        const modal_files_form = document.getElementById('modal_files_form');
+        modal_files_form.addEventListener('submit', e => {
+            e.preventDefault();
+            
+            file_types.forEach(file_type => {
+                const checkbox = document.getElementById(`${file_type}_checkbox`);
+                const radio = document.getElementById(`${file_type}_radio`);
+                const file = document.getElementById(`${file_type}_file`);
+                if (!(checkbox.checked && radio.checked)) {
+                    file.value = '';
+                }
+            })
+
+            modal_files_form.submit();
+        });
+
+        const setListeners = () => {
+            file_types.forEach(file_type => {
+                const checkbox = document.getElementById(`${file_type}_checkbox`);
+                checkbox.addEventListener('change', e => {
+                    const elementsList = document.getElementsByClassName(file_type);
+                    if (e.currentTarget.checked) {
+                        for (let i = 0; i < elementsList.length; i++) {
+                            elementsList[i].removeAttribute("disabled");
+                        }
+                    } else {
+                        for (let i = 0; i < elementsList.length; i++) {
+                            elementsList[i].setAttribute("disabled", "");
+                        }
+                    }
+                })
+            })
+            
+
+        }
+        setListeners();
+
+    </script>
+
+</body>
+</html>

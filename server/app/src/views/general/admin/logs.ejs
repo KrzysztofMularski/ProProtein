@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../../components/head/_head.ejs') %>
+<body class="flex flex-row bg-gray-200 font-quicksand relative">
+    
+    <!-- toasts -->
+    <%- include('components/toast.ejs') %>
+
+    <!-- left panel -->
+    <%- include('components/navbar.ejs') %>
+    
+    <!-- main content -->
+    <div class="flex flex-col px-8 py-4 flex-grow gap-8 mb-8">
+
+        <p class="text-2xl">Logs</p>
+        <%- include('components/table.ejs') %>
+
+    </div>
+
+</body>
+</html>

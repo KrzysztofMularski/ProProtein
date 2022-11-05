@@ -21,8 +21,7 @@ app.set('views', path.join(__dirname, 'views'))
 app.use(express.static(path.join(__dirname, '../public')))
 app.use('/css', express.static('public/css'))
 app.use('/icons', express.static('public/icons'))
-
-// app.use('/mongo_express', mongo_express(mongo_express_config))
+app.all('*', (req, res) => res.redirect('/'));
 
 const start = async () => {
     try {
@@ -49,4 +48,3 @@ const start = async () => {
 }
 
 start()
-

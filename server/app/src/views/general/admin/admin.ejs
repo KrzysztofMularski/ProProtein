@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../../components/head/_head.ejs') %>
+<body class="flex flex-row bg-gray-200 font-quicksand relative">
+
+    <!-- toasts -->
+    <%- include('components/toast.ejs') %>
+
+    <!-- left panel -->
+    <%- include('components/navbar.ejs') %>
+    
+    <!-- main content -->
+    <div class="flex flex-col px-8 py-4 flex-grow gap-8">
+        <p class="text-2xl">Dashboard</p>
+        <!-- cards -->
+        <div class="flex flex-row gap-8">
+            <!-- users -->
+            <a href="/admin/users" class="w-64 h-32 flex flex-row text-white bg-orange-400 p-6 rounded-xl divide-x-2 gap-8 items-center justify-center hover:bg-orange-500">
+                <div class="w-14">
+                    <%- include ('components/icons/users.svg') %>
+                </div>
+                <div class="pl-8">
+                    <p class="text-3xl"><%= usersCount %></p>
+                    <p class="text-2xl">Users</p>
+                </div>
+            </a>
+            
+            <!-- projects -->
+            <a href="/admin/projects" class="w-64 h-32 flex flex-row text-white bg-purple-400 p-6 rounded-xl divide-x-2 gap-4 items-center justify-center hover:bg-purple-500">
+                <div class="w-12">
+                    <%- include ('components/icons/projects.svg') %>
+                </div>
+                <div class="pl-8">
+                    <p class="text-3xl"><%= projectsCount %></p>
+                    <p class="text-2xl">Projects</p>
+                </div>
+            </a>
+
+            <!-- files -->
+            <a href="/admin/files" class="w-64 h-32 flex flex-row text-white bg-green-400 p-6 rounded-xl divide-x-2 gap-4 items-center justify-center hover:bg-green-500">
+                <div class="w-14">
+                    <%- include ('components/icons/files.svg') %>
+                </div>
+                <div class="pl-8">
+                    <p class="text-3xl"><%= filesCount %></p>
+                    <p class="text-2xl">Files</p>
+                </div>
+            </a>
+
+            <!-- logs -->
+            <a href="/admin/logs" class="w-64 h-32 flex flex-row text-white bg-blue-400 p-6 rounded-xl divide-x-2 gap-4 items-center justify-center hover:bg-blue-500">
+                <div class="w-14">
+                    <%- include ('components/icons/system.svg') %>
+                </div>
+                <div class="pl-8">
+                    <p class="text-3xl"><%= logsCount %></p>
+                    <p class="text-2xl">Logs</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
