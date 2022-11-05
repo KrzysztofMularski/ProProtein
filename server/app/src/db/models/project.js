@@ -19,8 +19,8 @@ const projectSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        min: [2, 'Project name length cannot be less than 2 characters'],
-        max: [100, 'Project name length cannot be more than 100 characters']
+        minLength: [2, 'Project name length cannot be less than 2 characters'],
+        maxLength: [100, 'Project name length cannot be more than 100 characters']
     },
     status: {
         type: String,
@@ -28,7 +28,7 @@ const projectSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        max: [400, 'Project description length cannot be more than 400 characters']
+        maxLength: [400, 'Project description length cannot be more than 400 characters']
     },
     created: {
         type: Date,

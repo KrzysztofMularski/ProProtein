@@ -3,7 +3,7 @@
     <% if (table.content.length) { %>
 
     <!-- headers -->
-    <div class="w-full flex flex-row font-quicksand font-medium text-coolgray-400 h-14">
+    <div class="w-full flex flex-row font-quicksand font-medium text-gray-400 h-14">
         
         <p class="w-16 flex flex-row items-center justify-center p-4">No.</p>
 
@@ -23,7 +23,7 @@
         <% table.content.forEach((row, id) => { %>
 
             <!-- row -->
-            <div class="w-full flex flex-row font-quicksand font-medium text-coolgray-700 h-14 odd:bg-coolgray-100">
+            <div class="w-full flex flex-row font-quicksand font-medium text-gray-700 h-14 odd:bg-gray-100">
                 
                 <p class="w-16 flex flex-row items-center justify-center p-4 overflow-hidden"><%= (pg.currentPage-1)*pg.rowsPerPage+id+1 %></p>
 
@@ -41,7 +41,7 @@
                                 <% } else if (value === 'Processing') { %>
                                     class="rounded-full px-3 bg-purple-300 text-purple-800"
                                 <% } else if (value === 'Finished') { %>
-                                    class="rounded-full px-3 bg-coolgray-300 text-coolgray-800"
+                                    class="rounded-full px-3 bg-gray-300 text-gray-800"
                                 <% } else if (value === 'Error') { %>
                                     class="rounded-full px-3 bg-red-300 text-red-800"
                                 <% } %>   
@@ -79,7 +79,7 @@
                             </div>
                             
 
-                            <div onclick="openProject('<%=value%>')" class="w-8 h-8 text-white bg-coolgray-500 rounded-xl cursor-pointer hover:bg-coolgray-600">
+                            <div onclick="openProject('<%=value%>')" class="w-8 h-8 text-white bg-gray-500 rounded-xl cursor-pointer hover:bg-gray-600">
                                 <div class="group h-full w-full flex items-center justify-center">
                                     <div class="w-4 group-hover:hidden ">
                                         <%- include (`../../../../../public/icons/folder.svg`) %>
@@ -107,21 +107,21 @@
 
     <% } else { %>
     <div class="w-full h-full grid place-items-center pb-40">
-        <p class="text-4xl font-bold text-coolgray-300">Your projects list is empty</p>
+        <p class="text-4xl font-bold text-gray-300">Your projects list is empty</p>
     </div>
 
     <% } %>
 
     <!-- description modal -->
 
-    <div id="edit_description_modal_wrapper" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-coolgray-500 bg-opacity-50 flex flex-col overflow-hidden">
+    <div id="edit_description_modal_wrapper" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-gray-500 bg-opacity-50 flex flex-col overflow-hidden">
         <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
             <div class="w-full h-full grid place-items-center">
                 <form id="edit_description_form" class="flex flex-col w-2/5 gap-6" action="/edit_description?rowscount=<%=reqQuery.rowscount%>&page=<%=reqQuery.page%>" method="post">
                     <p class="text-4xl whitespace-nowrap">Project description</p>
                     <label class="flex flex-row gap-4 items-center w-full overflow-hidden">
                         <p class="whitespace-nowrap w-36 flex-shrink-0">Project description:</p>
-                        <textarea id="edit_description_textarea" class="bg-coolgray-300 w-full h-24 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4 py-2 resize-none" name="project_description"></textarea>
+                        <textarea id="edit_description_textarea" class="bg-gray-300 w-full h-24 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4 py-2 resize-none" name="project_description"></textarea>
                     </label>
                     <input id="edit_description_project_id" type="hidden" name="project_id">
                     <input type="hidden" name="route" value=<%=reqQuery.route%>>
@@ -140,7 +140,7 @@
 
     <!-- delete project modal -->
 
-    <div id="delete_project_modal_wrapper" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-coolgray-500 bg-opacity-50 flex flex-col overflow-hidden">
+    <div id="delete_project_modal_wrapper" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-gray-500 bg-opacity-50 flex flex-col overflow-hidden">
         <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
             <div class="w-full h-full grid place-items-center">
                 <form id="delete_project_form" class="flex flex-col w-2/5 gap-6" action="/delete_project?_method=DELETE&rowscount=<%=reqQuery.rowscount%>&page=<%=reqQuery.page%>" method="post">
@@ -148,7 +148,7 @@
                     <p>Type project name: <span id="project_name_span" class="font-bold"></span> and click <span class="font-bold">Delete Project</span> to permanently erase this project from your projects list</p>
                     <label class="flex flex-row gap-4 items-center w-full mt-4">
                         <p class="whitespace-nowrap w-36 flex-shrink-0">Project name:</p>
-                        <input id="project_name" onchange="onChangeInput()" class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="text" name="project_name">
+                        <input id="project_name" onchange="onChangeInput()" class="bg-gray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4" type="text" name="project_name">
                     </label>
                     <pre id="errorText" class="text-base text-center text-red-500 font-quicksand font-normal">Provided Project name is not correct</pre>
                     <input id="delete_project_project_id" type="hidden" name="project_id">
@@ -160,7 +160,7 @@
                             </button>
                         </div>
                         <div class="flex flex-row gap-4">
-                            <button type="button" onclick="delete_project_form_submit()" class="w-32 h-8 rounded bg-coolgray-500 hover:bg-coolgray-600">
+                            <button type="button" onclick="delete_project_form_submit()" class="w-32 h-8 rounded bg-gray-500 hover:bg-gray-600">
                                 Delete Project
                             </button>
                         </div>

@@ -1,4 +1,5 @@
 const TemplateFile = require('../db/models/templateFile')
+const pushLog = require('../logging')
 
 const getHomePage = (req, res) => {
     const messages = req.flash()
@@ -15,8 +16,10 @@ const getDownloadTemplate = async (req, res, next) => {
         res.attachment(templateType + '.mdp');
         next()
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'getDownloadTemplate');
+        req.flash('error', 'Error while downloading template');
+        return res.redirect('/')
     }
     
 }

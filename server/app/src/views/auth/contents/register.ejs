@@ -1,7 +1,7 @@
 <%- include('components/title.ejs', { p: 'Sign Up' }) %>
 
 <%- include('components/input.ejs', { p: 'Username', type: 'text', name: 'username', required: true, value: credentials.username}) %>
-<%- include('components/input.ejs', { p: 'Email', type: 'text', name: 'email', required: true, value: credentials.email}) %>
+<%- include('components/input.ejs', { p: 'Email', type: 'email', name: 'email', required: true, value: credentials.email}) %>
 <%- include('components/input.ejs', { p: 'Password', type: 'password', name: 'password', required: true, value: '' }) %>
 <%- include('components/input.ejs', { p: 'Repeat Password', type: 'password', name: 'password_confirmation', required: true, value: '' }) %>
 

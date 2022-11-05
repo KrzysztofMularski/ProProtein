@@ -1,0 +1,109 @@
+<% tables.forEach(({tableName,tableHeaders,tableHeadersTypes,tableColumnSizes,tableLength,links,showDetailsButton,showDownloadButton,showDeleteButton,detailsRoute,downloadRoute,afterDeleteRoute,deleteRoute,tableContent,statusColors}, id) => { %>
+
+<% if (renderingAllTablesAtOnce || tableId === id) { %>
+
+<% if (tableName) { %>
+<p class="text-lg -mb-4"><%= tableName %></p>
+<% } %>
+
+<!-- table -->
+<div class="flex flex-row">
+<table class="bg-white flex-1 <% if (tableLength) { %>flex-[<%= tableLength %>] <% } %>">
+
+    <!-- headers -->
+    <tr class="flex flex-row text-gray-500 py-2 bg-gray-100">
+        <% tableHeaders.forEach((header, colId) => { %>
+        <th class="flex-[<%= tableColumnSizes[colId] %>] font-medium text-start px-4 overflow-hidden"><%= header %></th>
+        <% }) %>
+        <% if (showDetailsButton) { %>
+        <!-- options -->
+        <th class="px-4">
+            <div class="w-6"></div>
+        </th>
+        <% } %>
+        <% if (showDownloadButton) { %>
+        <!-- download -->
+        <th class="px-4">
+            <div class="w-6"></div>
+        </th>
+        <% } %>
+        <!-- delete -->
+        <% if (showDeleteButton) { %>
+        <th class="px-4">
+            <div class="w-6"></div>
+        </th>
+        <% } %>
+    </tr>
+
+    <!-- content -->
+    <% tableContent.forEach(row => { %>
+    <tr class="flex flex-row odd:bg-gray-100 py-2 overflow-hidden">
+        <% row.forEach((cell, colId) => { %>
+        <td class="flex-[<%= tableColumnSizes[colId] %>] overflow-hidden px-4">
+            <% if (tableHeadersTypes[colId] === 'status') { %>
+            <div class="flex-1 flex">
+                <div class="rounded-full px-3 bg-<%= statusColors[cell] %>-300 text-<%= statusColors[cell] %>-800">
+                    <p><%= cell %></p>
+                </div>
+            </div>
+            <% } else if (tableHeadersTypes[colId].startsWith('link') && cell !== 'no owner') { %>
+            <a class="underline text-blue-500 hover:text-blue-600" href="<%= links[tableHeadersTypes[colId].split('_')[1]] + '/' + cell%>"><p><%= cell %></p></a>
+            <% } else if (tableHeadersTypes[colId].startsWith('link') && cell === 'no owner') { %>
+            <p class="text-gray-300"><%= cell %></p>
+            <% } else if (tableHeadersTypes[colId] !== 'bool') { %>
+            <p><%= cell %></p>
+            <% } else if (tableHeadersTypes[colId] === 'bool' && cell) { %>
+            <div class="w-6 text-green-500">
+                <%- include ('icons/check.svg') %>
+            </div>
+            <% } else { %>
+            <div class="w-5 text-red-500">
+                <%- include ('icons/cross.svg') %>
+            </div>
+            <% } %>
+        </td>
+        
+        <% }) %>
+        <% if (showDetailsButton) { %>
+        <td class="px-4">
+            <a href="<%= detailsRoute %>/<%= row[0] %>">
+                <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                    <%- include ('icons/arrow_right_details.svg') %>
+                </div>
+            </a>
+        </td>
+        <% } %>
+        <% if (showDownloadButton) { %>
+        <td class="px-4">
+            <% if (row[0]) { %>
+            <a href="<%= downloadRoute %>/<%= row[0] %>">
+                <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                    <%- include ('icons/download.svg') %>
+                </div>
+            </a>
+            <% } else { %>
+            <div class="w-6"></div>
+            <% } %>
+        </td>
+        <% } %>
+        <% if (showDeleteButton) { %>
+        <td class="px-4">
+            <form action="<%= deleteRoute %>/<%= row[0] %>?_method=DELETE" method="POST">
+                <input type="hidden" name="route_back" value="<%= afterDeleteRoute %>">
+                <button type="submit">
+                    <div class="w-6 text-red-500 hover:text-red-800 hover:cursor-pointer">
+                        <%- include ('icons/trash.svg') %>
+                    </div>
+                </button>
+            </form>
+        </td>
+        <% } %>
+    </tr>
+    <% }) %>
+
+</table>
+</div>
+
+<% } %>
+
+<% }) %>

@@ -10,6 +10,7 @@ const queueManagerUrl = process.env.QUEUE_MANAGER_ADDRESS
 const { sendNotificationSimFinished } = require('../mailing')
 const bcrypt = require('bcryptjs')
 const project = require('../db/models/project')
+const pushLog = require('../logging')
 
 const setPagination = (query, route) => {
 
@@ -146,8 +147,10 @@ const pullProjects = async (route, req, res) => {
         res.render(`general/_${route}`, { logged: true, selected: status, table, pg, reqQuery, errors, successes })
 
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'pullProjects', req.user._id);
+        req.flash('error', 'Error');
+        return res.redirect('/')
     }
 }
 
@@ -194,27 +197,36 @@ const getProfilePage = async (req, res) => {
 
         res.render('general/_profile', { logged: true, selected: 'Profile', user, user_created, projects_info, errors, successes })
     } catch (err) {
-        console.log(err)
+        // console.log(err)
+        await pushLog(err, 'getProfilePage', req.user._id);
+        req.flash('error', 'Error');
+        return res.redirect('/')
     }
 }
 
 const postEditProfile = async (req, res) => {
     try {
-        const userId = req.body.user_id
+
+        const userId = req.body.user_id;
+        const username = req.body.username;
+        const email = req.body.email;
+        const changing_password = req.body.changing_password;
+        const password = req.body.password;
+        const password2 = req.body.password2;
         const user = await User.findById(userId)
 
         if (
-            (req.body.username.length >= 2 && req.body.username.length <= 40) &&
-            (req.body.email.length >= 2 && req.body.email.length <= 100) &&
+            (username.length >= 2 && username.length <= 40) &&
+            (email.length >= 2 && email.length <= 100) &&
             (
-                !req.body.changing_password ||
-                (req.body.changing_password && req.body.password === req.body.password2)
+                !changing_password ||
+                (changing_password && password === password2)
             )
         ) {
-            user.username = req.body.username
-            user.email = req.body.email
-            if (req.body.changing_password)
-                user.hashedPassword = await bcrypt.hash(req.body.password, 10)
+            user.username = username
+            user.email = email
+            if (changing_password)
+                user.hashedPassword = await bcrypt.hash(password, 10)
             await user.save()
             req.flash('success', 'Successfully saved new profile')
         } else 
@@ -222,9 +234,10 @@ const postEditProfile = async (req, res) => {
         res.redirect('/profile')
         
     } catch (err) {
-        console.log(err)
+        // console.log(err)
+        await pushLog(err, 'postEditProfile', req.body.user_id);
         req.flash('error', 'Failed while editing profile')
-        res.sendStatus(500)
+        return res.redirect('/')
     }
 }
 
@@ -241,22 +254,24 @@ const deleteAccount = async (req, res) => {
             return res.redirect('/profile');
         }
     } catch (err) {
+        // console.log(err)
+        await pushLog(err, 'deleteAccount', req.user._id);
         req.flash('error', 'Cannot delete account')
-        console.log(err)
-        res.sendStatus(500)
+        return res.redirect('/')
     }
 }
 
-const logout = (req, res) => {
+const logout = async (req, res) => {
     try {
         req.flash('success', 'Successfully signed out')
         req.logOut()
+        res.redirect('/')
     } catch (err) {
+        // console.log(err)
+        await pushLog(err, 'logout', req.user._id);
         req.flash('error', 'Cannot sign out')
-        console.log(err)
-        res.sendStatus(500)
+        return res.redirect('/')
     }
-    res.redirect('/')
 }
 
 const postNewProject = async (req, res) => {
@@ -282,8 +297,10 @@ const postNewProject = async (req, res) => {
         else
             return res.redirect(`/project?id=${newProject._id.toString()}`)
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'postNewProject', req.user._id);
+        req.flash('error', 'Cannot create new project');
+        return res.redirect('/')
     }
 }
 
@@ -324,8 +341,10 @@ const getProject = async (req, res) => {
             res.redirect('/home')
         }
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'getProject', req.user._id);
+        req.flash('error', 'Error');
+        return res.redirect('/')
     }
 }
 
@@ -345,8 +364,10 @@ const postEditDescription = async (req, res) => {
             req.flash('error', "Project's description remains unmodified")
         res.redirect(`/${route}?rowscount=${rowscount}&page=${page}`)
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'postEditDescription', req.user._id);
+        req.flash('error', 'Cannot change project description');
+        return res.redirect('/')
     }
 }
 
@@ -373,8 +394,10 @@ const deleteProject = async (req, res) => {
         }
         res.redirect(`/${route}?rowscount=${rowscount}&page=${page}`)
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'deleteProject', req.user._id);
+        req.flash('error', 'Cannot delete project');
+        return res.redirect('/')
     }
 }
 
@@ -415,8 +438,10 @@ const postUploadStructure = async (req, res, next) => {
         }
         
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'postUploadStructure', req.user._id);
+        req.flash('error', 'Cannot upload structure');
+        return res.redirect('/')
     }
 }
 
@@ -458,8 +483,10 @@ const postSelectDemo = async (req, res, next) => {
         }
         
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'postSelectDemo', req.user._id);
+        req.flash('error', 'Cannot select demo');
+        return res.redirect('/')
     }
 }
 
@@ -493,8 +520,10 @@ const getDownloadFile = async (req, res, next) => {
         }
 
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'getDownloadFile', req.user._id);
+        req.flash('error', 'Error while downloading file');
+        return res.redirect('/')
     }
 }
 
@@ -523,8 +552,10 @@ const getMolstar = async (req, res, next) => {
         res.render(`general/_molstar`, { serverAddress, projectId, structureUrl, fileType, filename: fileToDisplay.filename })
 
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'getMolstar', req.user._id);
+        req.flash('error', 'Failed to open Molstar');
+        return res.redirect('/')
     }
 }
 
@@ -640,8 +671,10 @@ const postSaveParameters = async (req, res, next) => {
             next()
         }
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'postSaveParameters', req.user._id);
+        req.flash('error', 'Error while saving project parameters');
+        return res.redirect('/')
     }
 }
 
@@ -669,8 +702,10 @@ const postSubmitSimulation = async (req, res) => {
         })
         res.redirect('/projects?rowscount=5&page=1')
     } catch (err) {
-        console.log(err)
-        res.sendStatus(500)
+        // console.log(err)
+        await pushLog(err, 'postSubmitSimulation', req.user._id);
+        req.flash('error', 'Error while submitting simulation');
+        return res.redirect('/')
     }
 }
 
@@ -680,13 +715,16 @@ const postNotifyUser = async (req, res) => {
         const simulationStatus = req.body.sim_status
         const project = await Project.findById(projectId)
         const user = await User.findById(project.owner_id)
-        console.log(user.username, user.email, projectId, simulationStatus)
+
+        req.body._id = project.owner_id;
+        // console.log(user.username, user.email, projectId, simulationStatus)
         
         sendNotificationSimFinished(user.username, user.email, projectId, simulationStatus)
         
-        res.sendStatus(200)
+        return res.sendStatus(200)
     } catch (err) {
-        console.log(err)
+        // console.log(err)
+        await pushLog(err, 'postNotifyUser', req.body._id);
         res.sendStatus(500)
     }
 }

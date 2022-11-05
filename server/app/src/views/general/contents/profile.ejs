@@ -2,7 +2,7 @@
     <div class="h-full w-full bg-white rounded-xl flex flex-col p-10 gap-4 shadow-xl">
         <div class="flex flex-row justify-between px-20 font-quicksand h-full items-center">
             <!-- user info -->
-            <div class="flex flex-col w-5/12 bg-coolgray-100 rounded-lg p-10 h-80 justify-between">
+            <div class="flex flex-col w-5/12 bg-gray-100 rounded-lg p-10 h-80 justify-between">
                 <div class="flex flex-col gap-2">
                     <p class="text-2xl mb-2">User data:</p>
                     <div class="flex flex-row w-full justify-between">
@@ -24,7 +24,7 @@
                 <button onclick="openDeleteAccountDialog()" class="h-8 w-32 bg-red-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-red-600">
                     Delete Account
                 </button>
-                <div id="edit_profile_modal" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-coolgray-500 bg-opacity-50 flex flex-col overflow-hidden">
+                <div id="edit_profile_modal" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-gray-500 bg-opacity-50 flex flex-col overflow-hidden">
                     <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
                         <div class="w-full h-full grid place-items-center">
                             <form class="flex flex-col w-2/5 gap-2" action="/edit_profile" method="post">
@@ -32,23 +32,23 @@
                                 <p class="text-4xl whitespace-nowrap">Edit user data</p>
                                 <label class="flex flex-row gap-4 items-center w-full mt-4">
                                     <p class="whitespace-nowrap w-36 flex-shrink-0">Username:</p>
-                                    <input class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="text" name="username" value="<%= user.username %>">
+                                    <input class="bg-gray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4" type="text" name="username" value="<%= user.username %>">
                                 </label>
                                 <label class="flex flex-row gap-4 items-center w-full">
                                     <p class="whitespace-nowrap w-36 flex-shrink-0">Email:</p>
-                                    <input class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="text" name="email" value="<%= user.email %>">
+                                    <input class="bg-gray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4" type="text" name="email" value="<%= user.email %>">
                                 </label>
                                 <label class="flex flex-row gap-4 items-center w-full">
                                     <p class="whitespace-nowrap w-36 flex-shrink-0">Changing password:</p>
-                                    <input id="radio_button_password" onchange="togglePassword(this.checked)" class="bg-coolgray-300 w-4 h-4 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4" type="checkbox" name="changing_password" value="yes" autocomplete="off">
+                                    <input id="radio_button_password" onchange="togglePassword(this.checked)" class="bg-gray-300 w-4 h-4 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4" type="checkbox" name="changing_password" value="yes" autocomplete="off">
                                 </label>
                                 <label class="flex flex-row gap-4 items-center w-full">
                                     <p class="whitespace-nowrap w-36 flex-shrink-0">Password:</p>
-                                    <input id="pass1_input" class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4 disabled:bg-coolgray-400" type="password" name="password">
+                                    <input id="pass1_input" class="bg-gray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4 disabled:bg-gray-400" type="password" name="password">
                                 </label>
                                 <label class="flex flex-row gap-4 items-center w-full">
                                     <p class="whitespace-nowrap w-36 flex-shrink-0">Repeat password:</p>
-                                    <input id="pass2_input" class="bg-coolgray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-coolgray-400 px-4 disabled:bg-coolgray-400" type="password" name="password2">
+                                    <input id="pass2_input" class="bg-gray-300 w-full h-8 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4 disabled:bg-gray-400" type="password" name="password2">
                                 </label>
                                 <input type="hidden" name="user_id" value="<%= user._id %>">
                                 <div class="flex flex-row text-white justify-between gap-8 mt-4">
@@ -65,7 +65,7 @@
                     </div>
                 </div>
 
-                <div id="delete_account_modal" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-coolgray-500 bg-opacity-50 flex flex-col overflow-hidden">
+                <div id="delete_account_modal" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-gray-500 bg-opacity-50 flex flex-col overflow-hidden">
                     <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
                         <div class="w-full h-full grid place-items-center">
                             <form class="flex flex-col w-2/5 gap-2" action="/delete_account" method="post">
@@ -91,7 +91,7 @@
             </div>
 
             <!-- users's projects info -->
-            <div class="flex flex-col w-5/12 bg-coolgray-100 rounded-lg p-10 gap-2 h-80">
+            <div class="flex flex-col w-5/12 bg-gray-100 rounded-lg p-10 gap-2 h-80">
                 <p class="text-2xl mb-2">Projects statistics:</p>
                 <div class="flex flex-row justify-between">
                     <p>Initiated:</p>
