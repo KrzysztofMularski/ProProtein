@@ -1390,34 +1390,34 @@ const deleteAdminLog = async (req, res) => {
     }
 }
 
-const getAdminMakeSuperAdmin = async (req, res) => {
-    try {
-        const user_id = req.user._id;
-        const newSuperAdmin = new SuperAdmin({
-            user_id,
-        });
-        await newSuperAdmin.save();
-        res.redirect('/');
-    } catch (err) {
-        // console.log(err);
-        await pushLog(err, 'getAdminMakeSuperAdmin');
-        req.flash('error', 'Error');
-        return res.redirect('/admin');
-    }
-}
+// const getAdminMakeSuperAdmin = async (req, res) => {
+//     try {
+//         const user_id = req.user._id;
+//         const newSuperAdmin = new SuperAdmin({
+//             user_id,
+//         });
+//         await newSuperAdmin.save();
+//         res.redirect('/');
+//     } catch (err) {
+//         // console.log(err);
+//         await pushLog(err, 'getAdminMakeSuperAdmin');
+//         req.flash('error', 'Error');
+//         return res.redirect('/admin');
+//     }
+// }
 
-const getAdminConsoleLogSuperAdmin = async (req, res) => {
-    try {
-        const superAdmins = await SuperAdmin.find();
-        console.log(superAdmins);
-        res.redirect('/');
-    } catch (err) {
-        // console.log(err);
-        await pushLog(err, 'getAdminConsoleLogSuperAdmin');
-        req.flash('error', 'Error');
-        return res.redirect('/admin');
-    }
-}
+// const getAdminConsoleLogSuperAdmin = async (req, res) => {
+//     try {
+//         const superAdmins = await SuperAdmin.find();
+//         console.log(superAdmins);
+//         res.redirect('/');
+//     } catch (err) {
+//         // console.log(err);
+//         await pushLog(err, 'getAdminConsoleLogSuperAdmin');
+//         req.flash('error', 'Error');
+//         return res.redirect('/admin');
+//     }
+// }
 
 
 // const getMakeMeAdmin = async (req, res) => {
@@ -1467,7 +1467,7 @@ module.exports = {
     getAdminLogsPage,
     deleteAdminLog,
 
-    getAdminMakeSuperAdmin,
-    getAdminConsoleLogSuperAdmin,
+    // getAdminMakeSuperAdmin,
+    // getAdminConsoleLogSuperAdmin,
     // getMakeMeAdmin,
 }
