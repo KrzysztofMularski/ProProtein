@@ -132,6 +132,8 @@ router.get('/admin/download/:file_id', midd.checkAuthenticated, midd.checkIsAdmi
 router.get('/admin/logs', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminLogsPage);
 router.delete('/admin/logs/delete/:log_id', midd.checkAuthenticated, midd.checkIsAdmin, admin.deleteAdminLog);
 
+router.get('/admin/make_super_admin', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminMakeSuperAdmin);
+router.get('/admin/all_super_admins', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminConsoleLogSuperAdmin);
 // router.use('/mongo_express', mongo_express(mongo_express_config));
 
 // router.get('/admin/mongo-express', midd.checkAuthenticated, midd.checkIsAdmin, mongo_express(mongo_express_config));

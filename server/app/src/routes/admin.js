@@ -8,6 +8,7 @@ const TemplateFile = require('../db/models/templateFile')
 const moment = require('moment')
 const bcrypt = require('bcryptjs')
 const Log = require('../db/models/log')
+const SuperAdmin = require('../db/models/admin')
 const pushLog = require('../logging')
 
 const getAdminPage = async (req, res) => {
@@ -218,14 +219,20 @@ const postAdminUserEdit = async (req, res) => {
             }
         }
 
-        if (req.body.isAdmin) {
-            if (!user.isAdmin) {
-                user.isAdmin = true
+        const isSuperAdmin = await SuperAdmin.exists({ user_id: user._id.toString() });
+        if (!isSuperAdmin) {
+            if (req.body.isAdmin) {
+                if (!user.isAdmin) {
+                    user.isAdmin = true
+                }
+            } else {
+                if (user.isAdmin) {
+                    user.isAdmin = false
+                }
             }
         } else {
-            if (user.isAdmin) {
-                user.isAdmin = false
-            }
+            await pushLog('Attempt to change isAdmin on super admin', 'postAdminUserEdit', req.user._id.toString());
+            req.flash('error', 'Cannot remove this admin.');
         }
 
         if (user.created !== req.body.created) {
@@ -272,6 +279,12 @@ const deleteAdminUserAccount = async (req, res) => {
         if (!user) {
             req.flash('error', `No user found with such ID: ${user_id}`);
             return res.redirect('/admin/users');
+        }
+        const superAdmins = (await SuperAdmin.find({ user_id })).map(sa => sa.user_id.toString());
+        if (superAdmins.includes(user_id)) {
+            req.flash('error', 'You cannot delete this account');
+            await pushLog('Attempt to delete super admin', 'deleteAdminUserAccount', req.user._id);
+            return res.redirect(`/admin/users/${user_id}`);
         }
         const projects = await Project.find({ owner_id: user._id.toString() });
         if (projects.length === 0) {
@@ -1377,6 +1390,35 @@ const deleteAdminLog = async (req, res) => {
     }
 }
 
+const getAdminMakeSuperAdmin = async (req, res) => {
+    try {
+        const user_id = req.user._id;
+        const newSuperAdmin = new SuperAdmin({
+            user_id,
+        });
+        await newSuperAdmin.save();
+        res.redirect('/');
+    } catch (err) {
+        // console.log(err);
+        await pushLog(err, 'getAdminMakeSuperAdmin');
+        req.flash('error', 'Error');
+        return res.redirect('/admin');
+    }
+}
+
+const getAdminConsoleLogSuperAdmin = async (req, res) => {
+    try {
+        const superAdmins = await SuperAdmin.find();
+        console.log(superAdmins);
+        res.redirect('/');
+    } catch (err) {
+        // console.log(err);
+        await pushLog(err, 'getAdminConsoleLogSuperAdmin');
+        req.flash('error', 'Error');
+        return res.redirect('/admin');
+    }
+}
+
 
 // const getMakeMeAdmin = async (req, res) => {
 //     try {
@@ -1424,5 +1466,8 @@ module.exports = {
 
     getAdminLogsPage,
     deleteAdminLog,
+
+    getAdminMakeSuperAdmin,
+    getAdminConsoleLogSuperAdmin,
     // getMakeMeAdmin,
 }
