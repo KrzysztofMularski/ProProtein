@@ -4,9 +4,12 @@ const nodemailer = require('nodemailer')
 const jwt = require('jsonwebtoken')
 const ejs = require('ejs')
 const serverAddress = process.env.SERVER_ADDRESS
+const path = '/home/app/src/views/components/mailing'
+// const path = './src/views/components/mailing';
 
 const transporter = nodemailer.createTransport({
-    service: 'Gmail',
+    host: process.env.MAILER_HOST,
+    port: process.env.PORT,
     auth: {
         user: process.env.MAILER_USER,
         pass: process.env.MAILER_PASSWORD
@@ -24,12 +27,12 @@ function sendAuthMail(username, email) {
                     throw err
                 const url = `${serverAddress}/account_confirmation/${emailToken}`
                 
-                ejs.renderFile('/home/app/src/views/components/mailing/_account_confirmation.ejs', {url, username}, (err, str) => {
+                ejs.renderFile(`${path}/_account_confirmation.ejs`, {url, username}, (err, str) => {
                     if (err)
                         console.log(err)
                     else {
                         transporter.sendMail({
-                            from: `"ProProtein" <${process.env.MAILER_USER}>`,
+                            from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
                             to: email,
                             subject: 'Account Confirmation',
                             html: str
@@ -57,12 +60,12 @@ function sendPasswordReset(username, email) {
                     throw err
                 const url = `${serverAddress}/password_reset/${passToken}`
 
-                ejs.renderFile('/home/app/src/views/components/mailing/_reset_password.ejs', {url, username}, (err, str) => {
+                ejs.renderFile(`${path}/_reset_password.ejs`, {url, username}, (err, str) => {
                     if (err)
                         console.log(err)
                     else {
                         transporter.sendMail({
-                            from: `"ProProtein" <${process.env.MAILER_USER}>`,
+                            from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
                             to: email,
                             subject: 'Reseting Password',
                             html: str
@@ -91,12 +94,12 @@ function sendNotificationSimFinished(username, email, project_id, sim_status) {
                 const url_project = `${serverAddress}/project?id=${project_id}`
 
                 if (sim_status === 'ok') {
-                    ejs.renderFile('/home/app/src/views/components/mailing/_notification_finished.ejs', {url, url_project, username}, (err, str) => {
+                    ejs.renderFile(`${path}/_notification_finished.ejs`, {url, url_project, username}, (err, str) => {
                         if (err)
                             console.log(err)
                         else {
                             transporter.sendMail({
-                                from: `"ProProtein" <${process.env.MAILER_USER}>`,
+                                from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
                                 to: email,
                                 subject: 'Your simulation processing is Finished!',
                                 html: str
@@ -106,12 +109,12 @@ function sendNotificationSimFinished(username, email, project_id, sim_status) {
                         }
                     })
                 } else if (sim_status === 'error') {
-                    ejs.renderFile('/home/app/src/views/components/mailing/_notification_error.ejs', {url, url_project, username}, (err, str) => {
+                    ejs.renderFile(`${path}/_notification_error.ejs`, {url, url_project, username}, (err, str) => {
                         if (err)
                             console.log(err)
                         else {
                             transporter.sendMail({
-                                from: `"ProProtein" <${process.env.MAILER_USER}>`,
+                                from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
                                 to: email,
                                 subject: 'Your simulation processing is Finished!',
                                 html: str
