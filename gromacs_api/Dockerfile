@@ -18,4 +18,5 @@ WORKDIR /home/app
 RUN npm install\
     && g++ -I /usr/include/eigen3/ /home/app/src/rmsd.cpp -o /bin/rmsd
 
-CMD ["node", "/home/app/src/app.js"]
+CMD ["sleep", "100000"]
+#CMD ["node", "/home/app/src/app.js"]
