@@ -1,9 +1,44 @@
-<!-- <meta http-equiv="refresh" content="2"> -->
+<style>
+select:required:invalid {
+    color: gray;
+}
+option[value=""][disabled] {
+    display: none;
+}
+option {
+    color: black;
+}
+</style>
+
+<!-- description modal -->
+
+<div id="edit_description_modal_wrapper" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-gray-500 bg-opacity-50 flex flex-col overflow-hidden">
+    <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
+        <div class="w-full h-full grid place-items-center">
+            <form id="edit_description_form" class="flex flex-col w-2/5 gap-6" action="/edit_description" method="post">
+                <p class="text-4xl whitespace-nowrap">Project description</p>
+                <label class="flex flex-row gap-4 items-center w-full overflow-hidden">
+                    <p class="whitespace-nowrap w-36 flex-shrink-0">Project description:</p>
+                    <textarea id="edit_description_textarea" class="bg-gray-300 w-full h-24 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4 py-2 resize-none" name="project_description"><%= project.description %></textarea>
+                </label>
+                <input id="edit_description_project_id" type="hidden" name="project_id" value="<%= project._id %>">
+                <div class="flex flex-row font-normal text-white justify-between gap-4 mt-4">
+                    <button type="button" onclick="editDescription()" class="w-20 h-8 rounded bg-red-500 hover:bg-red-600">
+                        Cancel
+                    </button>
+                    <button type="submit" class="w-20 h-8 rounded bg-green-500 hover:bg-green-600">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <div class="h-full w-full py-10 px-40 font-quicksand flex flex-col">
     <div class="h-full w-full bg-white rounded-xl flex flex-col p-10 gap-6 shadow-xl">
         <div class="flex flex-row justify-between">
             <p class="text-4xl font-bold"><%=project.name%></p>
-            <a href="<%= routeBack %>" class="h-10 w-48 rounded-md bg-gray-500 flex flex-row gap-4 items-center justify-center font-quicksand font-bold text-white hover:bg-gray-600">
+            <a href="<%= routeBack %>" class="w-64 bg-gray-500 flex flex-row gap-4 items-center justify-center rounded-md text-white cursor-pointer hover:bg-gray-600">
                 <div class="w-3 text-white">
                     <%- include (`../../../../public/icons/left.svg`) %>
                 </div>
@@ -12,54 +47,25 @@
                 </span>
             </a>
         </div>
-        <div class="max-w-min flex-1 flex flex-row items-center justify-center px-3 py-1 text-2xl rounded-full
-            <% if (project.status === 'Initial') { %>
-                bg-green-300 text-green-800
-            <% } else if (project.status === 'Waiting') { %>
-                bg-blue-300 text-blue-800
-            <% } else if (project.status === 'Processing') { %>
-                bg-purple-300 text-purple-800
-            <% } else if (project.status === 'Finished') { %>
-                bg-gray-300 text-gray-800
-            <% } else if (project.status === 'Error') { %>
-                bg-red-300 text-red-800
-            <% } %>
-        ">
-            <span>
-                <%= project.status %>
-            </span>
-        </div>
-        <p class="text-xl text-gray-600"><%=project.description%></p>
-
-        <hr>
-
-        <div class="flex flex-row justify-between">
-            <div class="flex flex-col gap-4">
-                <p class="text-lg">Project created: <span id="created_date"></span></p>
-
-                <% if (project.waiting_since) { %>
-                    <p class="text-lg">Requested for processing since: <span id="waiting_since"></span></p>
-                <% } %>
-        
-                <% if (project.processing_since) { %>
-                    <p class="text-lg">Simulation processing started on: <span id="processing_since"></span></p>
-                <% } %>
-        
-                <% if (project.finished_since) { %>
-                    <p class="text-lg">Simulation finished on: <span id="finished_since"></span></p>
-                <% } %>
-            </div>
-            <div class="flex flex-col gap-2 items-center">
-                <form action="/molstar" method="get" class="flex flex-row h-10 font-quicksand flex-shrink-0">
-                    <input type="hidden" name="project" value="<%= project.id %>">
-                    <input type="hidden" name="filetype" value="trajectory">
-                    <button type="submit" class="w-64 bg-blue-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-blue-600 disabled:bg-blue-200 disabled:cursor-default" <% if (project.status !== 'Finished') { %>disabled<% } %> >Open Results in Molstar</button>
-                </form>
-                <% if (project.output.files.trajectory.filename) { %>
-                    <a href="/download/file/<%= project.id %>/trajectory" class="whitespace-nowrap w-min text-blue-500 no-underline hover:underline">Get result tajectory (.pdb)</a>
-                <% } %>
+        <div class="flex flex-row items-center gap-4 text-lg">
+            <span>Status:</span>
+            <div class="max-w-min flex-1 flex flex-row items-center justify-center px-3 py-1 text-lg rounded-full bg-green-300 text-green-800">
+                <span>
+                    <%= project.status %>
+                </span>
             </div>
         </div>
+        <div class="flex flex-row items-start whitespace-nowrap gap-4 text-lg">
+            <span>Description:</span>
+            <div onclick="editDescription()" class="flex items-center justify-center w-8 h-8 flex-shrink-0 text-white bg-blue-500 rounded-xl cursor-pointer hover:bg-blue-600">
+                <div class="w-4">
+                    <%- include (`../../../../public/icons/edit.svg`) %>
+                </div>
+            </div>
+            <p class="text-xl text-gray-600 whitespace-normal"><%=project.description%></p>
+        </div>
+
+        <p class="text-lg">Project created: <span id="created_date"></span></p>
 
         <hr>
 
@@ -71,63 +77,89 @@
                 <span class="flex items-center w-28 ml-2 flex-shrink-0">Uploaded file:</span>
                 <span class="flex items-center w-72 border border-gray-500 rounded-md px-4 min-w-min justify-between gap-2
                     <% if (!project.input.files.structure.filename) { %> text-gray-500 <% } %>"
-                >
-                    <%= project.input.files.structure.filename || 'No specified file' %>
-                    <% if (project.input.files.structure.is_demo === true) { %>
-                        <span class="text-green-500">Demo</span>
-                    <% } %>
+                      >
+                      <%= project.input.files.structure.filename || 'No specified file' %>
+                      <% if (project.input.files.structure.is_demo === true) { %>
+                      <span class="text-green-500">Example</span>
+                      <% } %>
                 </span>
-                <button class="bg-gray-500 px-4 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-default" onclick="toggleUploadFile()" <% if (project.status !== 'Initial') { %>disabled<% } %>>Change File..</button>
+                <button class="bg-gray-500 px-4 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-default" onclick="toggleUploadFile()">Change File..</button>
             </div>
             <% if (project.input.files.structure.filename) { %>
-                <a href="/molstar?project=<%= project.id %>&filetype=structure" class="w-64 bg-blue-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-blue-600">Open in Molstar</a>
+            <a href="/molstar?project=<%= project.id %>&filetype=structure" class="w-64 bg-blue-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-blue-600">Open in Molstar</a>
             <% } %>
         </div>
 
-        <div id="div_upload_structure" class="transition-all duration-300 flex flex-col overflow-hidden h-0 -my-3 ml-2 justify-center flex-shrink-0">
-
-            <form id="form_upload_structure" action="/upload/structure" method="post" enctype="multipart/form-data" class=" flex flex-row justify-between h-10">
-                <div class="flex flex-row gap-4">
-                    <span class="flex items-center w-28 flex-shrink-0">New file:</span>
-                    <input id="structure_visible" class="w-72 border border-gray-500 flex items-center rounded-md px-4 outline-none" placeholder="No specified file" readonly>
-                </div>
-                <div class="flex flex-row gap-4 w-64">
-                    <label class="bg-gray-500 rounded-md cursor-pointer flex px-4 hover:bg-gray-600 flex-grow">
-                        <input type="file" name="input_data" onchange="onChangedStructure(this.value)" hidden>
-                        <span class="text-white flex items-center justify-center flex-grow">Choose file..</span>
+        <div id="div_upload_structure" class="transition-all duration-300 flex flex-col overflow-hidden h-0 -my-3 ml-2 justify-center flex-shrink-0 -mt-4">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-row gap-8 mb-4">
+                    <label class="flex flex-row gap-2">
+                        <input id="option_default"
+                            type="radio"
+                            name="is_demo_radio"
+                            value="demo"
+                            onchange="display_demo()"
+                            checked
+                            autocomplete="off">
+                        <span class="flex items-center">Example</span>
                     </label>
-                    <label class="bg-gray-500 rounded-md text-white flex flex-row items-center justify-center px-4 flex-grow gap-2 hover:bg-gray-600 cursor-pointer">
-                        <div class="w-4">
-                            <%- include (`../../../../public/icons/upload.svg`) %>
+                    <label class="flex flex-row gap-2">
+                        <input
+                            type="radio"
+                            name="is_demo_radio"
+                            value="custom"
+                            onchange="display_demo()"
+                            autocomplete="off">
+                        <span class="flex items-center">Custom</span>
+                    </label>
+                </div>
+                <div id="form_upload_demo_wrapper" class="transition-all duration-300 flex flex-col overflow-hidden h-10 justify-center flex-shrink-0 -my-4">
+                    <form id="form_upload_demo" action="/select_example" method="post" class="flex flex-row justify-between h-10">
+                        <div class="flex flex-row gap-4">
+                            <span class="flex items-center w-28 flex-shrink-0 whitespace-nowrap">Select Example:</span>
+                            <div class="relative flex">
+                                <span class="absolute inset-0 text-green-500 flex items-center justify-end mr-6">Example</span>
+                                <select name="demo_id" class="w-72 border border-gray-500 flex items-center rounded-md px-4 bg-transparent opacity-95">
+                                    <% demos.forEach(demo => { %>
+                                    <option value="<%= demo._id %>"><%= demo.filename %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
                         </div>
-                        <button type="submit" <% if (project.status !== 'Initial') { %>disabled<% } %>>Upload</button>
-                    </label>
-                </div>
-                <input type="hidden" value="<%=project.id%>" name="project_id">
-            </form>
 
-            <span class="text-gray-500 -my-1">or</span>
-
-            <form id="form_upload_demo" action="/select_demo" method="post" class="flex flex-row justify-between h-10">
-                <div class="flex flex-row gap-4">
-                    <span class="flex items-center w-28 flex-shrink-0">Select Demo:</span>
-                    <select name="demo_id" class="w-72 border border-gray-500 flex items-center rounded-md px-4 bg-white" <% if (project.status !== 'Initial') { %>disabled<% } %>>
-                        <% demos.forEach(demo => { %>
-                            <option value="<%= demo._id %>"><%= demo.filename %></option>
-                        <% }) %>
-                    </select>
+                        <button type="submit" class="flex flex-row w-64 bg-gray-500 rounded-md text-white items-center justify-center px-4 hover:bg-gray-600 cursor-pointer">Select</button>
+                        <input type="hidden" value="<%=project.id%>" name="project_id">
+                    </form>
                 </div>
-                
-                <button type="submit" class="flex flex-row w-64 bg-gray-500 rounded-md text-white items-center justify-center px-4 hover:bg-gray-600 cursor-pointer"<% if (project.status !== 'Initial') { %>disabled<% } %>>Select</button>
-                <input type="hidden" value="<%=project.id%>" name="project_id">
-            </form>
+                <div id="form_upload_structure_wrapper" class="transition-all duration-300 flex flex-col overflow-hidden h-0 justify-center flex-shrink-0 -my-2">
+                    <form id="form_upload_structure" action="/upload/structure" method="post" enctype="multipart/form-data" class="flex flex-row justify-between h-10">
+                        <div class="flex flex-row gap-4">
+                            <span class="flex items-center w-28 flex-shrink-0">New file:</span>
+                            <input id="structure_visible" class="w-72 border border-gray-500 flex items-center rounded-md px-4 outline-none" placeholder="No specified file" readonly>
+                        </div>
+                        <div class="flex flex-row gap-4 w-64">
+                            <label class="bg-gray-500 rounded-md cursor-pointer flex px-4 hover:bg-gray-600 flex-grow">
+                                <input type="file" name="input_data" onchange="onChangedStructure(this.value)" hidden>
+                                <span class="text-white flex items-center justify-center flex-grow">Choose file..</span>
+                            </label>
+                            <label class="bg-gray-500 rounded-md text-white flex flex-row items-center justify-center px-4 flex-grow gap-2 hover:bg-gray-600 cursor-pointer">
+                                <div class="w-4">
+                                    <%- include (`../../../../public/icons/upload.svg`) %>
+                                </div>
+                                <button type="submit">Upload</button>
+                            </label>
+                        </div>
+                        <input type="hidden" value="<%=project.id%>" name="project_id">
+                    </form>
+                </div>
+            </div>
         </div>
 
         <span class="text-gray-500 ml-2">
             <% if (project.input.files.structure.filename) { %>
-                To change current file, upload new file. Old data will be erased.
+            To change current file, upload new file. Old data will be erased.
             <% } else { %>
-                In order to start simulation you need to provide file with structure first.
+            In order to start simulation you need to provide file with structure first.
             <% } %>
         </span>
 
@@ -136,123 +168,17 @@
         <span class="text-2xl">Simulation Parameters</span>
 
         <div class="pl-2 flex flex-row justify-between">
-            <div class="flex flex-row gap-8">
-                <label class="flex flex-row gap-2">
-                    <input id="option_default"
-                        <% if (project.status !== 'Initial') { %>
-                            disabled
-                        <% } %>
-                        type="radio" name="sim_parameters" value="default" form="advanced_parameters_form" onchange="display_sim_params(this.value)"
-                        <% if (project.parameters_default) { %>
-                            checked
-                        <% } %>
-                        autocomplete="off">
-                    <span class="flex items-center">Default</span>
-                </label>
-                <label class="flex flex-row gap-2">
-                    <input
-                        <% if (project.status !== 'Initial') { %>
-                            disabled
-                        <% } %>
-                        type="radio" name="sim_parameters" value="advanced" form="advanced_parameters_form" onchange="display_sim_params(this.value)"
-                        <% if (!project.parameters_default) { %>
-                            checked
-                        <% } %>
-                        autocomplete="off">
-                    <span class="flex items-center">Advanced</span>
-                </label>
-            </div>
-            <button onclick="onFormSubmit()" type="button" class="self-end h-10 w-64 bg-green-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-green-600 disabled:bg-green-200 disabled:cursor-default" <% if (project.status !== 'Initial') { %>disabled<% } %> >Save parameters</button>
+            <button id="reset_parameters_to_default" onclick="setDefaultParameters()" type="button" class="self-end h-10 w-64 bg-gray-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-default">Reset parameters to default</button>
+            <button form="parameters_form" type="submit" class="self-end h-10 w-64 bg-green-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-green-600 disabled:bg-green-200 disabled:cursor-default">Save parameters</button>
         </div>
 
-        <form id="advanced_parameters_form" action="/save_parameters" method="post" enctype="multipart/form-data" class="ml-2 mb-4 flex flex-col gap-3 h-0 overflow-hidden">
-            
-            <!-- Energy minimisation file -->
-            <input id="using_old_energy_min" type="text" hidden name="using_old_energy_min" value="true">
-            <div class="flex flex-col">
-                <span class="flex items-center text-lg">Energy minimisation file:</span>
-                <a href="/download/templates/energy_min" class="whitespace-nowrap w-min text-blue-500 no-underline hover:underline">Get a template*</a>
-                <div class="flex flex-row w-full h-10 flex-shrink-0 justify-between">
-                    <div class="flex flex-row gap-2">
-                        <input id="template_energy_min_visible" type="text" readonly class="flex-shrink-0 w-72 border border-gray-500 flex items-center rounded-md px-4 outline-none"
-                            <% if (project.input.files.energy_min.filename) { %>
-                                value="<%= project.input.files.energy_min.filename %>"
-                            <% } %>
-                            placeholder="No specified file"
-                        >
-                        <label class="bg-red-500 rounded-md text-white flex flex-row items-center justify-center px-4 flex-grow hover:bg-red-600 cursor-pointer <% if (project.status !== 'Initial') { %>hidden<% } %>">
-                            <div class="w-3">
-                                <%- include (`../../../../public/icons/cross.svg`) %>
-                            </div>
-                            <button type="button" onclick="clearFile('energy_min')" <% if (project.status !== 'Initial') { %>disabled<% } %>></button>
-                        </label>
-                        <label class="gap-2 bg-blue-500 rounded-md text-white flex flex-row items-center justify-center px-4 flex-grow hover:bg-blue-600 cursor-pointer <% if (project.status !== 'Initial') { %>hidden<% } %>">
-                            <div class="w-4">
-                                <%- include (`../../../../public/icons/refresh.svg`) %>
-                            </div>
-                            <button type="button" onclick="eraseChanges('energy_min')" <% if (project.status !== 'Initial') { %>disabled<% } %>>Erase changes</button>
-                        </label>
-                        <% if (project.status !== 'Initial') { %>
-                            <% if (project.input.files.energy_min.filename) { %>
-                                <a href="/download/file/<%=project.id%>/energy_min" class="flex items-center whitespace-nowrap w-min text-blue-500 no-underline hover:underline">Get energy minimisation file</a>
-                            <% } else { %>
-                                <a href="/download/templates/energy_min" class="flex items-center whitespace-nowrap w-min text-blue-500 no-underline hover:underline">Get energy minimisation file (template*)</a>
-                            <% } %>
-                        <% } %>
-                    </div>
-                    <label class="bg-gray-500 rounded-md cursor-pointer flex flex-row hover:bg-gray-600 <% if (project.status !== 'Initial') { %>hidden<% } %>" >
-                        <input id="input_file_energy_min" type="file" name="energy_min" onchange="onChangedParams('energy_min', this.value)" hidden <% if (project.status !== 'Initial') { %>disabled<% } %>>
-                        <span class="text-white flex items-center justify-center w-64">Choose file.. </span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- MD simulation file -->
-            <input id="using_old_MD_simulation" type="text" hidden name="using_old_MD_simulation" value="true">
-            <div class="flex flex-col">
-                <span class="flex items-center text-lg">Molecular dynamics simulation file:</span>
-                <a href="/download/templates/MD_simulation" class="whitespace-nowrap w-min text-blue-500 no-underline hover:underline">Get a template*</a>
-                <div class="flex flex-row w-full h-10 flex-shrink-0 justify-between">
-                    <div class="flex flex-row gap-2">
-                        <input id="template_MD_simulation_visible" type="text" readonly class="flex-shrink-0 w-72 border border-gray-500 flex items-center rounded-md px-4 outline-none"
-                            <% if (project.input.files.MD_simulation.filename) { %>
-                                value="<%= project.input.files.MD_simulation.filename %>"
-                            <% } %>
-                            placeholder="No specified file"
-                        >
-                        <label class="bg-red-500 rounded-md text-white flex flex-row items-center justify-center px-4 flex-grow hover:bg-red-600 cursor-pointer <% if (project.status !== 'Initial') { %>hidden<% } %>">
-                            <div class="w-3">
-                                <%- include (`../../../../public/icons/cross.svg`) %>
-                            </div>
-                            <button type="button" onclick="clearFile('MD_simulation')" <% if (project.status !== 'Initial') { %>disabled<% } %>></button>
-                        </label>
-                        <label class="gap-2 bg-blue-500 rounded-md text-white flex flex-row items-center justify-center px-4 flex-grow hover:bg-blue-600 cursor-pointer <% if (project.status !== 'Initial') { %>hidden<% } %>">
-                            <div class="w-4">
-                                <%- include (`../../../../public/icons/refresh.svg`) %>
-                            </div>
-                            <button type="button" onclick="eraseChanges('MD_simulation')" <% if (project.status !== 'Initial') { %>disabled<% } %>>Erase changes</button>
-                        </label>
-                        <% if (project.status !== 'Initial') { %>
-                            <% if (project.input.files.MD_simulation.filename) { %>
-                                <a href="/download/file/<%=project.id%>/MD_simulation" class="flex items-center whitespace-nowrap w-min text-blue-500 no-underline hover:underline">Get a molecular dynamics simulation file</a>
-                            <% } else { %>
-                                <a href="/download/templates/MD_simulation" class="flex items-center whitespace-nowrap w-min text-blue-500 no-underline hover:underline">Get a molecular dynamics simulation file (template*)</a>
-                            <% } %>
-                        <% } %>
-                    </div>
-                    <label class="bg-gray-500 rounded-md cursor-pointer flex flex-row hover:bg-gray-600 <% if (project.status !== 'Initial') { %>hidden<% } %>">
-                        <input id="input_file_MD_simulation" type="file" name="MD_simulation" onchange="onChangedParams('MD_simulation', this.value)" hidden>
-                        <span class="text-white flex items-center justify-center w-64">Choose file..</span>
-                    </label>
-                </div>
-            </div>
-
+        <form id="parameters_form" action="/save_parameters" method="post" class="ml-2 mb-4 flex flex-col gap-3 h-full -my-3 overflow-hidden">
             <!-- Force Field -->
             <div class="flex flex-col">
                 <span class="flex items-center text-lg">Force Field:</span>
-                <span class="text-gray-500">Changing Force Field might affect current selected Water Model option.</span>
-                <select id="force_field_select" onchange="onChange_pdb2gmx1(value)" name="gmx2pdb1" class="w-1/2 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10 <% if (project.status !== 'Initial') { %>w-2/3<% } %>" <% if (project.status !== 'Initial') { %>disabled<% } %>>
-                    <option value="-1" selected="selected"></option>
+                <span class="text-gray-500">Changing Force Field could affect current selected Water Model option.</span>
+                <select id="force_field" required onchange="on_change_force_field(value); checkIfInputsAreDefaultsAndDisableButton()" name="force_field" class="w-1/2 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10">
+                    <!-- <option value="" disabled selected hidden>-- Select Force Field --</option> -->
                     <option value="1">AMBER03 protein, nucleic AMBER94 (Duan et al., J. Comp. Chem. 24, 1999-2012, 2003)</option>
                     <option value="2">AMBER94 force field (Cornell et al., JACS 117, 5179-5197, 1995)</option>
                     <option value="3">AMBER96 protein, nucleic AMBER94 (Kollman et al., Acc. Chem. Res. 29, 461-469, 1996)</option>
@@ -270,95 +196,83 @@
                     <option value="15">OPLS-AA/L all-atom force field (2001 aminoacid dihedrals)</option>
                 </select>
             </div>
-            
+
             <!-- Water Model -->
             <div class="flex flex-col">
                 <span class="flex items-center text-lg">Water Model:</span>
-                <div id="pdb2gmx2_div1" class="hidden">
-                    <select id="water_model_1" name="gmx2pdb2_v1" class="w-1/2 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10 <% if (project.status !== 'Initial') { %>w-2/3<% } %>" <% if (project.status !== 'Initial') { %>disabled<% } %>>
-                        <option value="-1" selected="selected"></option>
-                        <option value="1">TIP3P - TIP 3-point, recommended</option>
-                        <option value="2">TIP4P - TIP 4-point</option>
-                        <option value="3">TIP4P-Ew - TIP 4-point optimized with Ewald</option>
-                        <option value="4">TIP5P - TIP 5-point (see http://redmine.gromacs.org/issues/1348 for issues)</option>
-                        <option value="5">SPC - simple point charge</option>
-                        <option value="6">SPC/E - extended simple point charge</option>
-                        <option value="7">None</option>
-                    </select>
-                </div>
-                <div id="pdb2gmx2_div2" class="hidden">
-                    <select id="water_model_2" name="gmx2pdb2_v2" class="w-1/2 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10 <% if (project.status !== 'Initial') { %>w-2/3<% } %>" <% if (project.status !== 'Initial') { %>disabled<% } %>>
-                        <option value="-1" selected="selected"></option>
-                        <option value="1">SPC - simple point charge, recommended</option>
-                        <option value="2">SPC/E - extended simple point charge</option>
-                        <option value="3">None</option>
-                    </select>
-                </div>
-                <div id="pdb2gmx2_div3">
-                    <select id="water_model_3" name="gmx2pdb2_v3" class="w-72 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10 <% if (project.status !== 'Initial') { %>w-2/3<% } %>" <% if (project.status !== 'Initial') { %>disabled<% } %>>
-                        <option value="-1" selected="selected"></option>
-                        <option value="1">TIP4P - TIP 4-point, recommended</option>
-                        <option value="2">TIP4PEW - TIP 4-point with Ewald</option>
-                        <option value="3">TIP3P - TIP 3-point</option>
-                        <option value="4">TIP5P - TIP 5-point (see http://redmine.gromacs.org/issues/1348 for issues)</option>
-                        <option value="5">TIP5P - TIP 5-point improved for Ewald sums</option>
-                        <option value="6">SPC - simple point charge</option>
-                        <option value="7">SPC/E - extended simple point charge</option>
-                        <option value="8">None</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Continuous group of solvent molecules -->
-            <div class="flex flex-col">
-                <span class="flex items-center text-lg">Continuous group of solvent molecules:</span>
-                <select id="continuous_group_of_solvent_molecules" name="continuous_group_of_solvent_molecules"
-                    class="w-1/2 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10 <% if (project.status !== 'Initial') { %>w-2/3<% } %>" <% if (project.status !== 'Initial') { %>disabled<% } %>
-                >
-                    <option value="-1" selected="selected"></option>
-                    <option value="0">Group     0 (         System) has  7497 elements</option>
-                    <option value="1">Group     1 (        Protein) has   855 elements</option>
-                    <option value="2">Group     2 (      Protein-H) has   436 elements</option>
-                    <option value="3">Group     3 (        C-alpha) has    56 elements</option>
-                    <option value="4">Group     4 (       Backbone) has   168 elements</option>
-                    <option value="5">Group     5 (      MainChain) has   225 elements</option>
-                    <option value="6">Group     6 (   MainChain+Cb) has   277 elements</option>
-                    <option value="7">Group     7 (    MainChain+H) has   283 elements</option>
-                    <option value="8">Group     8 (      SideChain) has   572 elements</option>
-                    <option value="9">Group     9 (    SideChain-H) has   211 elements</option>
-                    <option value="10">Group    10 (    Prot-Masses) has   855 elements</option>
-                    <option value="11">Group    11 (    non-Protein) has  6642 elements</option>
-                    <option value="12">Group    12 (          Water) has  6642 elements</option>
-                    <option value="13">Group    13 (            SOL) has  6642 elements</option>
-                    <option value="14">Group    14 (      non-Water) has   855 elements</option>
+                <!-- <span class="text-gray-500">Select force field before choosing water model</span> -->
+                <!-- <select id="water_model_placeholder" required disabled class="w-1/2 border disabled:text-gray-500 disabled:bg-gray-200 border-gray-500 items-center rounded-md px-4 bg-white h-10"> -->
+                <!--     <option value="" disabled selected hidden>-- Select Force Field first --</option> -->
+                <!-- </select> -->
+                <!-- ff: 1-7 -->
+                <select id="water_model_1" name="water_model" onchange="checkIfInputsAreDefaultsAndDisableButton()" required disabled class="hidden w-1/2 border border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <!-- <option value="" disabled selected hidden>-- Select Water Model --</option> -->
+                    <option value="1">TIP3P - TIP 3-point, recommended</option>
+                    <option value="2">TIP4P - TIP 4-point</option>
+                    <option value="3">TIP4P-Ew - TIP 4-point optimized with Ewald</option>
+                    <option value="4">TIP5P - TIP 5-point (see http://redmine.gromacs.org/issues/1348 for issues)</option>
+                    <option value="5">SPC - simple point charge</option>
+                    <option value="6">SPC/E - extended simple point charge</option>
+                    <option value="7">None</option>
+                </select>
+                <!-- ff: 8 -->
+                <select id="water_model_2" name="water_model" onchange="checkIfInputsAreDefaultsAndDisableButton()" required disabled class="hidden w-1/2 border border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <!-- <option value="" disabled selected hidden>-- Select Water Model --</option> -->
+                    <option value="1">TIP3P - TIP 3-point, recommended</option>
+                    <option value="2">TIP4P - TIP 4-point</option>
+                    <option value="3">TIPS3P - CHARMM TIP 3-point with LJ on H's</option>
+                    <option value="4">TIP5P - TIP 5-point (see http://redmine.gromacs.org/issues/1348 for issues)</option>
+                    <option value="5">SPC - simple point charge</option>
+                    <option value="6">SPC/E - extended simple point charge</option>
+                    <option value="7">None</option>
+                </select>
+                <!-- ff: 9-14 -->
+                <select id="water_model_3" name="water_model" onchange="checkIfInputsAreDefaultsAndDisableButton()" required disabled class="hidden w-1/2 border border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <!-- <option value="" disabled selected hidden>-- Select Water Model --</option> -->
+                    <option value="1">SPC - simple point charge, recommended</option>
+                    <option value="2">SPC/E - extended simple point charge</option>
+                    <option value="3">None</option>
+                </select>
+                <!-- ff: 15 -->
+                <select id="water_model_4" name="water_model" onchange="checkIfInputsAreDefaultsAndDisableButton()" required disabled class="hidden w-1/2 border border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <!-- <option value="" disabled selected hidden>-- Select Water Model --</option> -->
+                    <option value="1">TIP4P - TIP 4-point, recommended</option>
+                    <option value="2">TIP4PEW - TIP 4-point with Ewald</option>
+                    <option value="3">TIP3P - TIP 3-point</option>
+                    <option value="4">TIP5P - TIP 5-point (see http://redmine.gromacs.org/issues/1348 for issues)</option>
+                    <option value="5">TIP5P - TIP 5-point improved for Ewald sums</option>
+                    <option value="6">SPC - simple point charge</option>
+                    <option value="7">SPC/E - extended simple point charge</option>
+                    <option value="8">None</option>
                 </select>
             </div>
-
-            <!-- Group for output -->
+            <!-- Simulation length -->
             <div class="flex flex-col">
-                <span class="flex items-center text-lg">Group for output:</span>
-                <select id="group_for_output" name="group_for_output"
-                    class="w-1/2 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10 <% if (project.status !== 'Initial') { %>w-2/3<% } %>" <% if (project.status !== 'Initial') { %>disabled<% } %>
-                >
-                    <option value="-1" selected="selected"></option>
-                    <option value="0">Group     0 (         System) has  7489 elements</option>
-                    <option value="1">Group     1 (        Protein) has   855 elements</option>
-                    <option value="2">Group     2 (      Protein-H) has   436 elements</option>
-                    <option value="3">Group     3 (        C-alpha) has    56 elements</option>
-                    <option value="4">Group     4 (       Backbone) has   168 elements</option>
-                    <option value="5">Group     5 (      MainChain) has   225 elements</option>
-                    <option value="6">Group     6 (   MainChain+Cb) has   277 elements</option>
-                    <option value="7">Group     7 (    MainChain+H) has   283 elements</option>
-                    <option value="8">Group     8 (      SideChain) has   572 elements</option>
-                    <option value="9">Group     9 (    SideChain-H) has   211 elements</option>
-                    <option value="10">Group    10 (    Prot-Masses) has   855 elements</option>
-                    <option value="11">Group    11 (    non-Protein) has  6634 elements</option>
-                    <option value="12">Group    12 (          Water) has  6630 elements</option>
-                    <option value="13">Group    13 (            SOL) has  6630 elements</option>
-                    <option value="14">Group    14 (      non-Water) has   859 elements</option>
-                    <option value="15">Group    15 (            Ion) has     4 elements</option>
-                    <option value="16">Group    16 (             NA) has     4 elements</option>
-                    <option value="17">Group    17 ( Water_and_ions) has  6634 elements</option>
+                <span class="flex items-center text-lg">Simulation length [ns]:</span>
+                <div class="flex flex-row">
+                    <span id="simulation_length_span" class="w-10">10ns</span>
+                    <input
+                        type="range"
+                        name="simulation_length"
+                        id="simulation_length"
+                        min="5"
+                        max="15"
+                        step="1"
+                        value="10"
+                        oninput="update_simulation_length_span()"
+                        onchange="checkIfInputsAreDefaultsAndDisableButton()"
+                        class="w-64">
+                </div>                
+            </div>
+
+            <!-- Saving step -->
+            <div class="flex flex-col">
+                <span class="flex items-center text-lg">Saving step [ps]:</span>
+                <span class="text-gray-500">Saving energies, updating log file and saving compressed coordinates.</span>
+                <select id="saving_step" name="saving_step" onchange="checkIfInputsAreDefaultsAndDisableButton()" required class="w-72 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10"> 
+                    <!-- <option value="" disabled selected hidden>-- Select Saving Step --</option> -->
+                    <option value="2500">5.0 ps</option>
+                    <option value="1250">2.5 ps</option>
                 </select>
             </div>
 
@@ -366,7 +280,7 @@
             <div class="flex flex-col">
                 <span class="flex items-center text-lg">Spheres allocation frame:</span>
                 <span class="text-gray-500 w-2/3">
-                    You may not want to exceed total number of result trajectories. For default Molecular dynamics simulation file number of result trajectories is 21.
+                    You may not want to exceed total number of result trajectories.
                 </span>
                 <input
                     id="spheres_allocation_frame"
@@ -376,8 +290,7 @@
                     min="1"
                     step="1"
                     value="1"
-                    <% if (project.status !== 'Initial') { %>disabled<% } %>
-                >
+                    onchange="checkIfInputsAreDefaultsAndDisableButton()">
             </div>
 
             <!-- RMSD Threshold -->
@@ -393,42 +306,18 @@
                         max="100"
                         step="1"
                         value="10"
-                        oninput="this.previousElementSibling.textContent = this.value+'%'"
-                        class="w-64"
-                        <% if (project.status !== 'Initial') { %>disabled<% } %>
-                    >
+                        oninput="update_rmsd_threshold_span()"
+                        onchange="checkIfInputsAreDefaultsAndDisableButton()"
+                        class="w-64">
                 </div>                
             </div>
 
             <input type="hidden" value="<%= project.id %>" name="project_id">
-            <button onclick="onFormSubmit()" type="button" class="self-end h-10 w-64 bg-green-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-green-600 disabled:bg-green-200 disabled:cursor-default" <% if (project.status !== 'Initial') { %>disabled<% } %> >Save parameters</button>
+            <button type="submit" class="self-end h-10 w-64 bg-green-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-green-600 disabled:bg-green-200 disabled:cursor-default">Save parameters</button>
         </form>
 
-        <form action="/submit_simulation" method="post" class="flex flex-row h-10 self-end font-quicksand flex-shrink-0">
-            <input type="hidden" value="<%= project.id %>" name="project_id">
-            <button type="submit" class="w-64 bg-purple-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-purple-600 disabled:bg-purple-200 disabled:cursor-default" <% if (project.status !== 'Initial') { %>disabled<% } %> >Request Simulation</button>
-        </form>
-
-        <hr>
-
-        <div class="flex flex-col text-gray-600 gap-2">
-            <div class="flex flex-col">
-                <span>(*) Templates available on our website does not belong to us. You can find information about autors on official Computational Biomolecular Dynamics Group website:</span>
-                <a class="hover:underline text-blue-500" href="https://www3.mpibpc.mpg.de/groups/de_groot/">https://www3.mpibpc.mpg.de/groups/de_groot/</a>
-            </div>
-            <div class="flex flex-col">
-                <span>You can also read more about making simulation with Gromacs using their great tutorial (there you can also find information about templates):</span>
-                <a class="hover:underline text-blue-500" href="https://www3.mpibpc.mpg.de/groups/de_groot/compbio1/p2/index.html">Bert de Groot - Introduction to protein simulations</a>
-            </div>
-            <div class="flex flex-col">
-                <span>To our purposes we are using templates:</span>
-                <a class="hover:underline text-blue-500" href="http://www3.mpibpc.mpg.de/groups/de_groot/compbio/p2/em.mdp">Energy minimisation file</a>
-                <a class="hover:underline text-blue-500" href="http://www3.mpibpc.mpg.de/groups/de_groot/compbio/p2/md.mdp">Molecular dynamics simulation file</a>
-            </div>
-            <div class="flex flex-col">
-                <span>You can also find information about specific parameters in those files at:</span>
-                <a class="hover:underline text-blue-500" href="https://manual.gromacs.org/documentation/current/user-guide/mdp-options.html">https://manual.gromacs.org/documentation/current/user-guide/mdp-options.html</a>
-            </div>
+        <div class="flex flex-row h-10 self-end font-quicksand flex-shrink-0">
+            <button form="parameters_form" type="submit" name="request_simulation" value="yes" class="w-64 bg-purple-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-purple-600">Request Simulation</button>
         </div>
 
     </div>
@@ -436,116 +325,82 @@
 
 <script>
 
-    const structure_visible = document.getElementById('structure_visible')
-    const div_upload_structure = document.getElementById('div_upload_structure')
-    const sim_parameters_div = document.getElementById('sim_parameters_div')
-    const sim_advanced = document.getElementById('sim_advanced')
-    const option_default = document.getElementById('option_default')
-    const advanced_parameters_form = document.getElementById('advanced_parameters_form')
+    const form_upload_structure_wrapper = document.getElementById('form_upload_structure_wrapper');
+    const form_upload_demo_wrapper = document.getElementById('form_upload_demo_wrapper');
 
-    const template_energy_min_visible = document.getElementById('template_energy_min_visible')
-    const template_MD_simulation_visible = document.getElementById('template_MD_simulation_visible')
+    const force_field = document.getElementById('force_field');
+    const water_model_placeholder = document.getElementById('water_model_placeholder');
+    const water_model_1 = document.getElementById('water_model_1');
+    const water_model_2 = document.getElementById('water_model_2');
+    const water_model_3 = document.getElementById('water_model_3');
+    const water_model_4 = document.getElementById('water_model_4');
+    const simulation_length = document.getElementById('simulation_length');
+    const simulation_length_span = document.getElementById('simulation_length_span');
+    const saving_step = document.getElementById('saving_step');
+    const spheres_allocation_frame = document.getElementById('spheres_allocation_frame');
+    const rmsd_threshold = document.getElementById('rmsd_threshold');
+    const rmsd_threshold_span = document.getElementById('rmsd_threshold_span');
 
-    const using_old_energy_min = document.getElementById('using_old_energy_min')
-    const using_old_MD_simulation = document.getElementById('using_old_MD_simulation')
+    const edit_description_modal_wrapper = document.getElementById('edit_description_modal_wrapper')
+    const delete_project_modal_wrapper = document.getElementById('delete_project_modal_wrapper')
+    const edit_description_textarea = document.getElementById('edit_description_textarea')
+    const edit_description_project_id = document.getElementById('edit_description_project_id')
 
-    const input_file_energy_min = document.getElementById('input_file_energy_min')
-    const input_file_MD_simulation = document.getElementById('input_file_MD_simulation')
+    const reset_parameters_to_default = document.getElementById('reset_parameters_to_default');
 
-    const pdb2gmx2_div1 = document.getElementById('pdb2gmx2_div1')
-    const pdb2gmx2_div2 = document.getElementById('pdb2gmx2_div2')
-    const pdb2gmx2_div3 = document.getElementById('pdb2gmx2_div3')
+    const update_simulation_length_span = () => {
+        simulation_length_span.textContent = simulation_length.value + 'ns';
+    }
 
-    const created_date = document.getElementById('created_date')
-    const waiting_since = document.getElementById('waiting_since')
-    const processing_since = document.getElementById('processing_since')
-    const finished_since = document.getElementById('finished_since')
-
-    const force_field_select = document.getElementById('force_field_select')
-    const water_model_1 = document.getElementById('water_model_1')
-    const water_model_2 = document.getElementById('water_model_2')
-    const water_model_3 = document.getElementById('water_model_3')
-    const continuous_group_of_solvent_molecules = document.getElementById('continuous_group_of_solvent_molecules')
-    const group_for_output = document.getElementById('group_for_output')
-    const spheres_allocation_frame = document.getElementById('spheres_allocation_frame')
-    const rmsd_threshold = document.getElementById('rmsd_threshold')
-    const rmsd_threshold_span = document.getElementById('rmsd_threshold_span')
+    const update_rmsd_threshold_span = () => {
+        rmsd_threshold_span.textContent = rmsd_threshold.value + '%';
+    }
     
+    const display_demo = () => {
+        form_upload_structure_wrapper.classList.toggle('h-10');
+        form_upload_structure_wrapper.classList.toggle('h-0');
+        form_upload_structure_wrapper.classList.toggle('-my-4');
+        form_upload_structure_wrapper.classList.toggle('-my-2');
+        form_upload_demo_wrapper.classList.toggle('h-10');
+        form_upload_demo_wrapper.classList.toggle('h-0');
+        form_upload_demo_wrapper.classList.toggle('-my-4');
+        form_upload_demo_wrapper.classList.toggle('-my-2');
+    }
+
     const onChangedStructure = filepath => {
         structure_visible.value = filepath.split('\\').at(-1)
     }
 
     const toggleUploadFile = () => {
         div_upload_structure.classList.toggle('h-0')
-        div_upload_structure.classList.toggle('h-28')
+        div_upload_structure.classList.toggle('h-24')
         div_upload_structure.classList.toggle('-my-3')
     }
 
-    const display_sim_params = value => {
-        if (value === 'default') {
-            advanced_parameters_form.classList.add('h-0')
-            advanced_parameters_form.classList.remove('h-full')
-            advanced_parameters_form.classList.add('-my-3')
-        } else {
-            advanced_parameters_form.classList.remove('h-0')
-            advanced_parameters_form.classList.add('h-full')
-            advanced_parameters_form.classList.remove('-my-3')
-        }
-
-    }
-
-    display_sim_params(option_default.checked ? 'default' : 'advanced')
-
-    const onChangedParams = (template_type, filepath) => {
-        if (template_type === 'energy_min') {
-            using_old_energy_min.value = 'false'
-            template_energy_min_visible.value = filepath.split('\\').at(-1)
-        }
-        else if (template_type === 'MD_simulation') {
-            using_old_MD_simulation.value = 'false'
-            template_MD_simulation_visible.value = filepath.split('\\').at(-1)
-        }
-    }
-
-    const clearFile = template_type => {
-        if (template_type === 'energy_min') {
-            using_old_energy_min.value = 'false'
-            template_energy_min_visible.value = ''
-            input_file_energy_min.value = ''
-        }
-        else if (template_type === 'MD_simulation') {
-            using_old_MD_simulation.value = 'false'
-            template_MD_simulation_visible.value = ''
-            input_file_MD_simulation.value = ''
-        }
-    }
-
-    const eraseChanges = template_type => {
-        if (template_type === 'energy_min') {
-            using_old_energy_min.value = 'true'
-            template_energy_min_visible.value = '<%= project.input.files.energy_min.filename %>'
-            input_file_energy_min.value = ''
-        } else if (template_type === 'MD_simulation') {
-            using_old_MD_simulation.value = 'true'
-            template_MD_simulation_visible.value = '<%= project.input.files.MD_simulation.filename %>'
-            input_file_MD_simulation.value = ''
-        }
-    }
-
-    const onChange_pdb2gmx1 = value => {
-        let number = parseInt(value)
-        if (number >= 1 && number <= 8) {
-            pdb2gmx2_div1.classList.remove('hidden')
-            pdb2gmx2_div2.classList.add('hidden')
-            pdb2gmx2_div3.classList.add('hidden')
+    const on_change_force_field = value => {
+        let number = parseInt(value);
+        // water_model_placeholder.classList.add('hidden');
+        water_model_1.classList.add('hidden');
+        water_model_2.classList.add('hidden');
+        water_model_3.classList.add('hidden');
+        water_model_4.classList.add('hidden');
+        // water_model_placeholder.disabled = true;
+        water_model_1.disabled = true;
+        water_model_2.disabled = true;
+        water_model_3.disabled = true;
+        water_model_4.disabled = true;
+        if (number >= 1 && number <= 7) {
+            water_model_1.classList.remove('hidden');
+            water_model_1.disabled = false;
+        } else if (number === 8) {
+            water_model_2.classList.remove('hidden');
+            water_model_2.disabled = false;
         } else if (number >= 9 && number <= 14) {
-            pdb2gmx2_div1.classList.add('hidden')
-            pdb2gmx2_div2.classList.remove('hidden')
-            pdb2gmx2_div3.classList.add('hidden')
+            water_model_3.classList.remove('hidden');
+            water_model_3.disabled = false;
         } else if (number === 15) {
-            pdb2gmx2_div1.classList.add('hidden')
-            pdb2gmx2_div2.classList.add('hidden')
-            pdb2gmx2_div3.classList.remove('hidden')
+            water_model_4.classList.remove('hidden');
+            water_model_4.disabled = false;
         }
     }
 
@@ -562,105 +417,87 @@
         return `${day}.${month}.${year} ${hours}:${minutes}`
     }
 
-    created_date.textContent = makeDate('<%= project.created %>')
-    if ('<%= project.waiting_since %>')
-        waiting_since.textContent = makeDate('<%= project.waiting_since %>')
-    if ('<%= project.processing_since %>')
-        processing_since.textContent = makeDate('<%= project.processing_since %>')
-    if ('<%= project.finished_since %>')
-        finished_since.textContent = makeDate('<%= project.finished_since %>')
+    const populateDates = () => {
+        created_date.textContent = makeDate('<%= project.created %>')
+        if ('<%= project.waiting_since %>')
+            waiting_since.textContent = makeDate('<%= project.waiting_since %>')
+        if ('<%= project.processing_since %>')
+            processing_since.textContent = makeDate('<%= project.processing_since %>')
+        if ('<%= project.finished_since %>')
+            finished_since.textContent = makeDate('<%= project.finished_since %>')
+    }
 
-
-    if ('<%= project.input.extra.pdb2gmx_params %>') {
-        const arrStr = '<%= project.input.extra.pdb2gmx_params %>'.split(',')
-        if (arrStr[0]) {
-            force_field_select.value = arrStr[0]
-            onChange_pdb2gmx1(arrStr[0])
+    const populateInputs = () => {
+        if ('<%= project.input.extra.force_field %>') {
+            force_field.value = '<%= project.input.extra.force_field %>';
         }
-        if (arrStr[1]) {
-            if (arrStr[0] === '')
-                water_model_3.value = arrStr[1]
-            else if (parseInt(arrStr[0]) >= 1 && parseInt(arrStr[0]) <= 8 && parseInt(arrStr[1]) >= 1 && parseInt(arrStr[1]) <= 7)
-                water_model_1.value = arrStr[1]
-            else if (parseInt(arrStr[0]) >= 9 && parseInt(arrStr[0]) <= 14 && parseInt(arrStr[1]) >= 1 && parseInt(arrStr[1]) <= 3)
-                water_model_2.value = arrStr[1]
-            else if (parseInt(arrStr[0]) === 15)
-                water_model_3.value = arrStr[1]
+        on_change_force_field(force_field.value);
+        if ('<%= project.input.extra.water_model %>') {
+            let ff_number = parseInt(force_field.value);
+            if (ff_number <= 7) {
+                water_model_1.value = '<%= project.input.extra.water_model %>';
+            } else if (ff_number === 8) {
+                water_model_2.value = '<%= project.input.extra.water_model %>';
+            } else if (ff_number >= 9 && ff_number <= 14) {
+                water_model_3.value = '<%= project.input.extra.water_model %>';
+            } else if (ff_number === 15) {
+                water_model_4.value = '<%= project.input.extra.water_model %>';
+            }
         }
-    }
-    if ('<%= project.input.extra.traj_params %>') {
-        group_for_output.value = '<%= project.input.extra.traj_params %>'
-    }
-    if ('<%= project.input.extra.genion_params %>') {
-        continuous_group_of_solvent_molecules.value = '<%= project.input.extra.genion_params %>'
-    }
-    if ('<%= project.input.extra.spheres_allocation_frame %>') {
-        spheres_allocation_frame.value = '<%= project.input.extra.spheres_allocation_frame %>'
-    }
-
-    if ('<%= project.input.extra.rmsd_threshold %>') {
-        rmsd_threshold.value = '<%= project.input.extra.rmsd_threshold %>'
-        rmsd_threshold_span.textContent = '<%= project.input.extra.rmsd_threshold %>'+'%'
-    }
-
-
-
-    if ('<%= project.status %>' !== 'Initial' && '<%= project.parameters_default %>' === 'false') {
-        let paramStr = '<%= project.input.extra.pdb2gmx_params %>'
-        const template = '<%= pdb2gmx_params %>'
-        const templateArrStr = template.split(',')
-        const paramArrStr = paramStr.split(',')
-        const paramArrInt = paramArrStr.map(v => parseInt(v))
-
-        if (paramStr === '-1,-1')
-            paramStr = template
-        else if (paramArrInt[0] === -1)
-            paramStr = `${templateArrStr[0]},${paramArrStr[1]}`
-        else if (paramArrInt[0] > -1 && paramArrInt[1] === -1) {
-            if (paramArrInt[0] >= 1 && paramArrInt[0] <= 8)
-                paramStr = `${paramArrStr[0]},7`
-            else if (paramArrInt[0] >= 9 && paramArrInt[0] <= 14)
-                paramStr = `${paramArrStr[0]},3`
-            else if (paramArrInt[0] === 15)
-                paramStr = `${paramArrStr[0]},8`
+        if ('<%= project.input.extra.simulation_length %>') {
+            simulation_length.value = '<%= project.input.extra.simulation_length %>';
+            update_simulation_length_span();
         }
-        // '-1,-1' -> '15,7' from template
-        // '-1,6' -> '15,6' without checking
-        // '12,-1 -> '12,x' x - to find
-        // '12,4' -> '12,4' without checking
-
-        const arr = paramStr.split(',')
-
-        force_field_select.value = arr[0]
-        onChange_pdb2gmx1(arr[0])
-
-        if (arr[0] === '')
-            water_model_3.value = arr[1]
-        else if (parseInt(arr[0]) >= 1 && parseInt(arr[0]) <= 8 && parseInt(arr[1]) >= 1 && parseInt(arr[1]) <= 7)
-            water_model_1.value = arr[1]
-        else if (parseInt(arr[0]) >= 9 && parseInt(arr[0]) <= 14 && parseInt(arr[1]) >= 1 && parseInt(arr[1]) <= 3)
-            water_model_2.value = arr[1]
-        else if (parseInt(arr[0]) === 15)
-            water_model_3.value = arr[1]
-
-        if ('<%= project.input.extra.traj_params %>' === '-1')
-            group_for_output.value = '<%= traj_params %>'
-        if ('<%= project.input.extra.genion_params %>' === '-1')
-            continuous_group_of_solvent_molecules.value = '<%= genion_params %>'
-        if ('<%= project.input.extra.spheres_allocation_frame %>' === '-1')
-            spheres_allocation_frame.value = '<%= spheres_allocation_frame %>'
-        if ('<%= project.input.extra.rmsd_threshold %>' === '-1') {
-            rmsd_threshold.value = '<%= rmsd_threshold %>'
-            rmsd_threshold_span.textContent = '<%= rmsd_threshold %>'+'%'
+        if ('<%= project.input.extra.saving_step %>') {
+            saving_step.value = '<%= project.input.extra.saving_step %>';
+        }
+        if ('<%= project.input.extra.spheres_allocation_frame %>') {
+            spheres_allocation_frame.value = '<%= project.input.extra.spheres_allocation_frame %>';
+        }
+        if ('<%= project.input.extra.rmsd_threshold %>') {
+            rmsd_threshold.value = '<%= project.input.extra.rmsd_threshold %>';
+            update_rmsd_threshold_span();
         }
     }
 
-    const onFormSubmit = () => {
-        if (option_default.checked) {
-            input_file_energy_min.value = ''
-            input_file_MD_simulation.value = ''
-        }
-        advanced_parameters_form.submit()
+    const setDefaultParameters = () => {
+        force_field.value = "15";
+        on_change_force_field("15");
+        water_model_4.value = "7";
+        simulation_length.value = "10";
+        update_simulation_length_span();
+        saving_step.value = "2500";
+        spheres_allocation_frame.value = "1";
+        rmsd_threshold.value = "10";
+        update_rmsd_threshold_span();
+        checkIfInputsAreDefaultsAndDisableButton();
     }
+
+    const checkIfInputsAreDefaultsAndDisableButton = () => {
+        if (
+            force_field.value === "15" &&
+            water_model_4.value === "7" &&
+            simulation_length.value === "10" &&
+            saving_step.value === "2500" &&
+            spheres_allocation_frame.value === "1" &&
+            rmsd_threshold.value === "10") {
+            
+            reset_parameters_to_default.disabled = true;
+        } else {
+            reset_parameters_to_default.disabled = false;
+        }
+    }
+
+    const editDescription = () => {
+        edit_description_modal_wrapper.classList.toggle('w-0')
+        edit_description_modal_wrapper.classList.toggle('w-full')
+        edit_description_modal_wrapper.classList.toggle('left-1/2')
+        edit_description_modal_wrapper.classList.toggle('left-0')
+    }
+
+    setDefaultParameters();
+    populateDates();
+    populateInputs();
+    checkIfInputsAreDefaultsAndDisableButton();
 
 </script>

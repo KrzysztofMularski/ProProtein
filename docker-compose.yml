@@ -15,6 +15,7 @@ services:
     # volumes:
     #   - /etc/letsencrypt:/home/app/letsencrypt
   gromacs_api:
+    runtime: nvidia
     build: gromacs_api
     image: gromacs_api:1.0
     env_file:

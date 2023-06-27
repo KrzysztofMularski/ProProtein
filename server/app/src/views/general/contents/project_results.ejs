@@ -1,0 +1,187 @@
+<div class="h-full w-full py-10 px-40 font-quicksand flex flex-col">
+    <div class="h-full w-full bg-white rounded-xl flex flex-col p-10 gap-6 shadow-xl">
+        <div class="flex flex-row justify-between">
+            <p class="text-4xl font-bold"><%=project.name%></p>
+            <a href="<%= routeBack %>" class="w-64 bg-gray-500 flex flex-row gap-4 items-center justify-center rounded-md text-white cursor-pointer hover:bg-gray-600">
+                <div class="w-3 text-white">
+                    <%- include (`../../../../public/icons/left.svg`) %>
+                </div>
+                <span>
+                    Back to project
+                </span>
+            </a>
+        </div>
+
+        <!-- Structure file -->
+        <span class="text-2xl">Molecular Structure</span>
+
+        <div class="flex flex-row justify-between h-10 font-quicksand flex-shrink-0">
+            <div class="flex flex-row gap-4">
+                <span class="flex items-center w-36 ml-2 flex-shrink-0">Uploaded file:</span>
+                <span class="flex items-center w-72 border border-gray-500 rounded-md px-4 min-w-min justify-between gap-2
+                    <% if (!project.input.files.structure.filename) { %> text-gray-500 <% } %>"
+                      >
+                      <%= project.input.files.structure.filename || 'No specified file' %>
+                      <% if (project.input.files.structure.is_demo === true) { %>
+                      <span class="text-green-500">Example</span>
+                      <% } %>
+                </span>
+                <a class="self-center" href="<%= downloadUrl %>/<%= project._id %>/structure">
+                    <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                        <%- include (`../../../../public/icons/download.svg`) %>
+                    </div>
+                </a>
+            </div>
+            <% if (project.input.files.structure.filename) { %>
+            <a
+                <% if (isGuest) { %>
+                href="/guest_molstar_requested?project=<%= project.id %>&filetype=structure"
+                <% } else { %>
+                href="/molstar?project=<%= project.id %>&filetype=structure"
+                <% } %>
+                class="w-64 bg-blue-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-blue-600">Open in Molstar</a>
+            <% } %>
+        </div>
+
+        <span class="text-2xl">Results</span>
+
+        <!-- Output trajectory file -->
+        <div class="flex flex-row justify-between h-10 font-quicksand flex-shrink-0">
+            <div class="flex flex-row gap-4">
+                <span class="flex items-center w-36 ml-2 flex-shrink-0 whitespace-nowrap">Output Trajectory:</span>
+                <span class="flex items-center w-72 border border-gray-500 rounded-md px-4 min-w-min justify-between gap-2
+                    <% if (!project.output.files.trajectory.filename) { %> text-gray-500 <% } %>"
+                      >
+                      <%= project.output.files.trajectory.filename || 'No specified file' %>
+                </span>
+                <a class="self-center" href="<%= downloadUrl %>/<%= project._id %>/trajectory">
+                    <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                        <%- include (`../../../../public/icons/download.svg`) %>
+                    </div>
+                </a>
+            </div>
+            <% if (project.output.files.trajectory.filename) { %>
+            <a
+                <% if (isGuest) { %>
+                href="/guest_molstar_requested?project=<%= project.id %>&filetype=trajectory"
+                <% } else { %>
+                href="/molstar?project=<%= project.id %>&filetype=trajectory"
+                <% } %>
+                class="w-64 bg-blue-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-blue-600">Open in Molstar</a>
+            <% } %>
+        </div>
+
+        <!-- xtc file -->
+        <div class="flex flex-row gap-4 h-10">
+            <span class="flex items-center w-36 ml-2 flex-shrink-0">Output trajectory (.xtc):</span>
+            <span class="flex items-center w-72 border border-gray-500 rounded-md px-4 min-w-min justify-between gap-2
+                <% if (!project.output.files.md_xtc.filename) { %> text-gray-500 <% } %>"
+                  >
+                  <%= project.output.files.md_xtc.filename || 'No specified file' %>
+            </span>
+            <a class="self-center" href="<%= downloadUrl %>/<%= project._id %>/md_xtc">
+                <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                    <%- include (`../../../../public/icons/download.svg`) %>
+                </div>
+            </a>
+        </div>
+
+        <!-- edr file -->
+        <div class="flex flex-row gap-4 h-10">
+            <span class="flex items-center w-36 ml-2 flex-shrink-0">Energy file (.edr):</span>
+            <span class="flex items-center w-72 border border-gray-500 rounded-md px-4 min-w-min justify-between gap-2
+                <% if (!project.output.files.md_edr.filename) { %> text-gray-500 <% } %>"
+                  >
+                  <%= project.output.files.md_edr.filename || 'No specified file' %>
+            </span>
+            <a class="self-center" href="<%= downloadUrl %>/<%= project._id %>/md_edr">
+                <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                    <%- include (`../../../../public/icons/download.svg`) %>
+                </div>
+            </a>
+        </div>
+
+        <!-- tpr file -->
+        <div class="flex flex-row gap-4 h-10">
+            <span class="flex items-center w-36 ml-2 flex-shrink-0">Portable xdr run input file (.tpr):</span>
+            <span class="flex items-center w-72 border border-gray-500 rounded-md px-4 min-w-min justify-between gap-2
+                <% if (!project.output.files.md_tpr.filename) { %> text-gray-500 <% } %>"
+                  >
+                  <%= project.output.files.md_tpr.filename || 'No specified file' %>
+            </span>
+            <a class="self-center" href="<%= downloadUrl %>/<%= project._id %>/md_tpr">
+                <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                    <%- include (`../../../../public/icons/download.svg`) %>
+                </div>
+            </a>
+        </div>
+
+        <!-- log file -->
+        <!-- <div class="flex flex-row gap-4 h-10"> -->
+        <!--     <span class="flex items-center w-36 ml-2 flex-shrink-0">Simulation logs:</span> -->
+        <!--     <span class="flex items-center w-72 border border-gray-500 rounded-md px-4 min-w-min justify-between gap-2 -->
+        <!--         <% if (!project.output.files.simulation_logs.filename) { %> text-gray-500 <% } %>" -->
+        <!--           > -->
+        <!--           <%= project.output.files.simulation_logs.filename || 'No specified file' %> -->
+        <!--     </span> -->
+        <!--     <a class="self-center" href="<%= downloadUrl %>/<%= project._id %>/simulation_logs"> -->
+        <!--         <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer"> -->
+        <!--             <%- include (`../../../../public/icons/download.svg`) %> -->
+        <!--         </div> -->
+        <!--     </a> -->
+        <!-- </div> -->
+
+        <!-- Diagrams -->
+        <span class="ml-2">Energy analysis:</span>
+
+        <div class="grid grid-cols-2 gap-2">
+            <div class="flex flex-col">
+                <div class="flex flex-row gap-2 w-full justify-center">
+                    <p class="whitespace-nowrap">Energy Minimization</p>
+                    <a href="<%= downloadUrl %>/<%= project._id %>/energy_potential">
+                        <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                            <%- include (`../../../../public/icons/download.svg`) %>
+                        </div>
+                    </a>
+                </div>
+                <img src="<%= downloadUrl %>/<%= project._id %>/energy_potential" alt="Energy Minimization">
+            </div>
+            <div class="flex flex-col">
+                <div class="flex flex-row gap-2 w-full justify-center">
+                    <p class="whitespace-nowrap">Temperature NVT Equilibration</p>
+                    <a href="<%= downloadUrl %>/<%= project._id %>/energy_temperature">
+                        <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                            <%- include (`../../../../public/icons/download.svg`) %>
+                        </div>
+                    </a>
+                </div>
+                <img src="<%= downloadUrl %>/<%= project._id %>/energy_temperature" alt="Temperature NVT Equilibration">
+            </div>
+            <div class="flex flex-col">
+                <div class="flex flex-row gap-2 w-full justify-center">
+                    <p class="whitespace-nowrap">Pressure NPT Equilibration</p>
+                    <a href="<%= downloadUrl %>/<%= project._id %>/energy_pressure">
+                        <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                            <%- include (`../../../../public/icons/download.svg`) %>
+                        </div>
+                    </a>
+                </div>
+                <img src="<%= downloadUrl %>/<%= project._id %>/energy_pressure" alt="Pressure NPT Equilibration">
+            </div>
+            <div class="flex flex-col">
+                <div class="flex flex-row gap-2 w-full justify-center">
+                    <p class="whitespace-nowrap">Density NPT Equilibration</p>
+                    <a href="<%= downloadUrl %>/<%= project._id %>/energy_density">
+                        <div class="w-6 text-gray-500 hover:text-gray-800 hover:cursor-pointer">
+                            <%- include (`../../../../public/icons/download.svg`) %>
+                        </div>
+                    </a>
+                </div>
+                <img src="<%= downloadUrl %>/<%= project._id %>/energy_density" alt="Density NPT Equilibration">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+</script>

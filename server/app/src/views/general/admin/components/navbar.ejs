@@ -46,5 +46,13 @@
                 <p class="text-lg">Logs</p>
             </div>
         </a>
+        <a href="/admin/queue" class="<%= selected === 'queue' ? "border-l-4 border-white pl-3" : "pl-4"%>">
+            <div class="flex flex-row gap-2 items-center h-10">
+                <div class="w-5">
+                    <%- include ('icons/queue.svg') %>
+                </div>
+                <p class="text-lg">Queue</p>
+            </div>
+        </a>
     </nav>
 </div>

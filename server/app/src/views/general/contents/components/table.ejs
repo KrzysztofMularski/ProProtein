@@ -52,16 +52,16 @@
                         
                     <% } else if (idd === 3) { %>
                         <!-- description -->
-                        <div class="flex-1 flex flex-row items-center justify-center p-4 overflow-hidden gap-4">
-                            <div class="w-full overflow-hidden flex flex-row justify-end">
-                                <p><%= value %></p>
-                            </div>
-                            <div onclick="editDescription('<%= Object.values(row)[4] %>', '<%= Object.values(row)[5] %>')" class="flex items-center justify-center w-8 h-8 flex-shrink-0 text-white bg-blue-500 rounded-xl cursor-pointer hover:bg-blue-600">
-                                <div class="w-4">
-                                    <%- include (`../../../../../public/icons/edit.svg`) %>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- <div class="flex-1 flex flex-row items-center justify-center p-4 overflow-hidden gap-4"> -->
+                        <!--     <div class="w-full overflow-hidden flex flex-row justify-end"> -->
+                        <!--         <p><%= value %></p> -->
+                        <!--     </div> -->
+                        <!--     <div onclick="editDescription('<%= Object.values(row)[4] %>', '<%= Object.values(row)[5] %>')" class="flex items-center justify-center w-8 h-8 flex-shrink-0 text-white bg-blue-500 rounded-xl cursor-pointer hover:bg-blue-600"> -->
+                        <!--         <div class="w-4"> -->
+                        <!--             <%- include (`../../../../../public/icons/edit.svg`) %> -->
+                        <!--         </div> -->
+                        <!--     </div> -->
+                        <!-- </div> -->
                     <% } else if (idd === 4) { %>
                         <!-- actions (last column) -->
                         <div class="flex-1 flex items-center justify-center p-4 gap-4 ">
@@ -125,7 +125,7 @@
                     </label>
                     <input id="edit_description_project_id" type="hidden" name="project_id">
                     <input type="hidden" name="route" value=<%=reqQuery.route%>>
-                    <div class="flex flex-row text-white justify-between gap-4 mt-4">
+                    <div class="flex flex-row font-normal text-white justify-between gap-4 mt-4">
                         <button type="button" onclick="editDescription()" class="w-20 h-8 rounded bg-red-500 hover:bg-red-600">
                             Cancel
                         </button>
@@ -153,7 +153,7 @@
                     <pre id="errorText" class="text-base text-center text-red-500 font-quicksand font-normal">Provided Project name is not correct</pre>
                     <input id="delete_project_project_id" type="hidden" name="project_id">
                     <input type="hidden" name="route" value=<%=reqQuery.route%>>
-                    <div class="flex flex-row text-white justify-between gap-8 mt-4">
+                    <div class="flex flex-row font-normal text-white justify-between gap-8 mt-4">
                         <div>
                             <button type="button" onclick="deleteProject()" class="w-20 h-8 rounded bg-red-500 hover:bg-red-600">
                                 Cancel

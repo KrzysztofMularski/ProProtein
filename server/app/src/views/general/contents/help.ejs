@@ -1,0 +1,52 @@
+<div class="h-full w-full py-10 px-40 font-quicksand flex flex-col gap-5 text-gray-700">
+    <div class="w-full bg-white rounded-xl flex flex-col px-10 py-6 shadow-xl gap-6">
+        <p class="text-4xl">Help</p>
+        <a href="http://rnasolo.cs.put.poznan.pl/help" class="text-blue-500 hover:text-blue-600 underline">http://rnasolo.cs.put.poznan.pl/help</a>
+        <a href="https://virxicon.cs.put.poznan.pl/help" class="text-blue-500 hover:text-blue-600 underline">https://virxicon.cs.put.poznan.pl/help</a>
+        <p class="text-4xl">User Manual for ProProtein web service</p>
+        <p class="text-2xl">Profile</p>
+        <p class="text-2xl">Signing up</p>
+        <p>To sign up you need to access Profile Menu in the top right corner and choose “Sign Up”. You will be redirected to a form that requires you to provide an username, email and password (which must be minimum 6 characters long). After successfully filling the form you can sign in to your new account.</p>
+        <p class="text-2xl">Signing in</p>
+        <p>To sign in you need to access Profile Menu in the top right corner and choose “Sign In”. You will be redirected to a form that requires you to provide your email and password. If the credentials are correct, you will get access to the account after clicking the “Sign In” button below.</p>
+        <p class="text-2xl">Resetting password</p>
+        <p>If you want to reset your password, you need to access Profile Menu in the top right corner and choose “Sign In”. Under the “Password” field there is a “Forgot password?” button. After clicking it, you will be redirected to a “Reset Password” form where you need to provide the email address connected to your account. After providing the address and clicking “Send”, an automatic email will be sent to the provided address, with a “Reset Password” link. When redirected by the link, you can provide and repeat a new password to be used for this account.</p>
+        <p class="text-2xl">Editing user data</p>
+        <p>You can edit user data such as username, provided email or password. To do this you need to  access Profile Menu in the top right corner when signed in and choose “Profile”. This will redirect you to a page with information and statistics about your account and projects. To make changes click “Edit” under User data and a form to edit desired information will be provided.</p>
+        <p class="text-2xl">Deleting account</p>
+        <p>To delete an account, you need to access Profile Menu in the top right corner when signed in and choose “Profile”. After being redirected click on the “Delete Account” button. Confirm by clicking “Delete” again. Your account will be then deleted from the service. </p>
+        <p class="text-2xl">Projects</p>
+        <p class="text-2xl">Setting up new project</p>
+        <p>To set up a new project you need to access Projects Menu in the top left corner when signed in and choose “Projects”. Then you need to click the “New Project” button on the right. A form will be provided in which you need to specify a project name and can specify a project description. To finish a project, click on either “Create” or “Create and open” button. If the “Create and open” button is chosen, the project view will be opened. To access it another way, you need to get to the Projects subpage and click the folder icon to the right of the chosen project. </p>
+        <p class="text-2xl">Providing input file</p>
+        <p>To provide an input file you need to click the “Change File…” button in the “Molecular Structure” area. Input file options will be expanded. To provide your file, click “Choose file…”, select a file from your system and then click on “Upload” to upload your file into the project. If you want to use one of the demo files provided, you just select the file you want under “Select Demo” and then click the “Select” button to the right.</p>
+        <p class="text-2xl">Providing simulation parameters</p>
+        <p>We provide default simulation parameters which were chosen to work best for basic simulations. If you want to provide the parameters yourself then you need to select “Advanced” under Simulation Parameters. Upon selection, the parameters menu is expanded. For energy minimisation and molecular dynamics parameters you can provide the file with parameters, by clicking “Choose file…” on the right and selecting desired file from your file system. We provide a suitable template for these files under respective “Get a template*” button. </p>
+        <p>Next there are select lists for Force Field, Water Model, Continuous group of solvent molecules and Group for output parameters.</p>
+        <p>Two last parameters refer to our “Highlighting regions of high fluctuation” functionality. How changing them can affect the post simulation analysis is described in the respective subchapter of “Tool design” chapter of this manual.</p>
+        <p>If the parameters are set to desired values, click the “Save parameters” button to the bottom right. If one or more parameters are not changed, they retain their default values.</p>
+        <p></p>
+        <p>When you are finished with setting up the project click “Request Simulation” to put your project into the queue.</p>
+        <p>Important: Simulation once requested cannot be stopped, canceled or modified. If you need to tweak some parameters or change inputs, please set up a new project. </p>
+        <p class="text-2xl">Statuses</p>
+        <p>Initial - Project is in its initial phase, the simulation was not requested yet.</p>
+        <p>Waiting - Simulation has been requested and changes cannot be made, it is waiting in a queue to be processed.</p>
+        <p>Processing - This project is actually being processed right now.</p>
+        <p>Finished - This project has been simulated and the results can be seen. Changes cannot be made, so if you need to simulate something different, you need to make a new project.</p>
+        <p class="text-2xl">Mail notifications</p>
+        <p>Automatic mail notifications are sent when:</p>
+        <p>User wants to reset his password.</p>
+        <p>Requested simulation finishes.</p>
+        <p>Storage time for the project expires.</p>
+        <p class="text-2xl">Viewing</p>
+        <p>To view the results of requested simulation, you need to open the selected finished project view. Then, if the project is finished, the button “Open Results in Molstar” will be present on the right. After clicking it, you will be redirected to our Molstar subpage, where the results are presented in a 3d view. There you can change the coloring from the default way to highlighting regions of high fluctuation and vice-versa, using the “Coloring” button on the left. If you want to go back to the project view, click “Back to project”. If you want some more information about Molstar features or a quick start guide, check its documentation here.</p>
+        <p class="text-2xl">Tool design</p>
+        <p class="text-xl">GROMACS</p>
+        <p>This tool is used to perform the molecular dynamics simulation. To get more information about input parameters and overall GROMACS workflow check its own documentation here.</p>
+        <p class="text-xl">MOL*</p>
+        <p>This tool allows us to present the results. If you are interested in ways it can help viewing them, check its documentation here. Some of its features are not available in ProProtein, but when you find they would be beneficial in your research, please let us know.</p>
+        <p class="text-2xl">Highlighting regions of high fluctuation</p>
+        <p>An additional feature that our service provides is showing regions of highest intensity of atom movements. These regions are called spheres and they are made of a main CA atom and atoms that are in distance less or equal to 8Å around it. Number of spheres is equal to the number of CA present in the protein and every atom can be present in multiple spheres. Relative positions of atoms can differ during simulation, thus the user during project creation can designate the trajectory frame in which atoms are allocated to spheres (default value is 1).</p>
+        <p>Fluctuations are measured by calculating RMSD between current and next frame for each sphere. Prior calculating the spheres are superposed to minimize the influence of atoms movement. After obtaining RMSD for every sphere in every frame interval, these values are sorted and a top percentage of them can be highlighted when viewing the results.  The percentage can be chosen by the user (default value is 10%).</p>
+    </div>
+</div>
