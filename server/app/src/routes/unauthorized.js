@@ -74,9 +74,9 @@ const postRegister = async (req, res) => {
             return res.redirect(`/register`);
         } else {
             await newUser.save()
-            // sendAuthMail(req.body.username, req.body.email)
-            // req.flash('success', 'New account successfully created. Check your mailbox to verify it')
-            req.flash('success', 'New account successfully created.')
+            sendAuthMail(req.body.username, req.body.email)
+            req.flash('success', 'New account successfully created. Check your mailbox to verify it')
+            // req.flash('success', 'New account successfully created.')
             res.redirect('/login')
         }
 

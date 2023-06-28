@@ -2,15 +2,14 @@ const mongoose = require('mongoose')
 const Project = require('../db/models/project')
 const User = require('../db/models/user')
 const DemoFile = require('../db/models/demoFile')
-const TemplateFile = require('../db/models/templateFile')
+const QueueEntry = require('../db/models/queueEntry')
 const moment = require('moment')
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
 const serverAddress = process.env.SERVER_ADDRESS
-const queueManagerUrl = process.env.QUEUE_MANAGER_ADDRESS
-const { sendNotificationSimFinished } = require('../mailing')
+const { sendNotificationSimFinished, sendNotificationGuestSimFinished } = require('../mailing')
 const bcrypt = require('bcryptjs')
-const project = require('../db/models/project')
 const pushLog = require('../logging')
+const path = require('path');
+const { gfsDeleteProjectWithFiles, gfsDeleteFile } = require('../gfs')
 
 const setPagination = (query, route) => {
 
@@ -105,7 +104,7 @@ const pullProjects = async (route, req, res) => {
             }
         }
 
-        let projects = await Project.find(dbQuery, 'name created status description _id')
+        let projects = await Project.find(dbQuery, 'name created status description _id').sort({created: 'desc'});
 
         projects = projects.map(project => ({
             name: project.name,
@@ -127,7 +126,7 @@ const pullProjects = async (route, req, res) => {
                 'Name',
                 'Created',
                 'Status',
-                'Description',
+                // 'Description',
             ],
             content: projects.filter((_, id) => id >= pg.minRowIndex && id <= pg.maxRowIndex),
             columnsCount: 4,
@@ -306,44 +305,111 @@ const postNewProject = async (req, res) => {
 
 const getProject = async (req, res) => {
     try {
-        const demos = await DemoFile.find()
-        const templateFiles = await TemplateFile.find()
-        const projectId = req.query.id
+        const demos = await DemoFile.find();
+        const projectId = req.query.id;
         if (!mongoose.isValidObjectId(projectId)) {
             req.flash('error', 'There is no project with such id')
-            return res.redirect('/projects?rowscount=5&page=1')
+            return res.redirect('/projects?rowscount=5&page=1');
         }
-        const project = await Project.findOne({ _id: projectId, owner_id: req.user._id })
-        if (project) {
-            const routeBack = '/projects?rowscount=5&page=1'
+        const project = await Project.findOne({ _id: projectId, owner_id: req.user._id });
+        if (!project) {
+            req.flash('error', 'There is no project with such id');
+            return res.redirect('/home');
+        }
+        const routeBack = '/projects?rowscount=5&page=1';
 
-            const messages = req.flash()
-            const errors = messages.error
-            const successes = messages.success
+        const messages = req.flash();
+        const errors = messages.error;
+        const successes = messages.success;
 
-            res.render('general/_project_details', {
-                logged: true,
-                selected: 'Projects',
-                project,
-                routeBack,
-                demos,
-                pdb2gmx_params: templateFiles.find(file => file.template_type === 'pdb2gmx_params').content,
-                traj_params: templateFiles.find(file => file.template_type === 'traj_params').content,
-                genion_params: templateFiles.find(file => file.template_type === 'genion_params').content,
-                spheres_allocation_frame: '1',
-                rmsd_threshold: '10',
-                errors,
-                successes
-            })
+        const params = {
+            logged: true,
+            selected: 'Projects',
+            project,
+            routeBack,
+            demos,
+            errors,
+            successes,
+            isGuest: false,
+            projectUrl: path.join(serverAddress, `project?id=${projectId}`),
+            resultsUrl: path.join(serverAddress, `project/results?id=${projectId}`),
+        };
+
+        if (project.status === 'Initial') {
+            return res.render('general/_project_details', params);
         }
-        else {
-            req.flash('error', 'There is no project with such id')
-            res.redirect('/home')
+
+        if (project.status === "Processing" || project.status === "Waiting") {
+            let curEntry = await QueueEntry
+                .findOne({ project_id: project._id })
+                .populate({ path: "project_id", model: Project });
+
+            if (!curEntry || !curEntry.project_id) {
+                req.flash('error', 'This project is not requested to queue, but has status Waiting or Processing. Contact administrator to resolve this issue');
+                return res.redirect('/');
+            }
+            let curProjectPos = await QueueEntry.find({ "created": { "$lte": curEntry.created }}).count() - await Project.find({ "status": "Processing" }).count();
+
+            if (curProjectPos < 0) {
+                curProjectPos = 0;
+            }
+            const params_ro = {
+                ...params,
+                queuePosition: curProjectPos,
+            }
+
+            return res.render('general/_project_details_read_only', params_ro);
         }
+        // finished or error projects
+        const params_ro = {
+            ...params,
+            queuePosition: -1,
+        }
+        return res.render('general/_project_details_read_only', params_ro);
     } catch (err) {
         // console.log(err)
         await pushLog(err, 'getProject', req.user._id);
-        req.flash('error', 'Error');
+        req.flash('error', 'Error while getting project details');
+        return res.redirect('/')
+    }
+}
+
+const getProjectResults = async (req, res) => {
+    try {
+        const projectId = req.query.id;
+        if (!mongoose.isValidObjectId(projectId)) {
+            req.flash('error', 'There is no project with such id')
+            return res.redirect('/projects?rowscount=5&page=1');
+        }
+        const project = await Project.findOne({ _id: projectId, owner_id: req.user._id });
+
+        if (!project) {
+            req.flash('error', 'There is no project with such id')
+            return res.redirect('/home')
+        }
+        if (project.status !== "Finished") {
+            req.flash('error', 'The results are not available');
+            return res.redirect('/');
+        }
+        const messages = req.flash();
+        const errors = messages.error;
+        const successes = messages.success;
+        const routeBack = `/project?id=${projectId}`;
+        const params = {
+            logged: true,
+            selected: 'Projects',
+            project,
+            routeBack,
+            errors,
+            successes,
+            isGuest: false,
+            downloadUrl: '/download/file',
+        };
+        return res.render('general/_project_results', params);
+    } catch (err) {
+        // console.log(err)
+        await pushLog(err, 'getProjectResults', req.user._id);
+        req.flash('error', 'Error while getting project results');
         return res.redirect('/')
     }
 }
@@ -353,16 +419,26 @@ const postEditDescription = async (req, res) => {
         const projectId = req.body.project_id
         const projectDescription = req.body.project_description
         const project = await Project.findById(projectId)
-        const rowscount = req.query.rowscount
-        const page = req.query.page
-        const route = req.body.route
-        if (project.owner_id.toString() === req.user._id.toString()) {
-            project.description = projectDescription
-            await project.save()
-            req.flash('success', "Project's description modified correctly")
-        } else
+
+        if (project.owner_id.toString() !== req.user._id.toString()) {
             req.flash('error', "Project's description remains unmodified")
-        res.redirect(`/${route}?rowscount=${rowscount}&page=${page}`)
+            return res.redirect(`/project?id=${projectId}`)
+        }
+
+        project.description = projectDescription
+
+        const error = await project.validateSync();
+
+        if (error) {
+            Object.entries(error.errors).forEach(([ label, { message } ]) => {
+                req.flash('error', `Wrong ${ label }: ${ message }`)
+            });
+            return res.redirect(`/project?id=${projectId}`)
+        } else {
+            await project.save();
+            req.flash('success', "Project's description modified correctly")
+            return res.redirect(`/project?id=${projectId}`)
+        }
     } catch (err) {
         // console.log(err)
         await pushLog(err, 'postEditDescription', req.user._id);
@@ -373,26 +449,38 @@ const postEditDescription = async (req, res) => {
 
 const deleteProject = async (req, res) => {
     try {
+        // body:
+        // - project_name: 'hello',
+        // - project_id: '649999f4e81510d56bb55b0a',
+        // - route: 'projects'
+
         const projectId = req.body.project_id
         if (!mongoose.isValidObjectId(projectId)) {
             req.flash('error', 'Invalid project id');
-            return res.redirect(`/${route}?rowscount=5&page=1`);
+            return res.redirect('/');
         }
-        const project = await Project.findById(projectId)
-        const rowscount = req.query.rowscount
-        const page = req.query.page
-        const route = req.body.route
-        // if (project.status === 'Waiting')
-        //     req.flash('error', 'Project cannot be deleted, beacuse of "Waiting" status')
-        // else if (project.status === 'Processing')
-        //     req.flash('error', 'Project cannot be deleted, beacuse of "Processing" status')
-        if (project.name !== req.body.project_name || project.owner_id.toString() !== req.user._id.toString()) {
+        const project = await Project.findById(projectId);
+        if (!project) {
+            req.flash('error', 'Cannot find project with such id');
+            return res.redirect('/');
+        }
+        if (!project.owner_id) {
+            // don't have owner, it is guest project
+            req.flash('error', 'Cannot find project with such id');
+            return res.redirect('/');
+        }
+        if (project.name !== req.body.project_name || project.owner_id?.toString() !== req.user._id.toString()) {
             req.flash('error', 'Project cannot be deleted')
-        } else {
-            await Project.deleteOne({ _id: projectId })
-            req.flash('success', 'Project deleted correctly')
+            return res.redirect('back');
         }
-        res.redirect(`/${route}?rowscount=${rowscount}&page=${page}`)
+        if (project.status === 'Processing') {
+            req.flash('error', 'Project cannot be deleted, because it is currently being processed');
+            return res.redirect('back');
+        }
+        await QueueEntry.deleteOne({ project_id: project._id });
+        await gfsDeleteProjectWithFiles(projectId);
+        req.flash('success', 'Project deleted correctly');
+        res.redirect('back');
     } catch (err) {
         // console.log(err)
         await pushLog(err, 'deleteProject', req.user._id);
@@ -401,19 +489,42 @@ const deleteProject = async (req, res) => {
     }
 }
 
-const postUploadStructure = async (req, res, next) => {
+const postUploadStructure = async (req, res) => {
     try {
-        const fileType = req.params.file_type
         const projectId = req.body.project_id
+        if (!mongoose.isValidObjectId(projectId)) {
+            req.flash('error', 'Invalid project id');
+            return res.redirect('/');
+        }
+        const project = await Project.findById(projectId);
+        if (!project) {
+            req.flash('error', 'There is no project with such id');
+            return res.redirect('/home');
+        }
+        if (project.owner_id?.toString() !== req.user._id.toString()) {
+            return res.redirect('/');
+        }
+        if (req.fileNotCorrect) {
+            req.flash('error', req.errorMsg);
+            await gfsDeleteFile(req.file.id);
+            return res.redirect(`/project?id=${projectId}`);
+        }
+        const fileType = req.params.file_type;
+        if (fileType !== 'structure') {
+            await gfsDeleteFile(req.file.id);
+            req.flash('error', 'Cannot upload nothing else than a structure file');
+            return res.redirect(`/project?id=${projectId}`);
+        }
+
         if (!req.file) {
             req.flash('error', 'No file choosen')
             return res.redirect(`/project?id=${projectId}`)
         }
-        const project = await Project.findById(projectId)
-        if (project.owner_id.toString() !== req.user._id.toString())
-            return res.redirect('/')
-        if (project.status !== 'Initial')
-            return res.redirect('/')
+        if (project.status !== 'Initial') {
+            await gfsDeleteFile(req.file.id);
+            req.flash('error', 'Cannot upload file when project status is not "Initial"');
+            return res.redirect('/');
+        }
         let fileToDelete = {
             exists: false
         }
@@ -430,12 +541,11 @@ const postUploadStructure = async (req, res, next) => {
             is_demo: false
         }
 
-        await project.save()
-        res.redirect(`/project?id=${project._id}`)
+        await project.save();
         if (fileToDelete.exists) {
-            req.fileToDeleteId = fileToDelete.id
-            next()
+            await gfsDeleteFile(fileToDelete.id);
         }
+        return res.redirect(`/project?id=${project._id}`)
         
     } catch (err) {
         // console.log(err)
@@ -445,24 +555,41 @@ const postUploadStructure = async (req, res, next) => {
     }
 }
 
-const postSelectDemo = async (req, res, next) => {
+const postSelectDemo = async (req, res) => {
     try {
         const demoId = req.body.demo_id
 
+        if (!mongoose.isValidObjectId(demoId)) {
+            req.flash('error', 'Invalid example id');
+            return res.redirect('/');
+        }
         const projectId = req.body.project_id
-        const project = await Project.findById(projectId)
+        if (!mongoose.isValidObjectId(projectId)) {
+            req.flash('error', 'Invalid project id');
+            return res.redirect('/');
+        }
+        const project = await Project.findById(projectId);
+        if (!project) {
+            req.flash('error', 'There is no project with such id');
+            return res.redirect('/home');
+        }
+        if (project.owner_id?.toString() !== req.user._id.toString()) {
+            return res.redirect('/');
+        }
 
         const demo = await DemoFile.findById(demoId)
+        if (!demo) {
+            req.flash('error', 'There is no example with such id');
+            return res.redirect('/');
+        }
 
-        if (project.owner_id.toString() !== req.user._id.toString())
-            return res.redirect('/')
         if (project.status !== 'Initial')
             return res.redirect('/')
         let fileToDelete = {
             exists: false
         }
         
-        if (project.input.files.structure._doc.hasOwnProperty('filename') && !project.input.files.structure._doc.is_demo) {
+        if (project.input.files?.structure?._doc?.hasOwnProperty('filename') && !project.input.files?.structure?._doc?.is_demo) {
             // deleting previous file
             fileToDelete.exists = true
             fileToDelete.id = project.input.files.structure._doc.file_id
@@ -474,18 +601,17 @@ const postSelectDemo = async (req, res, next) => {
             is_demo: true
         }
 
-        await project.save()
+        await project.save();
 
-        res.redirect(`/project?id=${project._id}`)
         if (fileToDelete.exists) {
-            req.fileToDeleteId = fileToDelete.id
-            next()
+            await gfsDeleteFile(fileToDelete.id);
         }
+        return res.redirect(`/project?id=${project._id}`);
         
     } catch (err) {
         // console.log(err)
         await pushLog(err, 'postSelectDemo', req.user._id);
-        req.flash('error', 'Cannot select demo');
+        req.flash('error', 'Cannot select example');
         return res.redirect('/')
     }
 }
@@ -495,13 +621,34 @@ const getDownloadFile = async (req, res, next) => {
         const projectId = req.params.project_id
         const fileType = req.params.file_type
         if (!mongoose.Types.ObjectId.isValid(projectId))
-            return res.redirect('/')
-        const inputFiles = ['structure', 'energy_min', 'MD_simulation']
-        const outputFiles = ['trajectory', 'residues_indexes']
-        if (!inputFiles.includes(fileType) && !outputFiles.includes(fileType))
-            return res.redirect('/')
+            return res.redirect('/');
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.redirect('/');
+        }
+        if (project.owner_id?.toString() !== req.user._id.toString()) {
+            req.flash('error', 'Cannot find file');
+            return res.redirect('/');
+        }
 
-        const project = await Project.findById(projectId)
+        const inputFiles = ['structure'];
+        const outputFiles = [
+            'trajectory',
+            'energy_potential', 
+            'energy_temperature', 
+            'energy_pressure', 
+            'energy_density', 
+            'md_xtc', 
+            'md_edr', 
+            'md_tpr', 
+            'residues_indexes', 
+            // 'simulation_logs', 
+        ];
+        if (!inputFiles.includes(fileType) && !outputFiles.includes(fileType)) {
+            req.flash('error', 'Cannot find file');
+            return res.redirect('/')
+        }
+
         const _put = inputFiles.includes(fileType) ? 'input' : 'output'
         const fileToDownload = {
             exists: false
@@ -516,8 +663,10 @@ const getDownloadFile = async (req, res, next) => {
         if (fileToDownload.exists) {
             req.fileToDownloadId = fileToDownload.id
             res.attachment(fileToDownload.filename);
-            next()
+            return next();
         }
+        req.flash('error', 'Cannot find file');
+        return res.redirect('/');
 
     } catch (err) {
         // console.log(err)
@@ -527,7 +676,7 @@ const getDownloadFile = async (req, res, next) => {
     }
 }
 
-const getMolstar = async (req, res, next) => {
+const getMolstar = async (req, res) => {
     try {
         const fileType = req.query.filetype
         const projectId = req.query.project
@@ -549,7 +698,15 @@ const getMolstar = async (req, res, next) => {
             return res.redirect('/')
         const structureUrl = `download/file/${projectId}/${fileType}`
 
-        res.render(`general/_molstar`, { serverAddress, projectId, structureUrl, fileType, filename: fileToDisplay.filename })
+        const params = {
+            serverAddress,
+            projectId,
+            structureUrl,
+            fileType,
+            filename: fileToDisplay.filename,
+            backRoute: `/project?id=${projectId}`,
+        };
+        res.render(`general/_molstar`, params);
 
     } catch (err) {
         // console.log(err)
@@ -559,116 +716,44 @@ const getMolstar = async (req, res, next) => {
     }
 }
 
-const postSaveParameters = async (req, res, next) => {
+const postSaveParameters = async (req, res) => {
     try {
-        const projectId = req.body.project_id
-        const project = await Project.findById(projectId)
-        if (project.status !== 'Initial')
-            return res.redirect('/')
-
-        if (project.parameters_default === true && req.body.sim_parameters === 'default') {
-            return res.redirect(`/project?id=${project._id}`)
-        } else if (project.parameters_default === true && req.body.sim_parameters === 'advanced') {
-            if (req.files.energy_min) {
-                let file_energy_min = req.files.energy_min[0]
-                if (file_energy_min.id) {
-                    project.input.files.energy_min = {
-                        file_id: file_energy_min.id,
-                        filename: file_energy_min.filename
-                    }
-                }
+        const projectId = req.body.project_id;
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.redirect('/');
+        }
+        if (project.status !== 'Initial') {
+            return res.redirect('/');
+        }
+        if (project.owner_id.toString() !== req.user._id.toString()) {
+            return res.redirect('/');
+        }
+        let ff_number = parseInt(req.body.force_field);
+        if (ff_number >= 16) {
+            return res.redirect('/');
+        }
+        let wm_number = parseInt(req.body.water_model);
+        if ((ff_number <= 8 && wm_number >= 8) ||
+            (ff_number >= 9 && ff_number <= 14 && wm_number >= 4) ||
+            (ff_number === 15 && wm_number >= 9)) {
+            return res.redirect('/');
+        }
+        project.input.extra = req.body;
+        const error = await project.validateSync();
+        if (error) {
+            Object.entries(error.errors).forEach(([ label, { message } ]) => {
+                req.flash('error', `Wrong ${ label }: ${ message }`)
+            });
+            return res.redirect(`/project?id=${projectId}`)
+        } else {
+            await project.save();
+            if (req.body.request_simulation) {
+                return submitSimulation(req, res);
+            } else {
+                req.flash('success', 'Project saved')
+                return res.redirect(`/project?id=${projectId}`)
             }
-            
-            if (req.files.MD_simulation) {
-                let file_MD_simulation = req.files.MD_simulation[0]
-                if (file_MD_simulation) {
-                    project.input.files.MD_simulation = {
-                        file_id: file_MD_simulation.id,
-                        filename: file_MD_simulation.filename
-                    }
-                }
-            }
-            
-            const gmx2pdb1 = parseInt(req.body.gmx2pdb1)
-            let gmx2pdb2 = -1
-            if (gmx2pdb1 >= 1 && gmx2pdb1 <= 8)
-                gmx2pdb2 = req.body.gmx2pdb2_v1
-            else if (gmx2pdb1 >= 9 && gmx2pdb1 <= 14)
-                gmx2pdb2 = req.body.gmx2pdb2_v2
-            else if (gmx2pdb1 === 15)
-                gmx2pdb2 = req.body.gmx2pdb2_v3
-            project.input.extra.pdb2gmx_params = `${req.body.gmx2pdb1},${gmx2pdb2}`
-            project.input.extra.traj_params = req.body.group_for_output
-            project.input.extra.genion_params = req.body.continuous_group_of_solvent_molecules
-            project.input.extra.spheres_allocation_frame = req.body.spheres_allocation_frame
-            project.input.extra.rmsd_threshold = req.body.rmsd_threshold
-            project.parameters_default = false
-            await project.save()
-            return res.redirect(`/project?id=${project._id}`)
-        } else if (project.parameters_default === false && req.body.sim_parameters === 'default') {
-            const filesIdsToDelete = []
-            if (project.input.files.energy_min.file_id) {
-                filesIdsToDelete.push(project.input.files.energy_min.file_id)
-                project.input.files.energy_min = {}
-            }
-            if (project.input.files.MD_simulation.file_id) {
-                filesIdsToDelete.push(project.input.files.MD_simulation.file_id)
-                project.input.files.MD_simulation = {}
-            }
-            project.input.extra.pdb2gmx_params = ''
-            project.input.extra.traj_params = ''
-            project.input.extra.genion_params = ''
-            project.input.extra.spheres_allocation_frame = ''
-            project.input.extra.rmsd_threshold = ''
-            project.parameters_default = true
-            await project.save()
-            res.redirect(`/project?id=${project._id}`)
-            req.filesIdsToDelete = filesIdsToDelete
-            next()
-        } else if (project.parameters_default === false && req.body.sim_parameters === 'advanced') {
-            const filesIdsToDelete = []
-
-            if (req.body.using_old_energy_min === 'false' && project.input.files.energy_min.file_id) {
-                filesIdsToDelete.push(project.input.files.energy_min.file_id)
-                let file_energy_min = req.files.energy_min[0]
-                project.input.files.energy_min = {}
-                if (file_energy_min.id) {
-                    project.input.files.energy_min = {
-                        file_id: file_energy_min.id,
-                        filename: file_energy_min.filename
-                    }
-                }
-            }
-            
-            if (req.body.using_old_MD_simulation === 'false' && project.input.files.MD_simulation.file_id) {
-                filesIdsToDelete.push(project.input.files.MD_simulation.file_id)
-                let file_MD_simulation = req.files.MD_simulation[0]
-                project.input.files.MD_simulation = {}
-                if (file_MD_simulation) {
-                    project.input.files.MD_simulation = {
-                        file_id: file_MD_simulation.id,
-                        filename: file_MD_simulation.filename
-                    }
-                }
-            }
-            
-            const gmx2pdb1 = parseInt(req.body.gmx2pdb1)
-            let gmx2pdb2 = -1
-            if (gmx2pdb1 >= 1 && gmx2pdb1 <= 8)
-                gmx2pdb2 = req.body.gmx2pdb2_v1
-            else if (gmx2pdb1 >= 9 && gmx2pdb1 <= 14)
-                gmx2pdb2 = req.body.gmx2pdb2_v2
-            else if (gmx2pdb1 === 15)
-                gmx2pdb2 = req.body.gmx2pdb2_v3
-            project.input.extra.pdb2gmx_params = `${req.body.gmx2pdb1},${gmx2pdb2}`
-            project.input.extra.traj_params = req.body.group_for_output
-            project.input.extra.genion_params = req.body.continuous_group_of_solvent_molecules
-            project.input.extra.spheres_allocation_frame = req.body.spheres_allocation_frame
-            project.input.extra.rmsd_threshold = req.body.rmsd_threshold
-            await project.save()
-            res.redirect(`/project?id=${project._id}`)
-            req.filesIdsToDelete = filesIdsToDelete
-            next()
         }
     } catch (err) {
         // console.log(err)
@@ -678,32 +763,62 @@ const postSaveParameters = async (req, res, next) => {
     }
 }
 
-const postSubmitSimulation = async (req, res) => {
+const submitSimulation = async (req, res) => {
     try {
         const projectId = req.body.project_id
         const project = await Project.findById(projectId)
-        if (project.status !== 'Initial')
-            return res.redirect('/')
         if (!project.input.files.structure.filename) {
-            req.flash('error', 'Cannot request simulation with no structure file. You can find demo structures here under "Molecular Structure" -> "Change file.." -> "Select Demo" -> "Select"')
+            req.flash('error', 'Cannot request simulation with no structure file. You can find example structures here under "Molecular Structure" -> "Change file.." -> "Example" -> "Select"')
             return res.redirect(`/project?id=${projectId}`)
         }
-        project.waiting_since = new Date()
-        project.status = 'Waiting'
-        await project.save()
-        await fetch(queueManagerUrl, {
-            method: 'POST',
-            body: JSON.stringify({
-                project_id: projectId
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
-        res.redirect('/projects?rowscount=5&page=1')
+        const now = Date.now();
+        project.waiting_since = now;
+        project.status = 'Waiting';
+        
+        // parameters validation
+
+        let force_field = parseInt(project.input.extra.force_field);
+        let water_model = parseInt(project.input.extra.water_model);
+        let simulation_length = parseInt(project.input.extra.simulation_length);
+        let saving_step = parseInt(project.input.extra.saving_step);
+        let spheres_allocation_frame = parseInt(project.input.extra.spheres_allocation_frame);
+        let rmsd_threshold = parseInt(project.input.extra.spheres_allocation_frame);
+
+        if ((force_field <= 0 || force_field >= 16) ||
+            (water_model <= 0 || water_model >= 9) ||
+            (force_field <= 8 && water_model >= 8) ||
+            (force_field >= 9 && force_field <= 14 && water_model >= 4) ||
+            (force_field === 15 && water_model >= 9) ||
+            (simulation_length < 0 || simulation_length > 15) ||
+            (saving_step !== 2500 && saving_step !== 1250) ||
+            (spheres_allocation_frame < 0) ||
+            (rmsd_threshold < 0 || rmsd_threshold > 100) 
+        ) {
+            req.flash('error', 'Project parameters are wrong');
+            return res.redirect(`/project?id=${projectId}`);
+        }
+        const error = await project.validateSync();
+
+        if (error) {
+            Object.entries(error.errors).forEach(([ label, { message } ]) => {
+                req.flash('error', `Wrong ${ label }: ${ message }`)
+            });
+            return res.redirect(`/project?id=${projectId}`)
+        }
+        await project.save();
+        
+        const queueEntry = new QueueEntry({
+            project_id: projectId,
+            created: now,
+        });
+
+        await queueEntry.save();
+
+        req.flash('success', 'Simulation requested successfully')
+        return res.redirect(`/project?id=${projectId}`)
     } catch (err) {
         // console.log(err)
-        await pushLog(err, 'postSubmitSimulation', req.user._id);
+        await pushLog(err, 'submitSimulation', req.user._id);
         req.flash('error', 'Error while submitting simulation');
         return res.redirect('/')
     }
@@ -711,20 +826,21 @@ const postSubmitSimulation = async (req, res) => {
 
 const postNotifyUser = async (req, res) => {
     try {
-        const projectId = req.body.project_id
-        const simulationStatus = req.body.sim_status
-        const project = await Project.findById(projectId)
-        const user = await User.findById(project.owner_id)
+        const projectId = req.body.project_id;
+        const simulationStatus = req.body.sim_status;
+        const project = await Project.findById(projectId);
 
-        req.body._id = project.owner_id;
-        // console.log(user.username, user.email, projectId, simulationStatus)
-        
-        sendNotificationSimFinished(user.username, user.email, projectId, simulationStatus)
-        
-        return res.sendStatus(200)
+        if (project.owner_id) {
+            const user = await User.findById(project.owner_id)
+            sendNotificationSimFinished(user.username, user.email, projectId, simulationStatus);
+        } else if (project.guest_email) {
+            sendNotificationGuestSimFinished(project.guest_email, projectId, simulationStatus);
+        }
+
+        return res.sendStatus(200);
     } catch (err) {
         // console.log(err)
-        await pushLog(err, 'postNotifyUser', req.body._id);
+        await pushLog(err, 'postNotifyUser');
         res.sendStatus(500)
     }
 }
@@ -740,6 +856,7 @@ module.exports = {
     logout,
     postNewProject,
     getProject,
+    getProjectResults,
     postEditDescription,
     deleteProject,
     postUploadStructure,
@@ -749,7 +866,6 @@ module.exports = {
     getMolstar,
 
     postSaveParameters,
-    postSubmitSimulation,
 
     postNotifyUser,
 }

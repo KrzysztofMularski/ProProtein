@@ -60,7 +60,7 @@
                 padding: 10px 33px;
             }
 
-            #return_link {
+            .return_link {
                 display: flex;
                 color: white;
                 background-color: rgba(107, 114, 128, 1);
@@ -73,9 +73,10 @@
                 font-size: 16px;
                 align-items: center;
                 justify-content: center;
+                text-align: center;
             }
 
-            #return_link:hover {
+            .return_link:hover {
                 background-color: rgba(75, 85, 99, 1);
             }
 
@@ -109,7 +110,7 @@
                 <span class="filename text-xl">Structure File:</span>
                 <span class="filename"><%= filename %></span>
                 <div id="buttons">
-                    <a id="return_link" href="/project?id=<%= projectId %>">Back to project</a>
+                    <a class="return_link" href="<%= backRoute %>">Go back</a>
                     <% if (fileType === 'trajectory') { %>
                         <button id="coloring_button" onclick="toggleColoring()">Coloring</button>
                     <% } %>
@@ -123,17 +124,17 @@
             const structure_url = '<%= structureUrl %>'
             const server_address = '<%= serverAddress %>'
             const file_type = '<%= fileType %>'
-            const isStructure = file_type === 'structure' ? true : false
-            
+            const isStructure = file_type === 'structure' ? true : false;
+            const isTrajectory = file_type === 'trajectory' ? true : false;
+             
             let isColoring = false
-
 
             BasicMolStarWrapper.init('app');
             BasicMolStarWrapper.setBackground(0xffffff);
-
+            // BasicMolStarWrapper.load({ url: 'https://files.rcsb.org/download/1AKI.pdb', format: 'pdb' })
             BasicMolStarWrapper.load({ url: `${server_address}/${structure_url}`, format: 'pdb' })
             
-            if (!isStructure) {
+            if (isTrajectory) {
                 const residuesIndexesPath = `download/file/${project_id}/residues_indexes`
                 BasicMolStarWrapper.downloadAndSetResiduesIndexes(`${server_address}/${residuesIndexesPath}`)
             }
@@ -150,7 +151,7 @@
             }
 
             let interval
-            if (!isStructure)
+            if (isTrajectory)
                 interval = setInterval(checkingButtons, 100)
 
             function checkingButtons() {

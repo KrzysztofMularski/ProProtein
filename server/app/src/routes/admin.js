@@ -1,14 +1,15 @@
-const mongoose = require('mongoose')
-const Project = require('../db/models/project')
-const User = require('../db/models/user')
-const FileRaw = require('../db/models/fileRaw')
-const FileTemplateRaw = require('../db/models/fileTemplateRaw')
-const DemoFile = require('../db/models/demoFile')
-const TemplateFile = require('../db/models/templateFile')
-const moment = require('moment')
-const bcrypt = require('bcryptjs')
-const Log = require('../db/models/log')
-const SuperAdmin = require('../db/models/admin')
+const mongoose = require('mongoose');
+// const FileTemplateRaw = require('../db/models/fileTemplateRaw')
+// const TemplateFile = require('../db/models/templateFile')
+const moment = require('moment');
+const bcrypt = require('bcryptjs');
+const Project = require('../db/models/project');
+const User = require('../db/models/user');
+const FileRaw = require('../db/models/fileRaw');
+const DemoFile = require('../db/models/demoFile');
+const Log = require('../db/models/log');
+const SuperAdmin = require('../db/models/admin');
+const QueueEntry = require('../db/models/queueEntry');
 const pushLog = require('../logging')
 
 const getAdminPage = async (req, res) => {
@@ -20,8 +21,9 @@ const getAdminPage = async (req, res) => {
             successes: messages.success,
             usersCount: await User.count(),
             projectsCount: await Project.count(),
-            filesCount: await FileRaw.count() + await FileTemplateRaw.count(),
+            filesCount: await FileRaw.count(),
             logsCount: await Log.count(),
+            queueEntryCount: await QueueEntry.count(),
         }
 
         res.render('general/admin/admin', params);
@@ -49,9 +51,11 @@ const getAdminUsersPage = async (req, res) => {
         const usersProjects = {};
 
         projects.forEach(project => {
-            if (usersProjects[project.owner_id] === undefined)
-                usersProjects[project.owner_id.toString()] = [0, 0, 0, 0, 0];
-            usersProjects[project.owner_id.toString()][projectStatuses[project.status]]++;
+            if (project.owner_id) {
+                if (usersProjects[project.owner_id] === undefined)
+                    usersProjects[project.owner_id.toString()] = [0, 0, 0, 0, 0];
+                usersProjects[project.owner_id.toString()][projectStatuses[project.status]]++;
+            }
         })
         
         const headersInfo = [
@@ -398,8 +402,6 @@ const getAdminProjectDetailsPage = async (req, res) => {
 
         const inputFileTypes = [
             'structure',
-            'energy_min',
-            'MD_simulation',
         ];
 
         const tables = [];
@@ -425,7 +427,6 @@ const getAdminProjectDetailsPage = async (req, res) => {
         headersInfo = [
             ['Parameter Type', 'string', 4],
             ['Value', 'string', 2],
-            ['Is Specified', 'bool', 2],
         ];
 
         tableHeaders = headersInfo.map(e => e[0]);
@@ -433,9 +434,10 @@ const getAdminProjectDetailsPage = async (req, res) => {
         tableColumnSizes = headersInfo.map(e => e[2]);
 
         const parameterTypes = [
-            'pdb2gmx_params',
-            'traj_params',
-            'genion_params',
+            'force_field',
+            'water_model',
+            'simulation_length',
+            'saving_step',
             'spheres_allocation_frame',
             'rmsd_threshold',
         ]
@@ -453,7 +455,6 @@ const getAdminProjectDetailsPage = async (req, res) => {
             tableContent: parameterTypes.map(parameterType => [
                 parameterType,
                 project.input.extra[parameterType],
-                !!project.input.extra[parameterType]
             ]),
         });
 
@@ -470,7 +471,15 @@ const getAdminProjectDetailsPage = async (req, res) => {
 
         const outputFileTypes = [
             'trajectory',
-            'residues_indexes',
+            'energy_potential', 
+            'energy_temperature', 
+            'energy_pressure', 
+            'energy_density', 
+            'md_xtc', 
+            'md_edr', 
+            'md_tpr', 
+            'residues_indexes', 
+            'simulation_logs', 
         ]
 
         tables.push({
@@ -638,18 +647,23 @@ const postAdminProjectEditFiles = async (req, res, next) => {
 
         const demos = await DemoFile.find();
         const demosIDs = demos.map(demo => demo.file_id.toString());
-        const templates = (await TemplateFile.find()).filter(template => template.file_id);;
-        const templatesIDs = templates.map(template => template.file_id.toString());
-        const dtIDs = [...demosIDs, ...templatesIDs];
+        // const templates = (await TemplateFile.find()).filter(template => template.file_id);;
+        // const templatesIDs = templates.map(template => template.file_id.toString());
 
         const files_to_delete = [];
 
         const file_types_map = {
             'structure': 'input',
-            'energy_min': 'input',
-            'MD_simulation': 'input',
             'trajectory': 'output',
-            'residues_indexes': 'output'
+            'energy_potential': 'output', 
+            'energy_temperature': 'output', 
+            'energy_pressure': 'output', 
+            'energy_density': 'output', 
+            'md_xtc': 'output', 
+            'md_edr': 'output', 
+            'md_tpr': 'output', 
+            'residues_indexes': 'output', 
+            'simulation_logs': 'output', 
         }
 
         Object.entries(file_types_map).forEach(async ([file_type, _put]) => {
@@ -658,7 +672,7 @@ const postAdminProjectEditFiles = async (req, res, next) => {
                 if (option === 'delete' || option === 'demo' || (option === 'file' && req.files[`${file_type}_file`].length === 1)) {
                     const current_file_id = project[_put].files[file_type]?.file_id?.toString();
                     if (current_file_id) {
-                        if (!dtIDs.includes(current_file_id)) {
+                        if (!demosIDs.includes(current_file_id)) {
                             files_to_delete.push(current_file_id);
                         }
                         project[_put].files[file_type] = {};
@@ -775,18 +789,24 @@ const deleteAdminProject = async (req, res, next) => {
 
         const demos = await DemoFile.find();
         const demosIDs = demos.map(demo => demo.file_id.toString());
-        const templates = (await TemplateFile.find()).filter(template => template.file_id);;
-        const templatesIDs = templates.map(template => template.file_id.toString());
+        // const templates = (await TemplateFile.find()).filter(template => template.file_id);;
+        // const templatesIDs = templates.map(template => template.file_id.toString());
         
         let fileIds = [
             project.input.files.structure?.file_id?.toString(),
-            project.input.files.energy_min?.file_id?.toString(),
-            project.input.files.MD_simulation?.file_id?.toString(),
             project.output.files.trajectory?.file_id?.toString(),
-            project.output.files.residues_indexes?.file_id?.toString()
+            project.output.files.energy_potential?.file_id?.toString(),
+            project.output.files.energy_temperature?.file_id?.toString(),
+            project.output.files.energy_pressure?.file_id?.toString(),
+            project.output.files.energy_density?.file_id?.toString(),
+            project.output.files.md_xtc?.file_id?.toString(),
+            project.output.files.md_edr?.file_id?.toString(),
+            project.output.files.md_tpr?.file_id?.toString(),
+            project.output.files.residues_indexes?.file_id?.toString(),
+            project.output.files.simulation_logs?.file_id?.toString(),
         ];
 
-        fileIds = fileIds.filter(fileId => fileId !== undefined && ![...demosIDs, ...templatesIDs].includes(fileId));
+        fileIds = fileIds.filter(fileId => fileId !== undefined && !demosIDs.includes(fileId));
 
         await project.remove();
 
@@ -812,9 +832,9 @@ const getAdminFilesPage = async (req, res) => {
 
         const demos = await DemoFile.find();
         const demosIDs = demos.map(demo => demo.file_id.toString());
-        let templates = await TemplateFile.find();
-        templates = templates.filter(template => template.file_id);
-        const templatesIDs = templates.map(template => template.file_id.toString());
+        // let templates = await TemplateFile.find();
+        // templates = templates.filter(template => template.file_id);
+        // const templatesIDs = templates.map(template => template.file_id.toString());
         let files = await FileRaw.find();
         files = files.filter(file => !demosIDs.includes(file._id.toString()));        
 
@@ -824,12 +844,18 @@ const getAdminFilesPage = async (req, res) => {
 
             let fileIds = [
                 project.input.files.structure?.file_id?.toString(),
-                project.input.files.energy_min?.file_id?.toString(),
-                project.input.files.MD_simulation?.file_id?.toString(),
                 project.output.files.trajectory?.file_id?.toString(),
-                project.output.files.residues_indexes?.file_id?.toString()
+                project.output.files.energy_potential?.file_id?.toString(),
+                project.output.files.energy_temperature?.file_id?.toString(),
+                project.output.files.energy_pressure?.file_id?.toString(),
+                project.output.files.energy_density?.file_id?.toString(),
+                project.output.files.md_xtc?.file_id?.toString(),
+                project.output.files.md_edr?.file_id?.toString(),
+                project.output.files.md_tpr?.file_id?.toString(),
+                project.output.files.residues_indexes?.file_id?.toString(),
+                project.output.files.simulation_logs?.file_id?.toString(),
             ];
-            fileIds = fileIds.filter(fileId => fileId !== undefined && ![...demosIDs, ...templatesIDs].includes(fileId));
+            fileIds = fileIds.filter(fileId => fileId !== undefined && !demosIDs.includes(fileId));
 
             return [
                 project._id.toString(),
@@ -842,6 +868,9 @@ const getAdminFilesPage = async (req, res) => {
         const filesProjectsMap = {};
 
         projectsFilesMap.forEach(e => e[1].forEach(ee => filesProjectsMap[ee] = e[0] ));
+
+        // filesProjectsMap is list of all files in use
+        // if multiple projects refers to same file, only last project is "the owner" and will be seen later
         
         const headersInfo = [
             ['ID', 'string', 4],
@@ -932,11 +961,18 @@ const deleteAdminFile = async (req, res, next) => {
 
             let fileIds = [
                 project.input.files.structure?.file_id?.toString(),
-                project.input.files.energy_min?.file_id?.toString(),
-                project.input.files.MD_simulation?.file_id?.toString(),
                 project.output.files.trajectory?.file_id?.toString(),
-                project.output.files.residues_indexes?.file_id?.toString()
+                project.output.files.energy_potential?.file_id?.toString(),
+                project.output.files.energy_temperature?.file_id?.toString(),
+                project.output.files.energy_pressure?.file_id?.toString(),
+                project.output.files.energy_density?.file_id?.toString(),
+                project.output.files.md_xtc?.file_id?.toString(),
+                project.output.files.md_edr?.file_id?.toString(),
+                project.output.files.md_tpr?.file_id?.toString(),
+                project.output.files.residues_indexes?.file_id?.toString(),
+                project.output.files.simulation_logs?.file_id?.toString(),
             ];
+
             fileIds = fileIds.filter(fileId => fileId !== undefined);
 
             return [
@@ -1068,10 +1104,16 @@ const deleteAdminDemoFile = async (req, res, next) => {
 
             let fileIds = [
                 project.input.files.structure?.file_id?.toString(),
-                project.input.files.energy_min?.file_id?.toString(),
-                project.input.files.MD_simulation?.file_id?.toString(),
                 project.output.files.trajectory?.file_id?.toString(),
-                project.output.files.residues_indexes?.file_id?.toString()
+                project.output.files.energy_potential?.file_id?.toString(),
+                project.output.files.energy_temperature?.file_id?.toString(),
+                project.output.files.energy_pressure?.file_id?.toString(),
+                project.output.files.energy_density?.file_id?.toString(),
+                project.output.files.md_xtc?.file_id?.toString(),
+                project.output.files.md_edr?.file_id?.toString(),
+                project.output.files.md_tpr?.file_id?.toString(),
+                project.output.files.residues_indexes?.file_id?.toString(),
+                project.output.files.simulation_logs?.file_id?.toString(),
             ];
             fileIds = fileIds.filter(fileId => fileId !== undefined);
 
@@ -1122,191 +1164,191 @@ const postAdminDemoUpload = async (req, res) => {
     }
 }
 
-const getAdminFilesTemplatesPage = async (req, res) => {
-    try {
-        const messages = req.flash();
+// const getAdminFilesTemplatesPage = async (req, res) => {
+//     try {
+//         const messages = req.flash();
+//
+//         const templates = await TemplateFile.find();
+//
+//         const onlyFiles = templates.filter(template => template.file_id);
+//
+//         const templatesFilesIDs = onlyFiles.map(template => template.file_id.toString());
+//         const templateFiles = await FileTemplateRaw.find({ _id: templatesFilesIDs });
+//         const templateFilesTypesMap = {};
+//         onlyFiles.forEach(entry => {
+//             templateFilesTypesMap[entry.file_id.toString()] = entry.template_type;
+//         });
+//
+//         const parameter_types = [
+//             'pdb2gmx_params',
+//             'traj_params',
+//             'genion_params',
+//         ];
+//
+//         const templateValues = templates.filter(template => {
+//             return parameter_types.includes(template.template_type);
+//         });
+//
+//         // Two tables on page
+//         const tables = [];
+//
+//         // Template Files Table
+//         let headersInfo = [
+//             ['ID', 'string', 4],
+//             ['Template Type', 'string', 4],
+//             ['Filename', 'string', 4],
+//             ['Length', 'string', 3],
+//             ['Upload Time', 'string', 3],
+//             ['Content Type', 'string', 4],
+//         ];
+//
+//         let tableHeaders = headersInfo.map(e => e[0]);
+//         let tableHeadersTypes = headersInfo.map(e => e[1]);
+//         let tableColumnSizes = headersInfo.map(e => e[2]);
+//
+//         tables.push({
+//             tableName: 'Template Files',
+//             tableHeaders,
+//             tableHeadersTypes,
+//             tableColumnSizes,
+//             showDetailsButton: false,
+//             showDownloadButton: true,
+//             showDeleteButton: true,
+//             detailsRoute: '',
+//             downloadRoute: '/admin/download',
+//             deleteRoute: '/admin/files/templates/delete',
+//             afterDeleteRoute: '/admin/files/templates',
+//             tableContent: templateFiles.map(file => [
+//                 file._id,
+//                 templateFilesTypesMap[file._id.toString()],
+//                 file.filename,
+//                 file.length,
+//                 moment(file.uploadDate).format('ll'),
+//                 file.contentType,
+//             ])
+//         });
+//
+//         // Template Values Table
+//         headersInfo = [
+//             ['ID', 'string', 4],
+//             ['Template Type', 'string', 4],
+//             ['Content', 'string', 2],
+//         ];
+//
+//         tableHeaders = headersInfo.map(e => e[0]);
+//         tableHeadersTypes = headersInfo.map(e => e[1]);
+//         tableColumnSizes = headersInfo.map(e => e[2]);
+//         
+//         tables.push({
+//             tableName: 'Template Values',
+//             tableHeaders,
+//             tableHeadersTypes,
+//             tableColumnSizes,
+//             showDetailsButton: false,
+//             showDownloadButton: false,
+//             detailsRoute: '',
+//             downloadRoute: '',
+//             tableLength: 0.5,
+//             tableContent: templateValues.map(entry => [
+//                 entry._id,
+//                 entry.template_type,
+//                 entry.content,
+//             ])
+//         });
+//
+//         const templateParamsMap = templateValues.map(val => [val.template_type, val.content]);
+//
+//         const params = {
+//             selected: 'files',
+//             selectedTab: 'templates',
+//             errors: messages.error,
+//             successes: messages.success,
+//             tables,
+//             templateParamsMap,
+//             renderingAllTablesAtOnce: true
+//         };
+//
+//         res.render('general/admin/files', params);
+//
+//     } catch (err) {
+//         // console.log(err);
+//         await pushLog(err, 'getAdminFilesTemplatesPage');
+//         req.flash('error', 'Error');
+//         return res.redirect('/admin/files');
+//     }
+// }
 
-        const templates = await TemplateFile.find();
+// const deleteAdminTemplateFile = async (req, res, next) => {
+//     try {
+//         const file_id = req.params.file_id;
+//         if (!mongoose.Types.ObjectId.isValid(file_id)) {
+//             req.flash('error', `No file found with such ID: ${file_id}`);
+//             return res.redirect('/admin/files/templates');
+//         }
+//
+//         const template = await TemplateFile.findOne({ file_id });
+//
+//         if (!template) {
+//             req.flash('error', `No file found with such ID: ${file_id}`);
+//             return res.redirect('/admin/files/templates');
+//         }
+//
+//         const file = await FileTemplateRaw.findById(file_id);
+//         if (!file) {
+//             req.flash('error', `No file found with such ID: ${file_id}`);
+//             await pushLog(err, 'deleteAdminTemplateFile', req.user._id);
+//             return res.redirect('/admin/files/templates');
+//         }
+//
+//         req.params.file_bucket = 'template_files';
+//         await template.remove();
+//         return next();
+//
+//     } catch (err) {
+//         // console.log(err);
+//         await pushLog(err, 'deleteAdminTemplateFile');
+//         req.flash('error', 'Error');
+//         return res.redirect('/admin/files/templates');
+//     }
+// }
 
-        const onlyFiles = templates.filter(template => template.file_id);
+// const postAdminTemplateUpload = async (req, res) => {
+//     try {
+//         const template_type = req.body.template_type;
+//
+//         let newTemplate = new TemplateFile({
+//             file_id: mongoose.Types.ObjectId(req.file.id),
+//             template_type
+//         })
+//
+//         await newTemplate.save();
+//         req.flash('success', 'Successfully uploaded new template file');
+//         return res.redirect('/admin/files/templates');
+//
+//     } catch (err) {
+//         // console.log(err);
+//         await pushLog(err, 'postAdminTemplateUpload');
+//         req.flash('error', 'Error');
+//         return res.redirect('/admin/files/templates');
+//     }
+// }
 
-        const templatesFilesIDs = onlyFiles.map(template => template.file_id.toString());
-        const templateFiles = await FileTemplateRaw.find({ _id: templatesFilesIDs });
-        const templateFilesTypesMap = {};
-        onlyFiles.forEach(entry => {
-            templateFilesTypesMap[entry.file_id.toString()] = entry.template_type;
-        });
-
-        const parameter_types = [
-            'pdb2gmx_params',
-            'traj_params',
-            'genion_params',
-        ];
-
-        const templateValues = templates.filter(template => {
-            return parameter_types.includes(template.template_type);
-        });
-
-        // Two tables on page
-        const tables = [];
-
-        // Template Files Table
-        let headersInfo = [
-            ['ID', 'string', 4],
-            ['Template Type', 'string', 4],
-            ['Filename', 'string', 4],
-            ['Length', 'string', 3],
-            ['Upload Time', 'string', 3],
-            ['Content Type', 'string', 4],
-        ];
-
-        let tableHeaders = headersInfo.map(e => e[0]);
-        let tableHeadersTypes = headersInfo.map(e => e[1]);
-        let tableColumnSizes = headersInfo.map(e => e[2]);
-
-        tables.push({
-            tableName: 'Template Files',
-            tableHeaders,
-            tableHeadersTypes,
-            tableColumnSizes,
-            showDetailsButton: false,
-            showDownloadButton: true,
-            showDeleteButton: true,
-            detailsRoute: '',
-            downloadRoute: '/admin/download',
-            deleteRoute: '/admin/files/templates/delete',
-            afterDeleteRoute: '/admin/files/templates',
-            tableContent: templateFiles.map(file => [
-                file._id,
-                templateFilesTypesMap[file._id.toString()],
-                file.filename,
-                file.length,
-                moment(file.uploadDate).format('ll'),
-                file.contentType,
-            ])
-        });
-
-        // Template Values Table
-        headersInfo = [
-            ['ID', 'string', 4],
-            ['Template Type', 'string', 4],
-            ['Content', 'string', 2],
-        ];
-
-        tableHeaders = headersInfo.map(e => e[0]);
-        tableHeadersTypes = headersInfo.map(e => e[1]);
-        tableColumnSizes = headersInfo.map(e => e[2]);
-        
-        tables.push({
-            tableName: 'Template Values',
-            tableHeaders,
-            tableHeadersTypes,
-            tableColumnSizes,
-            showDetailsButton: false,
-            showDownloadButton: false,
-            detailsRoute: '',
-            downloadRoute: '',
-            tableLength: 0.5,
-            tableContent: templateValues.map(entry => [
-                entry._id,
-                entry.template_type,
-                entry.content,
-            ])
-        });
-
-        const templateParamsMap = templateValues.map(val => [val.template_type, val.content]);
-
-        const params = {
-            selected: 'files',
-            selectedTab: 'templates',
-            errors: messages.error,
-            successes: messages.success,
-            tables,
-            templateParamsMap,
-            renderingAllTablesAtOnce: true
-        };
-
-        res.render('general/admin/files', params);
-
-    } catch (err) {
-        // console.log(err);
-        await pushLog(err, 'getAdminFilesTemplatesPage');
-        req.flash('error', 'Error');
-        return res.redirect('/admin/files');
-    }
-}
-
-const deleteAdminTemplateFile = async (req, res, next) => {
-    try {
-        const file_id = req.params.file_id;
-        if (!mongoose.Types.ObjectId.isValid(file_id)) {
-            req.flash('error', `No file found with such ID: ${file_id}`);
-            return res.redirect('/admin/files/templates');
-        }
-
-        const template = await TemplateFile.findOne({ file_id });
-
-        if (!template) {
-            req.flash('error', `No file found with such ID: ${file_id}`);
-            return res.redirect('/admin/files/templates');
-        }
-
-        const file = await FileTemplateRaw.findById(file_id);
-        if (!file) {
-            req.flash('error', `No file found with such ID: ${file_id}`);
-            await pushLog(err, 'deleteAdminTemplateFile', req.user._id);
-            return res.redirect('/admin/files/templates');
-        }
-
-        req.params.file_bucket = 'template_files';
-        await template.remove();
-        return next();
-
-    } catch (err) {
-        // console.log(err);
-        await pushLog(err, 'deleteAdminTemplateFile');
-        req.flash('error', 'Error');
-        return res.redirect('/admin/files/templates');
-    }
-}
-
-const postAdminTemplateUpload = async (req, res) => {
-    try {
-        const template_type = req.body.template_type;
-
-        let newTemplate = new TemplateFile({
-            file_id: mongoose.Types.ObjectId(req.file.id),
-            template_type
-        })
-
-        await newTemplate.save();
-        req.flash('success', 'Successfully uploaded new template file');
-        return res.redirect('/admin/files/templates');
-
-    } catch (err) {
-        // console.log(err);
-        await pushLog(err, 'postAdminTemplateUpload');
-        req.flash('error', 'Error');
-        return res.redirect('/admin/files/templates');
-    }
-}
-
-const postAdminTemplateEdit = async (req, res) => {
-    try {
-        Object.entries(req.body).forEach(async ([key, value]) => {
-            const param = await TemplateFile.findOne({ template_type: key });
-            param.content = value;
-            await param.save();
-        });
-        req.flash('success', 'Successfully changed template parameters');
-        return res.redirect('/admin/files/templates');
-    } catch (err) {
-        // console.log(err);
-        await pushLog(err, 'postAdminTemplateEdit');
-        req.flash('error', 'Error');
-        return res.redirect('/admin/files/templates');
-    }
-}
+// const postAdminTemplateEdit = async (req, res) => {
+//     try {
+//         Object.entries(req.body).forEach(async ([key, value]) => {
+//             const param = await TemplateFile.findOne({ template_type: key });
+//             param.content = value;
+//             await param.save();
+//         });
+//         req.flash('success', 'Successfully changed template parameters');
+//         return res.redirect('/admin/files/templates');
+//     } catch (err) {
+//         // console.log(err);
+//         await pushLog(err, 'postAdminTemplateEdit');
+//         req.flash('error', 'Error');
+//         return res.redirect('/admin/files/templates');
+//     }
+// }
 
 const getAdminLogsPage = async (req, res) => {
     try {
@@ -1390,6 +1432,112 @@ const deleteAdminLog = async (req, res) => {
     }
 }
 
+const getAdminQueuePage = async (req, res) => {
+    try {
+        const messages = req.flash();
+        const queueEntries = await QueueEntry
+            .find()
+            .sort({ created: 'asc' })
+            .populate({ path: 'project_id', model: Project });
+
+        
+        const headersInfo = [
+            ['ID', 'string', 2],
+            ['Guest/Regular', 'string', 2],
+            ['Status', 'status', 3],
+            ['Owner ID', 'link_0', 3],
+            ['Project ID', 'link_1', 3],
+            ['Status changed', 'string', 3],
+        ];
+
+        const links = [
+            '/admin/users',
+            '/admin/projects'
+        ];
+
+        const tableHeaders = headersInfo.map(e => e[0]);
+        const tableHeadersTypes = headersInfo.map(e => e[1]);
+        const tableColumnSizes = headersInfo.map(e => e[2]);
+
+        const statusColors = {
+            'Initial': 'green',
+            'Waiting': 'blue',
+            'Processing': 'purple',
+            'Finished': 'gray',
+            'Error': 'red',
+        };
+
+        const tables = [{
+            detailsRoute: '',
+            downloadRoute: '',
+            deleteRoute: '/admin/queue/delete',
+            tableHeaders,
+            tableHeadersTypes,
+            tableColumnSizes,
+            showDetailsButton: false,
+            showDownloadButton: false,
+            showDeleteButton: true,
+            links,
+            statusColors,
+            tableContent: queueEntries.map(qe => [
+                qe._id,
+                qe.project_id.owner_id ? 'Regular' : 'Guest',
+                qe.project_id.status,
+                qe.project_id.owner_id,
+                qe.project_id._id,
+                moment(qe.project_id.status === "Waiting" ? qe.project_id.waiting_since : qe.project_id.processing_since).format('lll'),
+            ])
+        }];
+
+        const params = {
+            selected: 'queue',
+            errors: messages.error,
+            successes: messages.success,
+            tables,
+            renderingAllTablesAtOnce: true,
+        }
+
+        res.render('general/admin/queue', params);
+
+    } catch (err) {
+        // console.log(err);
+        await pushLog(err, 'getAdminQueuePage');
+        req.flash('error', 'Error while loading queue');
+        return res.redirect('/admin');
+    }
+}
+
+const deleteAdminQueueEntry = async (req, res) => {
+    try {
+        const queue_entry_id = req.params.queue_entry_id;
+        if (!mongoose.Types.ObjectId.isValid(queue_entry_id)) {
+            req.flash('error', `No queue entry found with such ID: ${queue_entry_id}`);
+            return res.redirect('/admin/queue');
+        }
+        const queue_entry = await QueueEntry
+            .findById(queue_entry_id)
+            .populate({ path: "project_id", model: Project });
+
+        if (!queue_entry) {
+            req.flash('error', `No queue entry found with such ID: ${queue_entry_id}`);
+            return res.redirect('/admin/queue');
+        }
+        if (queue_entry.project_id.status === 'Processing') {
+            req.flash('error', 'Cannot delete queue entry, because simulation is being currently processing');
+            return res.redirect('/admin/queue');
+        }
+
+        await QueueEntry.deleteOne({ _id: firstEntry._id });
+        req.flash('success', 'Queue entry successfully deleted');
+        res.redirect('/admin/queue');
+    } catch (err) {
+        // console.log(err);
+        await pushLog(err, 'deleteAdminQueueEntry');
+        req.flash('error', 'Error while deleting queue entry');
+        return res.redirect('/admin');
+    }
+}
+
 // const getAdminMakeSuperAdmin = async (req, res) => {
 //     try {
 //         const user_id = req.user._id;
@@ -1459,13 +1607,16 @@ module.exports = {
     deleteAdminDemoFile,
     postAdminDemoUpload,
     
-    getAdminFilesTemplatesPage,
-    deleteAdminTemplateFile,
-    postAdminTemplateUpload,
-    postAdminTemplateEdit,
+    // getAdminFilesTemplatesPage,
+    // deleteAdminTemplateFile,
+    // postAdminTemplateUpload,
+    // postAdminTemplateEdit,
 
     getAdminLogsPage,
     deleteAdminLog,
+
+    getAdminQueuePage,
+    deleteAdminQueueEntry,
 
     // getAdminMakeSuperAdmin,
     // getAdminConsoleLogSuperAdmin,

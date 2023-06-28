@@ -17,7 +17,6 @@
         <div class="flex flex-row gap-4">
             <a href="/admin/files" class="hover:text-gray-900 hover:border-b-2 hover:border-gray-900 <%= selectedTab === '' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500' %>">User files</a>
             <a href="/admin/files/demos" class="hover:text-gray-900 hover:border-b-2 hover:border-gray-900 <%= selectedTab === 'demos' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500' %>">Demos</a>
-            <a href="/admin/files/templates" class="hover:text-gray-900 hover:border-b-2 hover:border-gray-900 <%= selectedTab === 'templates' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500' %>">Templates</a>
         </div>
 
         <!-- action buttons -->
@@ -35,19 +34,6 @@
                     <%- include('components/icons/upload.svg') %>
                 </div>
                 <p>Upload new Demo File</p>
-            </button>
-            <% } else if (selectedTab === 'templates') { %>
-            <button onclick="toggleModalUploadTemplate()" class="flex flex-row gap-2 cursor-pointer items-center bg-blue-500 self-start px-4 py-2 text-white rounded-xl -mb-4 hover:bg-blue-600">
-                <div class="w-6">
-                    <%- include('components/icons/upload.svg') %>
-                </div>
-                <p>Upload new Template File</p>
-            </button>
-            <button onclick="toggleModalChangeParameters()" class="flex flex-row gap-2 cursor-pointer items-center bg-blue-500 self-start px-4 py-2 text-white rounded-xl -mb-4 hover:bg-blue-600">
-                <div class="w-6">
-                    <%- include('components/icons/change.svg') %>
-                </div>
-                <p>Change Template Parameters</p>
             </button>
             <% } %>
         </div>
@@ -110,83 +96,6 @@
 
             </form>
         </div>
-        <% } else if (selectedTab === 'templates') { %>
-        <!-- upload template file modal -->
-        <div id="modal_upload_template" class="hidden place-items-center bg-gray-500 fixed top-0 right-0 left-0 w-full h-full bg-opacity-50">
-            <form action="/admin/files/templates/upload" method="post" enctype="multipart/form-data" class="bg-gray-200 px-12 py-10 relative rounded-xl flex flex-col gap-6">
-                
-                <div class="w-4 text-gray-400 absolute top-4 right-4 cursor-pointer" onclick="toggleModalUploadTemplate()">
-                    <%- include('components/icons/cross.svg') %>
-                </div>
-
-                <div class="w-16 text-blue-500 self-center">
-                    <%- include('components/icons/upload.svg') %>
-                </div>
-
-                <p class="text-lg text-center">Upload new Template File</p>
-
-                <div class="grid grid-cols-[120px_300px] items-center gap-y-2">
-
-                    <label for="template_type">File type</label>
-                    <select name="template_type" id="template_type" class="p-2 rounded-lg bg-white">
-                        <option value="energy_min">energy_min</option>
-                        <option value="MD_simulation">MD_simulation</option>
-                    </select>
-
-                    <label for="file">Template File</label>
-                    <input type="file" name="file" class="bg-white cursor-pointer p-1 rounded-lg">
-                </div>
-
-
-                <div class="flex flex-row gap-2">
-
-                    <button type="submit" class="flex flex-row w-full cursor-pointer bg-blue-500 px-4 py-2 text-white rounded-xl hover:bg-blue-600 justify-center">
-                        Upload Template File
-                    </button>
-
-                    <button type="button" onclick="toggleModalUploadTemplate()" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
-                        Cancel
-                    </button>
-                </div>
-
-            </form>
-        </div>
-        <!-- change template parameters modal -->
-        <div id="modal_change_parameters" class="hidden place-items-center bg-gray-500 fixed top-0 right-0 left-0 w-full h-full bg-opacity-50">
-            <form action="/admin/files/templates/edit" method="post" class="bg-gray-200 px-12 py-10 relative rounded-xl flex flex-col gap-6">
-                
-                <div class="w-4 text-gray-400 absolute top-4 right-4 cursor-pointer" onclick="toggleModalChangeParameters()">
-                    <%- include('components/icons/cross.svg') %>
-                </div>
-
-                <div class="w-16 text-blue-500 self-center">
-                    <%- include('components/icons/change.svg') %>
-                </div>
-
-                <p class="text-lg text-center">Change Parameters</p>
-
-                <div class="grid grid-cols-[200px_100px] items-center gap-y-2">
-
-                    <% templateParamsMap.forEach(([t_type, content]) => { %>
-                        <label for="<%= t_type %>" class="text-md"><%= t_type %></label>
-                        <input type="<%= t_type %>" name="<%= t_type %>" id="<%= t_type %>" value="<%= content %>" class="p-2 rounded-lg">
-                    <% }) %>
-
-                </div>
-
-                <div class="flex flex-row gap-2">
-
-                    <button type="submit" class="flex flex-row w-full cursor-pointer bg-blue-500 px-4 py-2 text-white rounded-xl hover:bg-blue-600 justify-center">
-                        Save Changes
-                    </button>
-
-                    <button type="button" onclick="toggleModalChangeParameters()" class="flex flex-row w-full cursor-pointer bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 justify-center">
-                        Cancel
-                    </button>
-                </div>
-
-            </form>
-        </div>
         <% } %>
 
         <%- include('components/table.ejs') %>
@@ -205,19 +114,6 @@
             modal_upload_demo.classList.toggle('hidden');
             modal_upload_demo.classList.toggle('grid');
         }
-
-        const toggleModalUploadTemplate = () => {
-            const modal_upload_template = document.getElementById('modal_upload_template');
-            modal_upload_template.classList.toggle('hidden');
-            modal_upload_template.classList.toggle('grid');
-        }
-
-        const toggleModalChangeParameters = () => {
-            const modal_change_parameters = document.getElementById('modal_change_parameters');
-            modal_change_parameters.classList.toggle('hidden');
-            modal_change_parameters.classList.toggle('grid');
-        }
-
 
     </script>
 

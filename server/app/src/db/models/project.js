@@ -14,17 +14,25 @@ const structureFileHelperSchema = new mongoose.Schema({
 const projectSchema = new mongoose.Schema({
     owner_id: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
+        required: false,
+    },
+    guest_email: {
+        type: String,
+        required: false,
     },
     name: {
         type: String,
         required: true,
-        minLength: [2, 'Project name length cannot be less than 2 characters'],
+        minLength: [1, 'Project name cannot be empty'],
         maxLength: [100, 'Project name length cannot be more than 100 characters']
     },
     status: {
         type: String,
         enum: ['Initial', 'Waiting', 'Processing', 'Finished', 'Error']
+    },
+    error_msg: {
+        type: String,
+        required: false,
     },
     description: {
         type: String,
@@ -43,45 +51,37 @@ const projectSchema = new mongoose.Schema({
     finished_since: {
         type: Date
     },
-    parameters_default: {
-        type: Boolean,
-        default: true
-    },
     input: {
         files: {
             structure: {
                 type: structureFileHelperSchema,
                 default: {}
             },
-            energy_min: {
-                type: fileHelperSchema,
-                default: {}
-            },
-            MD_simulation: {
-                type: fileHelperSchema,
-                default: {}
-            },
         },
         extra: {
-            pdb2gmx_params: {
+            force_field: {
                 type: String,
-                default: ''
+                default: '15'
             },
-            traj_params: {
+            water_model: {
                 type: String,
-                default: ''
+                default: '7'
             },
-            genion_params: {
+            simulation_length: {
                 type: String,
-                default: ''
+                default: '10'
+            },
+            saving_step: {
+                type: String,
+                default: '2500'
             },
             spheres_allocation_frame: {
                 type: String,
-                default: ''
+                default: '1'
             },
             rmsd_threshold: {
                 type: String,
-                default: ''
+                default: '10'
             }
         }
     },
@@ -91,7 +91,39 @@ const projectSchema = new mongoose.Schema({
                 type: fileHelperSchema,
                 default: {}
             },
+            energy_potential: {
+                type: fileHelperSchema,
+                default: {}
+            },
+            energy_temperature: {
+                type: fileHelperSchema,
+                default: {}
+            },
+            energy_pressure: {
+                type: fileHelperSchema,
+                default: {}
+            },
+            energy_density: {
+                type: fileHelperSchema,
+                default: {}
+            },
+            md_xtc: {
+                type: fileHelperSchema,
+                default: {}
+            },
+            md_edr: {
+                type: fileHelperSchema,
+                default: {}
+            },
+            md_tpr: {
+                type: fileHelperSchema,
+                default: {}
+            },
             residues_indexes: {
+                type: fileHelperSchema,
+                default: {}
+            },
+            simulation_logs: {
                 type: fileHelperSchema,
                 default: {}
             },

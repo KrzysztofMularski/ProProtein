@@ -82,6 +82,12 @@
                         <label for="description" class="text-md">Description</label>
                         <input type="text" name="description" id="description" value="<%= project.description %>" class="p-2 rounded-lg">
 
+                        <label for="guest_email" class="text-md">Guest email</label>
+                        <input type="text" name="guest_email" id="guest_email" value="<%= project.guest_email %>" class="p-2 rounded-lg">
+
+                        <label for="error_msg" class="text-md">Error message</label>
+                        <input type="text" name="error_msg" id="error_msg" value="<%= project.error_msg %>" class="p-2 rounded-lg">
+
                     </div>
 
                     <div class="grid grid-cols-[120px_300px] items-center content-start gap-y-2">
@@ -109,9 +115,6 @@
                             <input type="date" name="finished_since" id="finished_since" value="<%= project.dateInputFinishedSince %>" class="p-2 rounded-lg">
                             <input type="time" name="finished_since_time" id="finished_since_time" value="<%= project.dateInputFinishedSinceTime %>" step=1 class="p-2 rounded-lg">
                         </div>
-                        
-                        <label for="parameters_default" class="text-md">Parameters Default</label>
-                        <input type="checkbox" name="parameters_default" id="parameters_default" <% if (project.parameters_default) { %> checked <% } %> class="rounded-lg justify-self-start h-4 w-4 ml-2">
                     </div>
 
                 </div>
@@ -129,7 +132,7 @@
         </div>
 
         <div id="modal_files" class="hidden place-items-center bg-gray-500 fixed top-0 right-0 left-0 w-full h-full bg-opacity-50">
-            <form id="modal_files_form" action="/admin/projects/edit_files/<%= project._id %>" enctype="multipart/form-data" method="post" class="bg-gray-200 px-6 py-8 relative rounded-xl flex flex-col gap-6">
+            <form id="modal_files_form" action="/admin/projects/edit_files/<%= project._id %>" enctype="multipart/form-data" method="post" class="bg-gray-200 px-6 py-8 relative rounded-xl flex flex-col gap-6 overflow-scroll h-[500px]">
                 <div class="w-4 text-gray-400 absolute top-4 right-4 cursor-pointer" onclick="toggleModalManageFiles()">
                     <%- include('components/icons/cross.svg') %>
                 </div>
@@ -270,39 +273,45 @@
             <p class="text-gray-500 text-sm">Created At</p>
             <p class="text-black text-lg"><%= project.createdStr %></p>
 
-            <p class="text-gray-500 text-sm">Default Parameters</p>
-            <p class="text-black text-lg"><%= project.parameters_default %></p>
-
             <% if (project.description) { %>
             <p class="text-gray-500 text-sm">Description</p>
             <p class="text-black text-lg"><%= project.description %></p>
             <% } %>
 
+            <% if (project.guest_email) { %>
+            <p class="text-gray-500 text-sm">Guest email</p>
+            <p class="text-black text-lg"><%= project.guest_email %></p>
+            <% } %>
+
+            <% if (project.error_msg) { %>
+            <p class="text-gray-500 text-sm">Error message</p>
+            <p class="text-black text-lg"><%= project.error_msg %></p>
+            <% } %>
         </div>
 
         <p class="text-xl">Simulation Files and Parameters</p>
 
         <% if (project.waiting_since_str || project.processing_since_str || project.finished_since_str) { %>
 
-            <div class="grid grid-cols-[150px_300px] w-96 items-baseline">
-    
-                <% if (project.waiting_since_str) { %>
-                <p class="text-gray-500 text-sm">Waiting since</p>
-                <p class="text-black text-lg"><%= project.waiting_since_str %></p>
-                <% } %>
-    
-                <% if (project.processing_since_str) { %>
-                <p class="text-gray-500 text-sm">Processing since</p>
-                <p class="text-black text-lg"><%= project.processing_since_str %></p>
-                <% } %>
-    
-                <% if (project.finished_since_str) { %>
-                <p class="text-gray-500 text-sm">Finished since</p>
-                <p class="text-black text-lg"><%= project.finished_since_str %></p>
-                <% } %>
-    
-            </div>
+        <div class="grid grid-cols-[150px_300px] w-96 items-baseline">
+
+            <% if (project.waiting_since_str) { %>
+            <p class="text-gray-500 text-sm">Waiting since</p>
+            <p class="text-black text-lg"><%= project.waiting_since_str %></p>
             <% } %>
+
+            <% if (project.processing_since_str) { %>
+            <p class="text-gray-500 text-sm">Processing since</p>
+            <p class="text-black text-lg"><%= project.processing_since_str %></p>
+            <% } %>
+
+            <% if (project.finished_since_str) { %>
+            <p class="text-gray-500 text-sm">Finished since</p>
+            <p class="text-black text-lg"><%= project.finished_since_str %></p>
+            <% } %>
+
+        </div>
+        <% } %>
         
         <%- include('components/table.ejs') %>
     </div>

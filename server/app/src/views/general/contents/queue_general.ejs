@@ -1,0 +1,100 @@
+<style>
+.lds-dual-ring {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: 4px;
+  border-radius: 50%;
+  border: 2px solid rgb(107 33 168);
+  border-color: rgb(107 33 168) transparent rgb(107 33 168) transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>
+<div class="h-full w-full py-10 px-40 font-quicksand flex flex-col">
+    <div class="h-full w-full bg-white rounded-xl flex flex-col p-10 gap-6 shadow-xl">
+        <div class="flex flex-row justify-between">
+            <p class="text-4xl font-bold">Processing Queue</p>
+            <a href="/" class="w-64 bg-gray-500 flex flex-row gap-4 items-center justify-center rounded-md text-white cursor-pointer hover:bg-gray-600">
+                <div class="w-3 text-white">
+                    <%- include (`../../../../public/icons/left.svg`) %>
+                </div>
+                <span>
+                    Back to Home Page
+                </span>
+            </a>
+        </div>
+
+        <table class="w-full">
+
+            <tr class="w-full border-y border-gray-200">
+                <th class="border-x border-gray-200 pr-2 py-2">No.</th>
+                <th class="border-x border-gray-200 px-2 py-2">Job ID</th>
+                <th class="border-x border-gray-200 px-2 py-2">Status</th>
+                <th class="border-x border-gray-200 px-2 py-2">Waiting/Processing since</th>
+            </tr>
+            <% entries.forEach(entry => { %>
+            <tr class="even:bg-gray-100 border border-gray-200">
+                <td class="border-x border-gray-200 pr-2 py-2 text-center"><%= entry.status === "Waiting" ? entry.id : ""%></td>
+                <td class="border-x border-gray-200 px-2 py-2 text-center"><%= entry.job_id %></td>
+                <td class="border-x border-gray-200 px-2 py-2 text-center">
+                    <div class="flex flex-row items-center justify-center">
+                        <% if (entry.status === 'Waiting') { %>
+                        <div class="rounded-full px-3 bg-blue-300 text-blue-800">
+                            <%= entry.status %>
+                        </div>
+                        <% } else if (entry.status === 'Processing') { %>
+                        <div class="rounded-full px-3 bg-purple-300 text-purple-800">
+                            <%= entry.status %>
+                            <div class="lds-dual-ring"></div>
+                        </div>
+                        <% } %>
+                    </div>
+                </td>
+                <% if (entry.processing_since) { %>
+                <td class="border-x border-gray-200 px-2 py-2 text-center"><%= entry.processing_since %></td>
+                <% } else {  %>
+                <td class="border-x border-gray-200 px-2 py-2 text-center"><%= entry.waiting_since %></td>
+                <% } %>
+            </tr>
+            <% }) %>
+
+            <% if (leftAfterAll) { %>
+            <tr class="">
+                <td class="text-center text-3xl items-center justify-center flex flex-row pr-2">
+                    <div class="w-10 text-gray-800">
+                        <%- include (`../../../../public/icons/dots-vertical.svg`) %>
+                    </div>
+                </td>
+            </tr>
+            <tr class="w-full">
+                <td class="whitespace-nowrap">
+                    <p class="w-0">and <%= leftAfterAll %> more <%= leftAfterAll === 1 ? "entry" : "entries"%></p>
+                </td>
+            </tr>
+            <% } %>
+            <tr class="w-full">
+                <td class="whitespace-nowrap pt-2">
+                    <p class="w-0 text-gray-500"><%= entriesLen %> <%= entriesLen === 1 ? "simulation in total is" : "simulations in total are"%> waiting or being executed right now!</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script>
+
+</script>

@@ -1,0 +1,473 @@
+<style>
+select:required:invalid {
+    color: gray;
+}
+option[value=""][disabled] {
+    display: none;
+}
+option {
+    color: black;
+}
+select {
+    appearance: none;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>
+
+<!-- description modal -->
+<% if (!isGuest) { %>
+<div id="edit_description_modal_wrapper" class="transition-all duration-700 fixed top-0 left-1/2 w-0 h-full bg-gray-500 bg-opacity-50 flex flex-col overflow-hidden">
+    <div class="font-quicksand font-light transition-all duration-1000 bg-white m-auto w-full h-1/2 flex flex-col overflow-hidden items-center">
+        <div class="w-full h-full grid place-items-center">
+            <form id="edit_description_form" class="flex flex-col w-2/5 gap-6" action="/edit_description" method="post">
+                <p class="text-4xl whitespace-nowrap">Project description</p>
+                <label class="flex flex-row gap-4 items-center w-full overflow-hidden">
+                    <p class="whitespace-nowrap w-36 flex-shrink-0">Project description:</p>
+                    <textarea id="edit_description_textarea" class="bg-gray-300 w-full h-24 rounded outline-none focus:ring-2 focus:ring-gray-400 px-4 py-2 resize-none" name="project_description"><%= project.description %></textarea>
+                </label>
+                <input id="edit_description_project_id" type="hidden" name="project_id" value="<%= project._id %>">
+                <div class="flex flex-row font-normal text-white justify-between gap-4 mt-4">
+                    <button type="button" onclick="editDescription()" class="w-20 h-8 rounded bg-red-500 hover:bg-red-600">
+                        Cancel
+                    </button>
+                    <button type="submit" class="w-20 h-8 rounded bg-green-500 hover:bg-green-600">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<% } %>
+<div class="h-full w-full py-10 px-40 font-quicksand flex flex-col">
+    <div class="h-full w-full bg-white rounded-xl flex flex-col p-10 gap-6 shadow-xl">
+        <div class="flex flex-row justify-between">
+            <p class="text-4xl font-bold"><%=project.name%></p>
+            <a href="<%= routeBack %>" class="w-64 bg-gray-500 flex flex-row gap-4 items-center justify-center rounded-md text-white cursor-pointer hover:bg-gray-600">
+                <div class="w-3 text-white">
+                    <%- include (`../../../../public/icons/left.svg`) %>
+                </div>
+                <span>
+                    <% if (isGuest) { %>
+                    Back to Home Page
+                    <% } else {  %>
+                    Back to projects
+                    <% } %>
+                </span>
+            </a>
+        </div>
+        <% if (isGuest && (project.status === "Waiting" || project.status === "Processing")) { %>
+        <div class="flex flex-col gap-2 border-2 border-gray-500 px-4 py-2 rounded-md">
+            <p class="font-bold">This is a guest project. You should copy the link to this page or enter your email so that you can be notified of the simulation results.</p>
+            <div class="flex flex-row py-1 gap-4 items-center">
+                <p class="whitespace-nowrap w-36 shrink-0">Project details link:</p>
+                <div class="relative w-full">
+                    <input id="details_link" type="text" class="bg-gray-200 px-2 py-1 rounded-md w-full" value="<%= projectUrl %>" readonly>
+                    <div class="absolute top-0 right-2 h-full flex items-center">
+                        <div class="w-6 text-black cursor-pointer hover:text-gray-600" onclick="copyToClipboard('details')">
+                            <%- include (`../../../../public/icons/copy.svg`) %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-row py-1 gap-4 items-center">
+                <p class="whitespace-nowrap w-36 shrink-0">Project results link:</p>
+                <div class="relative w-full">
+                    <input id="results_link" type="text" class="bg-gray-200 px-2 py-1 rounded-md w-full" value="<%= resultsUrl %>" readonly>
+                    <div class="absolute top-0 right-2 h-full flex items-center">
+                        <div class="w-6 text-black cursor-pointer hover:text-gray-600" onclick="copyToClipboard('results')">
+                            <%- include (`../../../../public/icons/copy.svg`) %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <form action="/guest_email" method="post" class="py-1 flex flex-row gap-4 items-center">
+                <label for="email" class="w-36 shrink-0">Email:</label>
+                <input type="hidden" name="project_id" value="<%= project._id %>">
+                <input id="email" type="email" name="email" class="bg-gray-200 px-2 py-1 rounded-md w-full" placeholder="Your email">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-md whitespace-nowrap">Notify me!</button>
+            </form>
+        </div>
+        <% } %>
+
+
+        <% if (project.status === "Finished") { %>
+        <div class="flex flex-row gap-4 text-lg">
+            <p class="font-bold">Results available!</p>
+            <% if (isGuest) { %>
+            <a class="font-bold text-lg decoration-2 whitespace-nowrap w-min text-blue-500 no-underline hover:underline" href="/guest_simulation/results/<%= project._id %>">Show results</a>
+            <% } else {  %>
+            <a class="font-bold text-lg decoration-2 whitespace-nowrap w-min text-blue-500 no-underline hover:underline" href="/project/results?id=<%= project._id %>">Show results</a>
+            <% } %>
+        </div>
+        <% } %>
+        <div class="flex flex-row items-center gap-4 text-lg">
+            <span>Status:</span>
+            <div class="max-w-min flex-1 flex flex-row items-center justify-center px-3 py-1 text-lg rounded-full
+                <% if (project.status === 'Waiting') { %>
+                bg-blue-300 text-blue-800
+                <% } else if (project.status === 'Processing') { %>
+                bg-purple-300 text-purple-800
+                <% } else if (project.status === 'Finished') { %>
+                bg-gray-300 text-gray-800
+                <% } else if (project.status === 'Error') { %>
+                bg-red-300 text-red-800
+                <% } %>
+                ">
+                <span>
+                    <%= project.status %>
+                </span>
+            </div>
+        </div>
+        <% if (!isGuest) { %>
+        <div class="flex flex-row items-start whitespace-nowrap gap-4 text-lg">
+            <span>Description:</span>
+            <div onclick="editDescription()" class="flex items-center justify-center w-8 h-8 flex-shrink-0 text-white bg-blue-500 rounded-xl cursor-pointer hover:bg-blue-600">
+                <div class="w-4">
+                    <%- include (`../../../../public/icons/edit.svg`) %>
+                </div>
+            </div>
+            <p class="text-xl text-gray-600 whitespace-normal"><%=project.description%></p>
+        </div>
+        <% } %>
+        
+        <% if (queuePosition >= 0) { %>
+        <div class="flex flex-row gap-4 items-center">
+            <p class="text-lg">Queue position: <%= queuePosition %></p>
+            <a href="/queue/<%= project._id %>" class="px-4 py-1 bg-blue-500 flex items-center justify-center rounded-lg text-white cursor-pointer hover:bg-blue-600">Check queue</a>
+        </div>
+        <% } %>
+
+        <p class="text-lg">Project created: <span id="created_date"></span></p>
+        <% if (project.waiting_since) { %>
+        <p class="text-lg">Waiting for processing since: <span id="waiting_since"></span></p>
+        <% } %>
+
+        <% if (project.processing_since) { %>
+        <p class="text-lg">Simulation processing started on: <span id="processing_since"></span></p>
+        <% } %>
+
+        <% if (project.finished_since) { %>
+        <p class="text-lg">Simulation finished on: <span id="finished_since"></span></p>
+        <% } %>
+
+        <hr>
+
+        <!-- Structure file -->
+        <span class="text-2xl">Molecular Structure</span>
+
+        <div class="flex flex-row justify-between h-10 font-quicksand flex-shrink-0">
+            <div class="flex flex-row gap-4">
+                <span class="flex items-center w-28 ml-2 flex-shrink-0">Uploaded file:</span>
+                <span class="flex items-center w-72 border border-gray-500 rounded-md px-4 min-w-min justify-between gap-2
+                    <% if (!project.input.files.structure.filename) { %> text-gray-500 <% } %>"
+                      >
+                      <%= project.input.files.structure.filename || 'No specified file' %>
+                      <% if (project.input.files.structure.is_demo === true) { %>
+                      <span class="text-green-500">Example</span>
+                      <% } %>
+                </span>
+            </div>
+            <% if (project.input.files.structure.filename) { %>
+            <a
+                <% if (isGuest) { %>
+                href="/guest_molstar_requested?project=<%= project.id %>&filetype=structure"
+                <% } else { %>
+                href="/molstar?project=<%= project.id %>&filetype=structure"
+                <% } %>
+                class="w-64 bg-blue-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-blue-600">Open in Molstar</a>
+            <% } %>
+        </div>
+
+        <!-- Simulation parameters -->
+
+        <span class="text-2xl">Simulation Parameters</span>
+
+        <form id="parameters_form" action="/save_parameters" method="post" class="ml-2 mb-4 flex flex-col gap-3 h-full -my-3 overflow-hidden">
+            <!-- Force Field -->
+            <div class="flex flex-col">
+                <span class="flex items-center text-lg">Force Field:</span>
+                <select id="force_field" required onchange="on_change_force_field(value)" disabled name="force_field" class="w-1/2 flex items-center rounded-md px-4 bg-white h-10 border border-gray-500">
+                    <option value="" disabled selected hidden>-- Select Force Field --</option>
+                    <option value="1">AMBER03 protein, nucleic AMBER94 (Duan et al., J. Comp. Chem. 24, 1999-2012, 2003)</option>
+                    <option value="2">AMBER94 force field (Cornell et al., JACS 117, 5179-5197, 1995)</option>
+                    <option value="3">AMBER96 protein, nucleic AMBER94 (Kollman et al., Acc. Chem. Res. 29, 461-469, 1996)</option>
+                    <option value="4">AMBER99 protein, nucleic AMBER94 (Wang et al., J. Comp. Chem. 21, 1049-1074, 2000)</option>
+                    <option value="5">AMBER99SB protein, nucleic AMBER94 (Hornak et al., Proteins 65, 712-725, 2006)</option>
+                    <option value="6">AMBER99SB-ILDN protein, nucleic AMBER94 (Lindorff-Larsen et al., Proteins 78, 1950-58, 2010)</option>
+                    <option value="7">AMBERGS force field (Garcia & Sanbonmatsu, PNAS 99, 2782-2787, 2002)</option>
+                    <option value="8">CHARMM27 all-atom force field (CHARM22 plus CMAP for proteins)</option>
+                    <option value="9">GROMOS96 43a1 force field</option>
+                    <option value="10">GROMOS96 43a2 force field (improved alkane dihedrals)</option>
+                    <option value="11">GROMOS96 45a3 force field (Schuler JCC 2001 22 1205)</option>
+                    <option value="12">GROMOS96 53a5 force field (JCC 2004 vol 25 pag 1656)</option>
+                    <option value="13">GROMOS96 53a6 force field (JCC 2004 vol 25 pag 1656)</option>
+                    <option value="14">GROMOS96 54a7 force field (Eur. Biophys. J. (2011), 40,, 843-856, DOI: 10.1007/s00249-011-0700-9)</option>
+                    <option value="15">OPLS-AA/L all-atom force field (2001 aminoacid dihedrals)</option>
+                </select>
+            </div>
+
+            <!-- Water Model -->
+            <div class="flex flex-col">
+                <span class="flex items-center text-lg">Water Model:</span>
+                <select id="water_model_placeholder" required disabled class="w-1/2 border disabled:text-gray-500 disabled:bg-gray-200 border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <option value="" disabled selected hidden>-- Select Force Field first --</option>
+                </select>
+                <!-- ff: 1-7 -->
+                <select id="water_model_1" name="water_model" required disabled class="hidden w-1/2 border border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <option value="" disabled selected hidden>-- Select Water Model --</option>
+                    <option value="1">TIP3P - TIP 3-point, recommended</option>
+                    <option value="2">TIP4P - TIP 4-point</option>
+                    <option value="3">TIP4P-Ew - TIP 4-point optimized with Ewald</option>
+                    <option value="4">TIP5P - TIP 5-point (see http://redmine.gromacs.org/issues/1348 for issues)</option>
+                    <option value="5">SPC - simple point charge</option>
+                    <option value="6">SPC/E - extended simple point charge</option>
+                    <option value="7">None</option>
+                </select>
+                <!-- ff: 8 -->
+                <select id="water_model_2" name="water_model" required disabled class="hidden w-1/2 border border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <option value="" disabled selected hidden>-- Select Water Model --</option>
+                    <option value="1">TIP3P - TIP 3-point, recommended</option>
+                    <option value="2">TIP4P - TIP 4-point</option>
+                    <option value="3">TIPS3P - CHARMM TIP 3-point with LJ on H's</option>
+                    <option value="4">TIP5P - TIP 5-point (see http://redmine.gromacs.org/issues/1348 for issues)</option>
+                    <option value="5">SPC - simple point charge</option>
+                    <option value="6">SPC/E - extended simple point charge</option>
+                    <option value="7">None</option>
+                </select>
+                <!-- ff: 9-14 -->
+                <select id="water_model_3" name="water_model" required disabled class="hidden w-1/2 border border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <option value="" disabled selected hidden>-- Select Water Model --</option>
+                    <option value="1">SPC - simple point charge, recommended</option>
+                    <option value="2">SPC/E - extended simple point charge</option>
+                    <option value="3">None</option>
+                </select>
+                <!-- ff: 15 -->
+                <select id="water_model_4" name="water_model" required disabled class="hidden w-1/2 border border-gray-500 items-center rounded-md px-4 bg-white h-10">
+                    <option value="" disabled selected hidden>-- Select Water Model --</option>
+                    <option value="1">TIP4P - TIP 4-point, recommended</option>
+                    <option value="2">TIP4PEW - TIP 4-point with Ewald</option>
+                    <option value="3">TIP3P - TIP 3-point</option>
+                    <option value="4">TIP5P - TIP 5-point (see http://redmine.gromacs.org/issues/1348 for issues)</option>
+                    <option value="5">TIP5P - TIP 5-point improved for Ewald sums</option>
+                    <option value="6">SPC - simple point charge</option>
+                    <option value="7">SPC/E - extended simple point charge</option>
+                    <option value="8">None</option>
+                </select>
+            </div>
+
+            <!-- Simulation length -->
+            <div class="flex flex-col">
+                <span class="flex items-center text-lg">Simulation length [ns]:</span>
+                <div class="flex flex-row">
+                    <span id="simulation_length_span" class="w-10">10ns</span>
+                    <input
+                        disabled
+                        type="range"
+                        name="simulation_length"
+                        id="simulation_length"
+                        min="1"
+                        max="15"
+                        step="1"
+                        value="10"
+                        oninput="update_simulation_length_span()"
+                        class="w-64">
+                </div>                
+            </div>
+
+            <!-- Saving step -->
+            <div class="flex flex-col">
+                <span class="flex items-center text-lg">Saving step [ps]:</span>
+                <span class="text-gray-500">Saving energies, updating log file and saving compressed coordinates.</span>
+                <select id="saving_step" name="saving_step" disabled required class="w-72 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10"> 
+                    <option value="" disabled selected hidden>-- Select Saving Step --</option>
+                    <option value="2500">5.0 ps</option>
+                    <option value="1250">2.5 ps</option>
+                </select>
+            </div>
+
+            <!-- Spheres allocation frame -->
+            <div class="flex flex-col">
+                <span class="flex items-center text-lg">Spheres allocation frame:</span>
+                <input
+                    disabled
+                    id="spheres_allocation_frame"
+                    name="spheres_allocation_frame"
+                    class="w-72 border border-gray-500 flex items-center rounded-md px-4 bg-white h-10 outline-none"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value="1">
+            </div>
+
+            <!-- RMSD Threshold -->
+            <div class="flex flex-col">
+                <span class="flex items-center text-lg">RMSD Threshold [%]:</span>
+                <div class="flex flex-row">
+                    <span id="rmsd_threshold_span" class="w-10">10%</span>
+                    <input
+                        disabled
+                        type="range"
+                        name="rmsd_threshold"
+                        id="rmsd_threshold"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="10"
+                        oninput="update_rmsd_threshold_span()"
+                        class="w-64">
+                </div>                
+            </div>
+
+            <input type="hidden" value="<%= project.id %>" name="project_id">
+        </form>
+    </div>
+</div>
+
+<script>
+
+    const force_field = document.getElementById('force_field');
+    const water_model_placeholder = document.getElementById('water_model_placeholder');
+    const water_model_1 = document.getElementById('water_model_1');
+    const water_model_2 = document.getElementById('water_model_2');
+    const water_model_3 = document.getElementById('water_model_3');
+    const water_model_4 = document.getElementById('water_model_4');
+    const simulation_length = document.getElementById('simulation_length');
+    const simulation_length_span = document.getElementById('simulation_length_span');
+    const saving_step = document.getElementById('saving_step');
+    const spheres_allocation_frame = document.getElementById('spheres_allocation_frame');
+    const rmsd_threshold = document.getElementById('rmsd_threshold');
+    const rmsd_threshold_span = document.getElementById('rmsd_threshold_span');
+    const details_link = document.getElementById('details_link');
+    const results_link = document.getElementById('results_link');
+    <% if (!isGuest) { %>
+    const edit_description_modal_wrapper = document.getElementById('edit_description_modal_wrapper')
+    const edit_description_textarea = document.getElementById('edit_description_textarea')
+    const edit_description_project_id = document.getElementById('edit_description_project_id')
+    <% } %>
+    const update_simulation_length_span = () => {
+        simulation_length_span.textContent = simulation_length.value + 'ns';
+    }
+
+    const update_rmsd_threshold_span = () => {
+        rmsd_threshold_span.textContent = rmsd_threshold.value + '%';
+    }
+    
+    const on_change_force_field = value => {
+        let number = parseInt(value);
+        water_model_placeholder.classList.add('hidden');
+        water_model_1.classList.add('hidden');
+        water_model_2.classList.add('hidden');
+        water_model_3.classList.add('hidden');
+        water_model_4.classList.add('hidden');
+        water_model_placeholder.disabled = true;
+        water_model_1.disabled = true;
+        water_model_2.disabled = true;
+        water_model_3.disabled = true;
+        water_model_4.disabled = true;
+        if (number >= 1 && number <= 7) {
+            water_model_1.classList.remove('hidden');
+        } else if (number === 8) {
+            water_model_2.classList.remove('hidden');
+        } else if (number >= 9 && number <= 14) {
+            water_model_3.classList.remove('hidden');
+        } else if (number === 15) {
+            water_model_4.classList.remove('hidden');
+        }
+    }
+
+    const makeDate = dateStr => {
+        const date = new Date(dateStr)
+
+        const day = date.getDate().toString().padStart(2, '0')
+        const month = (date.getMonth() + 1).toString().padStart(2, '0')
+        const year = date.getFullYear().toString()
+
+        const hours = date.getHours().toString().padStart(2, '0')
+        const minutes = date.getMinutes().toString().padStart(2, '0')
+
+        return `${day}.${month}.${year} ${hours}:${minutes}`
+    }
+
+    const populateDates = () => {
+        created_date.textContent = makeDate('<%= project.created %>')
+        if ('<%= project.waiting_since %>')
+            waiting_since.textContent = makeDate('<%= project.waiting_since %>')
+        if ('<%= project.processing_since %>')
+            processing_since.textContent = makeDate('<%= project.processing_since %>')
+        if ('<%= project.finished_since %>')
+            finished_since.textContent = makeDate('<%= project.finished_since %>')
+    }
+
+    const populateInputs = () => {
+        if ('<%= project.input.extra.force_field %>') {
+            force_field.value = '<%= project.input.extra.force_field %>';
+        }
+        on_change_force_field(force_field.value);
+        if ('<%= project.input.extra.water_model %>') {
+            let ff_number = parseInt(force_field.value);
+            if (ff_number <= 7) {
+                water_model_1.value = '<%= project.input.extra.water_model %>';
+            } else if (ff_number === 8) {
+                water_model_2.value = '<%= project.input.extra.water_model %>';
+            } else if (ff_number >= 9 && ff_number <= 14) {
+                water_model_3.value = '<%= project.input.extra.water_model %>';
+            } else if (ff_number === 15) {
+                water_model_4.value = '<%= project.input.extra.water_model %>';
+            }
+        }
+        if ('<%= project.input.extra.simulation_length %>') {
+            simulation_length.value = '<%= project.input.extra.simulation_length %>';
+            update_simulation_length_span();
+        }
+        if ('<%= project.input.extra.saving_step %>') {
+            saving_step.value = '<%= project.input.extra.saving_step %>';
+        }
+        if ('<%= project.input.extra.spheres_allocation_frame %>') {
+            spheres_allocation_frame.value = '<%= project.input.extra.spheres_allocation_frame %>';
+        }
+        if ('<%= project.input.extra.rmsd_threshold %>') {
+            rmsd_threshold.value = '<%= project.input.extra.rmsd_threshold %>';
+            update_rmsd_threshold_span();
+        }
+    }
+
+    // for updating water model select box after refresh in web browser
+    if (force_field.value) {
+        on_change_force_field(force_field.value);
+    }
+
+    populateDates();
+    populateInputs();
+
+    <% if (!isGuest) { %>
+    const editDescription = () => {
+        edit_description_modal_wrapper.classList.toggle('w-0')
+        edit_description_modal_wrapper.classList.toggle('w-full')
+        edit_description_modal_wrapper.classList.toggle('left-1/2')
+        edit_description_modal_wrapper.classList.toggle('left-0')
+    }
+    <% } %>
+
+    const copyToClipboard = linkType => {
+        if (linkType === 'details') {
+            details_link.select();
+            details_link.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(details_link.value);
+        } else if (linkType === 'results') {
+            results_link.select();
+            results_link.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(results_link.value);
+        }
+    }
+
+</script>

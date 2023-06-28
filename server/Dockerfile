@@ -6,9 +6,8 @@ COPY app /home/app
 
 WORKDIR /home/app
 
-RUN npm install\
-    && npm run build-css-minified\
-    && npm run build-molstar-bundle
+RUN npm install
+RUN npm run build-css-minified
+RUN npm run build-molstar-bundle
 
-#CMD ["sleep", "3h"]
 CMD ["node", "/home/app/src/app.js"]

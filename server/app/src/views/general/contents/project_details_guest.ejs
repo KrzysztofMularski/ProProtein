@@ -1,0 +1,138 @@
+<div class="h-full w-full py-10 px-40 font-quicksand flex flex-col">
+    <form id="get_molstar_form" action="/guest_molstar" method="get">
+        <input id="demo_filename_hidden" type="hidden" name="example_filename">
+    </form>
+    <form id="form" onsubmit="onSubmit(event)" action="/guest_simulation" enctype="multipart/form-data" method="post" class="h-full w-full bg-white rounded-xl flex flex-col p-10 gap-6 shadow-xl">
+        <div class="flex flex-row justify-between">
+            <p class="text-4xl font-bold"><%= projectName %></p>
+            <a href="/" class="w-64 bg-gray-500 flex flex-row gap-4 items-center justify-center rounded-md text-white cursor-pointer hover:bg-gray-600">
+                <div class="w-3 text-white">
+                    <%- include (`../../../../public/icons/left.svg`) %>
+                </div>
+                <span>
+                    Back to Home Page
+                </span>
+            </a>
+        </div>
+        <hr>
+
+        <!-- Structure file -->
+        <span class="text-2xl">Molecular Structure</span>
+
+        <div id="div_upload_structure" class="transition-all duration-300 flex flex-col overflow-hidden h-24 ml-2 justify-center flex-shrink-0 -mt-4">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-row gap-8 mb-4">
+                    <label class="flex flex-row gap-2">
+                        <input id="option_default"
+                            type="radio"
+                            name="is_demo_radio"
+                            value="demo"
+                            onchange="display_demo()"
+                            checked
+                            autocomplete="off">
+                        <span class="flex items-center">Example</span>
+                    </label>
+                    <label class="flex flex-row gap-2">
+                        <input
+                            type="radio"
+                            name="is_demo_radio"
+                            value="custom"
+                            onchange="display_demo()"
+                            autocomplete="off">
+                        <span class="flex items-center">Custom</span>
+                    </label>
+                </div>
+                <div id="form_upload_demo_wrapper" class="transition-all duration-300 flex flex-row justify-between overflow-hidden h-10 flex-shrink-0 -my-4">
+                    <div class="flex flex-row gap-4">
+                        <span class="flex items-center w-28 flex-shrink-0 whitespace-nowrap">Example:</span>
+                        <div class="relative flex">
+                            <span class="absolute inset-0 text-green-500 flex items-center justify-end mr-6">Example</span>
+                            <select id="demos_select" onchange="onChangeDemo()" form="form" name="demo_filename" class="w-72 border border-gray-500 flex items-center rounded-md px-4 bg-transparent opacity-95">
+                                <% demos.forEach(demo => { %>
+                                <option value="<%= demo.filename %>"><%= demo.filename %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-row font-quicksand flex-shrink-0"> 
+                        <button form="get_molstar_form" type="submit" class="w-64 bg-blue-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-blue-600">Open Example in Molstar</button>
+                    </div>
+                </div>
+                <div id="form_upload_structure_wrapper" class="transition-all duration-300 flex flex-row overflow-hidden h-0 justify-between flex-shrink-0 -my-2">
+                    <div class="flex flex-row gap-4">
+                        <span class="flex items-center w-28 flex-shrink-0">New file:</span>
+                        <input id="structure_visible" class="w-72 border border-gray-500 flex items-center rounded-md px-4 outline-none" placeholder="No specified file" readonly>
+                    </div>
+                    <label class="bg-gray-500 w-64 rounded-md cursor-pointer flex px-4 hover:bg-gray-600">
+                        <input id="input_file" type="file" name="input_data" onchange="onChangedStructure(this.value)" hidden>
+                        <span class="text-white flex items-center justify-center flex-grow">Choose file..</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <span class="text-gray-500 ml-2">
+            More options are available after logging in.
+        </span>
+
+        <div class="flex flex-row h-10 self-end font-quicksand flex-shrink-0">
+            <button id="submit_button" type="submit" form="form" class="w-64 bg-purple-500 flex items-center justify-center rounded-md text-white cursor-pointer hover:bg-purple-600 disabled:bg-purple-200 disabled:cursor-default">Request Simulation</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    const demos_select = document.getElementById('demos_select');
+    const demo_filename_hidden = document.getElementById('demo_filename_hidden');
+    const structure_visible = document.getElementById('structure_visible');
+    const form_upload_structure_wrapper = document.getElementById('form_upload_structure_wrapper');
+    const form_upload_demo_wrapper = document.getElementById('form_upload_demo_wrapper');
+    const submit_button = document.getElementById('submit_button');
+    const input_file = document.getElementById('input_file');
+    const option_default = document.getElementById('option_default');
+
+    const onChangeDemo = () => {
+        demo_filename_hidden.value = demos_select.value;
+    }
+
+    const display_demo = () => {
+        form_upload_structure_wrapper.classList.toggle('h-10');
+        form_upload_structure_wrapper.classList.toggle('h-0');
+        form_upload_structure_wrapper.classList.toggle('-my-4');
+        form_upload_structure_wrapper.classList.toggle('-my-2');
+        form_upload_demo_wrapper.classList.toggle('h-10');
+        form_upload_demo_wrapper.classList.toggle('h-0');
+        form_upload_demo_wrapper.classList.toggle('-my-4');
+        form_upload_demo_wrapper.classList.toggle('-my-2');
+        checkInputsAndDisableSubmitButton();
+    }
+
+    const onChangedStructure = filepath => {
+        structure_visible.value = filepath.split('\\').at(-1);
+        checkInputsAndDisableSubmitButton();
+    }
+
+    const onSubmit = (e) => {
+        if (e.currentTarget.is_demo_radio.value === "demo") {
+            e.currentTarget.input_data.value = "";
+            structure_visible.value = "";
+        }
+        if (!option_default.checked && input_file.value === "") {
+            e.preventDefault();
+        }
+    }
+
+    const checkInputsAndDisableSubmitButton = () => {
+        if (!option_default.checked && input_file.value === "") {
+            submit_button.disabled = true;
+        } else {
+            submit_button.disabled = false;
+        }
+    }
+
+    checkInputsAndDisableSubmitButton();
+    onChangeDemo(); // setting up default
+
+</script>
