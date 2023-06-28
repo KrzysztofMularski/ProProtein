@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const colors = require('tailwindcss/colors')
 
 module.exports = {
@@ -15,7 +14,6 @@ module.exports = {
         'quicksand': ['"Quicksand"', 'sans-serif']
       },
       colors: {
-        coolgray: colors.coolGray,
         orange: colors.orange
       },
       zIndex: {

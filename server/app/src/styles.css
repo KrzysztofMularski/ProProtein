@@ -5,7 +5,7 @@
 @layer components {
 
     ._body {
-        @apply flex flex-col h-screen bg-gray-50;
+        @apply flex flex-col h-screen bg-gray-500;
     }
 
     ._content {
