@@ -1,15 +1,23 @@
 <%- include('components/title.ejs', { p: 'Sign In' }) %>
 
-<%- include('components/input.ejs', { p: 'Email', type: 'email', name: 'email', required: true, value: '' }) %>
-<%- include('components/input.ejs', { p: 'Password', type: 'password', name: 'password', required: true, value: '' }) %>
+<div>
+    <label for="email">Email</label>
+    <input id="email" type="email" name="email" required autocomplete="username" class="border border-gray-300 rounded p-1 w-full focus:outline-none focus:ring-2">
+</div>
+
+<div>
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" required autocomplete="current-password" class="border border-gray-300 rounded p-1 w-full focus:outline-none focus:ring-2">
+</div>
+
 <%- include('components/forgot.ejs') %>
 
-<%- include('components/button.ejs', { p: 'Sign In' }) %>
+<button type="submit" class="mt-6 bg-orange-500 border border-orange-500 rounded-lg text-white font-quicksand font-medium py-1 w-40 hover:bg-orange-600 hover:border-orange-600 self-center">Sign In</button>
 
-<%- include('components/separator.ejs') %>
+<div class="border-t border-orange-500 mt-2"></div>
 
-<%- include('components/subtitle.ejs', { p: "Don't have an account yet?" }) %>
-<%- include('components/link.ejs', { p: 'Sign Up', destination: 'register' }) %>
+<p class="text-base text-center">Don't have an account yet?</p>
+<a href="/register" class="-mt-2 bg-white border border-orange-500 rounded-lg text-orange-500 font-quicksand font-medium py-1 self-center w-40 hover:text-white hover:bg-orange-600 hover:border-orange-600 text-center">Sign Up</a>
 
-<%- include('components/subtitle.ejs', { p: "Return to Home"}) %>
-<%- include('components/link.ejs', { p: 'Home', destination: 'home' }) %>
+<p class="text-base text-center">Return to Home</p>
+<a href="/home" class="-mt-2 bg-white border border-orange-500 rounded-lg text-orange-500 font-quicksand font-medium py-1 self-center w-40 hover:text-white hover:bg-orange-600 hover:border-orange-600 text-center">Home</a>

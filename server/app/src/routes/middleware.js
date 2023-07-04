@@ -3,7 +3,6 @@ const multer = require('multer')
 const { GridFsStorage } = require('multer-gridfs-storage')
 const connectionString = process.env.MONGODB_CONNECTION_STRING
 const Project = require('../db/models/project')
-// const TemplateRaw = require('../db/models/fileTemplateRaw')
 const FileRaw = require('../db/models/fileRaw')
 const pushLog = require('../logging')
 const { spawn } = require('child_process');
@@ -39,48 +38,6 @@ const deleteFiles = async (req, _) => {
         await gfs.delete(fileId);
     }
 }
-
-// const deleteAllFiles = async (req, res) => {
-//     try {
-//         const projectId = req.body.project_id
-//         const project = await Project.findById(projectId)
-//         const filesToDelete = [];
-//
-//         const inputFileTypes = ['structure'];
-//
-//         const outputFileTypes = [
-//             'trajectory',
-//             'energy_potential', 
-//             'energy_temperature', 
-//             'energy_pressure', 
-//             'energy_density', 
-//             'md_xtc', 
-//             'md_edr', 
-//             'md_tpr', 
-//             'residues_indexes', 
-//             'simulation_logs', 
-//         ];
-//
-//         inputFileTypes.forEach(file_type => {
-//             if (project.input.files[file_type]._doc.hasOwnProperty('file_id') && !project.input.files[file_type]._doc.is_demo) {
-//                 filesToDelete.push(project.input.files[file_type]._doc.file_id);
-//             }
-//         })
-//
-//         outputFileTypes.forEach(file_type => {
-//             if (project.output.files[file_type]._doc.hasOwnProperty('file_id'))
-//                 filesToDelete.push(project.output.files[file_type]._doc.file_id)
-//         })
-//
-//         filesToDelete.forEach(fileId => gfs.delete(fileId))
-//         next()
-//     } catch (err) {
-//         // console.log(err)
-//         await pushLog(err, 'deleteAllFiles', req.user._id);
-//         req.flash('error', 'Error while deleting all files');
-//         return res.redirect('/')
-//     }
-// }
 
 const downloadFile = (req, res) => {
     const fileId = req.fileToDownloadId
@@ -167,24 +124,14 @@ const checkIsAdmin = (req, res, next) => {
     next();
 }
 
-// const checkIfNotFinished = async (req, res, next) => {
-//     try {
-//         const projectId = req.body.project_id
-//         const project = await Project.findById(projectId)
-//         if (project.owner_id.toString() !== req.user._id.toString())
-//             return res.redirect('/')
-//         if (project.status !== 'Initial')
-//             return res.redirect('/')
-//         next()
-//     } catch (err) {
-//         console.log(err)
-//         return res.redirect('/')
-//     }
-// }
-
 const validateFileGuest = async (req, res, next) => {
     try {
         if (!req.file) {
+            return next();
+        }
+        if (req.file.size > 2*1024*1024) {
+            req.fileNotCorrect = true;
+            req.errorMsg = "File is too large. (Max 2MB)";
             return next();
         }
         const {is_ok, error_msg} = await fileCorrect(req.file.id, true);
@@ -205,6 +152,11 @@ const validateFile = async (req, res, next) => {
         if (!req.file) {
             return next();
         }
+        if (req.file.size > 2*1024*1024) {
+            req.fileNotCorrect = true;
+            req.errorMsg = "File is too large. (Max 2MB)";
+            return next();
+        }
         const {is_ok, error_msg} = await fileCorrect(req.file.id, false);
         if (!is_ok) {
             req.fileNotCorrect = true;
@@ -220,7 +172,23 @@ const validateFile = async (req, res, next) => {
 
 const fileCorrect = (fileId, isGuest) => {
     return new Promise((resolve, _) => {
-        const awkCommand = '{if (a[$5]<$6 && $1 == "ATOM"){a[$5];a[$5]=$6;}}END{for(i in a){s+=a[i];}print s}';
+        const awkCommand = `
+{
+    chain_identifier = substr($0, 22, 1)
+    res_seq_number = 0+substr($0, 23, 4)
+    if ($1 == "ATOM" && chain_identifier != " ") {
+	if (a[chain_identifier]<res_seq_number) {
+	    a[chain_identifier] = res_seq_number;
+	}
+    }
+}
+END {
+    for(i in a) {
+	s+=a[i];
+    }
+    print s
+}
+`;
         const awkArgs = ['-F', ' ', awkCommand];
         const awkProcess = spawn('awk', awkArgs);
         const readStream = gfs.openDownloadStream(fileId);
@@ -246,7 +214,6 @@ module.exports = {
     upload,
     deleteFile,
     deleteFiles,
-    // deleteAllFiles,
     downloadFile,
 
     adminDownload,

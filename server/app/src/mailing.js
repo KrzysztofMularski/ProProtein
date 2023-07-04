@@ -1,26 +1,60 @@
-require('dotenv').config()
+require('dotenv').config();
 
-const nodemailer = require('nodemailer')
-const jwt = require('jsonwebtoken')
-const ejs = require('ejs')
-const serverAddress = process.env.SERVER_ADDRESS;
-
-const path = '/home/app/src/views/components/mailing'
-// const path = './src/views/components/mailing';
+const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+const ejs = require('ejs');
+const path = require('path');
+const pushLog = require('./logging');
+// todo: check every mailing function in production
+const path_to_template = './src/views/components/mailing';
+let serverAddress = '';
+if (process.env.MODE === 'development') {
+    serverAddress = "https://proprotein.cs.put.poznan.pl";
+} else {
+    serverAddress = process.env.SERVER_ADDRESS;
+}
 
 const transporter = nodemailer.createTransport({
     host: process.env.MAILER_HOST,
-    port: process.env.PORT,
+    port: process.env.MAILER_PORT,
     auth: {
         user: process.env.MAILER_USER,
         pass: process.env.MAILER_PASSWORD
     }
-})
+});
 
-function sendAuthMail(username, email) {
+transporter.verify(function (error, success) {
+    console.log("mail transporter init..");
+    if (error) {
+        console.log("transporter error:", error);
+    } else {
+        console.log("transporter success:", success);
+    }
+});
+
+const sendMail = async (template_filename, template_params, email_address, email_subject) => {
+    try {
+        ejs.renderFile(path.join(path_to_template, template_filename), template_params, (err, str) => {
+            if (err) {
+                throw err;
+            }
+            transporter.sendMail({
+                from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
+                to: email_address,
+                subject: email_subject,
+                html: str
+            })
+        });
+    } catch (err) {
+        // console.log(err);
+        await pushLog(err, `sendMail, template_filename: ${JSON.stringify(template_filename)}, template_params: ${JSON.stringify(template_params)}, ${email_address} : ${email_subject}`);
+    }
+}
+
+const sendAuthMail = (username, email) => {
     try {
         jwt.sign(
-            { email: email },
+            { email },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: process.env.ACCESS_TOKEN_EXP },
             (err, emailToken) => {
@@ -28,32 +62,18 @@ function sendAuthMail(username, email) {
                     throw err
                 const url = `${serverAddress}/account_confirmation/${emailToken}`
                 
-                ejs.renderFile(`${path}/_account_confirmation.ejs`, {url, username}, (err, str) => {
-                    if (err)
-                        console.log(err)
-                    else {
-                        transporter.sendMail({
-                            from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
-                            to: email,
-                            subject: 'Account Confirmation',
-                            html: str
-                        })
-                        .then()
-                        .catch(e => console.log(e))
-                    }
-                })
+                sendMail('_account_confirmation.ejs', {url, username}, email, 'Account Confirmation');
             }
         )
-        
     } catch (e) {
         console.log(e)
     }
 }
 
-function sendPasswordReset(username, email) {
+const sendPasswordReset = (username, email) => {
     try {
         jwt.sign(
-            { email: email },
+            { email },
             process.env.PASS_RESET_TOKEN_SECRET,
             { expiresIn: process.env.PASS_RESET_TOKEN_EXP },
             (err, passToken) => {
@@ -61,20 +81,7 @@ function sendPasswordReset(username, email) {
                     throw err
                 const url = `${serverAddress}/password_reset/${passToken}`
 
-                ejs.renderFile(`${path}/_reset_password.ejs`, {url, username}, (err, str) => {
-                    if (err)
-                        console.log(err)
-                    else {
-                        transporter.sendMail({
-                            from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
-                            to: email,
-                            subject: 'Reseting Password',
-                            html: str
-                        })
-                        .then()
-                        .catch(e => console.log(e))
-                    }
-                })
+                sendMail('_reset_password.ejs', {url, username}, email, 'Password reset');
             }
         )
     } catch (e) {
@@ -82,113 +89,40 @@ function sendPasswordReset(username, email) {
     }
 }
 
-function sendNotificationSimFinished(username, email, project_id, sim_status) {
-    try {
-        const url = serverAddress
-        const url_project_details = `${serverAddress}/project?id=${project_id}`
-        const url_project_results = `${serverAddress}/project/results?id=${project_id}`
+const sendNotificationSimFinished = (username, email, project_id, sim_status) => {
+    const url = serverAddress
+    const url_project_details = `${serverAddress}/project?id=${project_id}`
+    const url_project_results = `${serverAddress}/project/results?id=${project_id}`
 
-        if (sim_status === 'ok') {
-            ejs.renderFile(`${path}/_notification_finished.ejs`, {url, url_project: url_project_results, username}, (err, str) => {
-                if (err)
-                    console.log(err)
-                else {
-                    transporter.sendMail({
-                        from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
-                        to: email,
-                        subject: 'Your simulation is Finished!',
-                        html: str
-                    })
-                        .then()
-                        .catch(e => console.log(e))
-                }
-            })
-        } else if (sim_status === 'error') {
-            ejs.renderFile(`${path}/_notification_error.ejs`, {url, url_project: url_project_details, username}, (err, str) => {
-                if (err)
-                    console.log(err)
-                else {
-                    transporter.sendMail({
-                        from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
-                        to: email,
-                        subject: 'Your simulation is Finished!',
-                        html: str
-                    })
-                        .then()
-                        .catch(e => console.log(e))
-                }
-            })
-        }
-    } catch (e) {
-        console.log(e)
+    if (sim_status === 'ok') {
+        sendMail('_notification_finished.ejs', {url, url_project: url_project_results, username}, email, 'Your simulation finished successfully!');
+    } else if (sim_status === 'error') {
+        sendMail('_notification_error.ejs', {url, url_project: url_project_details, username}, email, 'Your simulation finished with errors!');
     }
 }
 
-function sendGuestProjectIsWaiting(email, project_id) {
-    try {
-        const url = serverAddress;
-        const url_project_details = `${serverAddress}/guest_simulation/${project_id}`;
-        const url_project_results = `${serverAddress}/guest_simulation/results/${project_id}`;
+const sendGuestProjectIsWaiting = (email, project_id) => {
+    const url = serverAddress;
+    const url_project_details = `${serverAddress}/guest_simulation/${project_id}`;
+    const url_project_results = `${serverAddress}/guest_simulation/results/${project_id}`;
 
-        ejs.renderFile(`${path}/_guest_simulation.ejs`, {url, url_project_details, url_project_results}, (err, str) => {
-            if (err)
-                console.log(err)
-            else {
-                transporter.sendMail({
-                    from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
-                    to: email,
-                    subject: 'Your guest simulation details',
-                    html: str
-                })
-                    .then()
-                    .catch(e => console.log(e))
-            }
-        })
-    } catch (e) {
-        console.log(e)
+    sendMail('_guest_simulation.ejs', {url, url_project_details, url_project_results}, email, 'Your guest simulation details');
+}
+
+const sendNotificationGuestSimFinished = (email, project_id, sim_status) => {
+    const url = serverAddress;
+    const url_project_details = `${serverAddress}/guest_simulation/${project_id}`;
+    const url_project_results = `${serverAddress}/guest_simulation/results/${project_id}`;
+
+    if (sim_status === 'ok') {
+        sendMail('_notification_finished.ejs', {url, url_project: url_project_results, username: null}, email, 'Your guest simulation finished successfully!');
+    } else if (sim_status === 'error') {
+        sendMail('_notification_error.ejs', {url, url_project: url_project_details, username: null}, email, 'Your guest simulation finished with errors!');
     }
 }
 
-function sendNotificationGuestSimFinished(email, project_id, sim_status) {
-    try {
-        const url = serverAddress;
-        const url_project_details = `${serverAddress}/guest_simulation/${project_id}`;
-        const url_project_results = `${serverAddress}/guest_simulation/results/${project_id}`;
-
-        if (sim_status === 'ok') {
-            ejs.renderFile(`${path}/_notification_finished.ejs`, {url, url_project: url_project_results, username: null}, (err, str) => {
-                if (err)
-                    console.log(err)
-                else {
-                    transporter.sendMail({
-                        from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
-                        to: email,
-                        subject: 'Your guest simulation is Finished!',
-                        html: str
-                    })
-                        .then()
-                        .catch(e => console.log(e))
-                }
-            })
-        } else if (sim_status === 'error') {
-            ejs.renderFile(`${path}/_notification_error.ejs`, {url, url_project: url_project_details, username: null}, (err, str) => {
-                if (err)
-                    console.log(err)
-                else {
-                    transporter.sendMail({
-                        from: `"ProProtein" <${process.env.MAILER_SENDER_ADDRESS}>`,
-                        to: email,
-                        subject: 'Your guest simulation is Finished!',
-                        html: str
-                    })
-                        .then()
-                        .catch(e => console.log(e))
-                }
-            })
-        }
-    } catch (e) {
-        console.log(e)
-    }
+const sendContactMessageConfirmation = contactMessageObj => {
+    sendMail('_contact_message_confirmation_to_user.ejs', {serverAddress, ...contactMessageObj}, contactMessageObj.email, 'Message received');
 }
 
 module.exports = {
@@ -197,4 +131,5 @@ module.exports = {
     sendNotificationSimFinished,
     sendGuestProjectIsWaiting,
     sendNotificationGuestSimFinished,
+    sendContactMessageConfirmation
 }

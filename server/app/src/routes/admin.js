@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-// const FileTemplateRaw = require('../db/models/fileTemplateRaw')
-// const TemplateFile = require('../db/models/templateFile')
 const moment = require('moment');
 const bcrypt = require('bcryptjs');
 const Project = require('../db/models/project');
@@ -71,6 +69,7 @@ const getAdminUsersPage = async (req, res) => {
         const tableHeaders = headersInfo.map(e => e[0]);
         const tableHeadersTypes = headersInfo.map(e => e[1]);
         const tableColumnSizes = headersInfo.map(e => e[2]);
+        const tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const tables = [{
             detailsRoute: '/admin/users',
@@ -78,6 +77,7 @@ const getAdminUsersPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             showDetailsButton: true,
             showDownloadButton: false,
             tableContent: users.map(user => [
@@ -142,6 +142,7 @@ const getAdminUserDetailsPage = async (req, res) => {
         const tableHeaders = headersInfo.map(e => e[0]);
         const tableHeadersTypes = headersInfo.map(e => e[1]);
         const tableColumnSizes = headersInfo.map(e => e[2]);
+        const tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const tables = [{
             tableName: 'Projects',
@@ -150,6 +151,7 @@ const getAdminUserDetailsPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             statusColors,
             showDetailsButton: true,
             showDownloadButton: false,
@@ -336,6 +338,7 @@ const getAdminProjectsPage = async (req, res) => {
         const tableHeaders = headersInfo.map(e => e[0]);
         const tableHeadersTypes = headersInfo.map(e => e[1]);
         const tableColumnSizes = headersInfo.map(e => e[2]);
+        const tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const tables = [{
             detailsRoute: '/admin/projects',
@@ -343,6 +346,7 @@ const getAdminProjectsPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             links,
             statusColors,
             showDetailsButton: true,
@@ -399,6 +403,7 @@ const getAdminProjectDetailsPage = async (req, res) => {
         let tableHeaders = headersInfo.map(e => e[0]);
         let tableHeadersTypes = headersInfo.map(e => e[1]);
         let tableColumnSizes = headersInfo.map(e => e[2]);
+        let tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const inputFileTypes = [
             'structure',
@@ -413,6 +418,7 @@ const getAdminProjectDetailsPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             showDetailsButton: false,
             showDownloadButton: true,
             tableContent: inputFileTypes.map(inputFileType => [
@@ -432,6 +438,7 @@ const getAdminProjectDetailsPage = async (req, res) => {
         tableHeaders = headersInfo.map(e => e[0]);
         tableHeadersTypes = headersInfo.map(e => e[1]);
         tableColumnSizes = headersInfo.map(e => e[2]);
+        tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const parameterTypes = [
             'force_field',
@@ -449,6 +456,7 @@ const getAdminProjectDetailsPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             showDetailsButton: false,
             showDownloadButton: false,
             tableLength: 0.6,
@@ -468,6 +476,7 @@ const getAdminProjectDetailsPage = async (req, res) => {
         tableHeaders = headersInfo.map(e => e[0]);
         tableHeadersTypes = headersInfo.map(e => e[1]);
         tableColumnSizes = headersInfo.map(e => e[2]);
+        tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const outputFileTypes = [
             'trajectory',
@@ -489,6 +498,7 @@ const getAdminProjectDetailsPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             showDetailsButton: false,
             showDownloadButton: true,
             tableLength: 0.6,
@@ -647,9 +657,6 @@ const postAdminProjectEditFiles = async (req, res, next) => {
 
         const demos = await DemoFile.find();
         const demosIDs = demos.map(demo => demo.file_id.toString());
-        // const templates = (await TemplateFile.find()).filter(template => template.file_id);;
-        // const templatesIDs = templates.map(template => template.file_id.toString());
-
         const files_to_delete = [];
 
         const file_types_map = {
@@ -789,8 +796,6 @@ const deleteAdminProject = async (req, res, next) => {
 
         const demos = await DemoFile.find();
         const demosIDs = demos.map(demo => demo.file_id.toString());
-        // const templates = (await TemplateFile.find()).filter(template => template.file_id);;
-        // const templatesIDs = templates.map(template => template.file_id.toString());
         
         let fileIds = [
             project.input.files.structure?.file_id?.toString(),
@@ -832,9 +837,6 @@ const getAdminFilesPage = async (req, res) => {
 
         const demos = await DemoFile.find();
         const demosIDs = demos.map(demo => demo.file_id.toString());
-        // let templates = await TemplateFile.find();
-        // templates = templates.filter(template => template.file_id);
-        // const templatesIDs = templates.map(template => template.file_id.toString());
         let files = await FileRaw.find();
         files = files.filter(file => !demosIDs.includes(file._id.toString()));        
 
@@ -888,7 +890,7 @@ const getAdminFilesPage = async (req, res) => {
         const tableHeaders = headersInfo.map(e => e[0]);
         const tableHeadersTypes = headersInfo.map(e => e[1]);
         const tableColumnSizes = headersInfo.map(e => e[2]);
-
+        const tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
         const tables = [{
             downloadRoute: '/admin/download',
             deleteRoute: '/admin/files/delete',
@@ -899,6 +901,7 @@ const getAdminFilesPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             links,
             tableContent: files.map(file => {
                 let projectId = filesProjectsMap[file._id.toString()];
@@ -950,7 +953,7 @@ const deleteAdminFile = async (req, res, next) => {
         const isDemo = await DemoFile.exists({ file_id });
 
         if (isDemo) {
-            req.flash('error', `Cannot delete demo file`);
+            req.flash('error', `Cannot delete example file`);
             return res.redirect('/admin/files');
         }
 
@@ -1005,7 +1008,6 @@ const deleteAdminFile = async (req, res, next) => {
 const postAdminFileUpload = async (req, res) => {
     try {
         // const file_id = mongoose.Types.ObjectId(req.file.id);
-
         // function doing nothing, left for future improvements
         
         return res.redirect('/admin/files');
@@ -1036,6 +1038,7 @@ const getAdminFilesDemosPage = async (req, res) => {
         const tableHeaders = headersInfo.map(e => e[0]);
         const tableHeadersTypes = headersInfo.map(e => e[1]);
         const tableColumnSizes = headersInfo.map(e => e[2]);
+        const tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const tables = [{
             downloadRoute: '/admin/download',
@@ -1047,6 +1050,7 @@ const getAdminFilesDemosPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             tableContent: files.map(file => [
                 file._id,
                 file.filename,
@@ -1133,10 +1137,9 @@ const deleteAdminDemoFile = async (req, res, next) => {
             await demo.remove();
             return next();
         } else {
-            req.flash('error', 'A demo file in use cannot be deleted');
+            req.flash('error', 'An example file in use cannot be deleted');
             return res.redirect('/admin/files/demos');
         }
-        
     } catch (err) {
         // console.log(err);
         await pushLog(err, 'deleteAdminDemoFile');
@@ -1153,7 +1156,7 @@ const postAdminDemoUpload = async (req, res) => {
         });
 
         await newDemo.save();
-        req.flash('success', 'Successfully uploaded new demo file');
+        req.flash('success', 'Successfully uploaded new example file');
         return res.redirect('/admin/files/demos');
 
     } catch (err) {
@@ -1163,192 +1166,6 @@ const postAdminDemoUpload = async (req, res) => {
         return res.redirect('/admin/files/demos');
     }
 }
-
-// const getAdminFilesTemplatesPage = async (req, res) => {
-//     try {
-//         const messages = req.flash();
-//
-//         const templates = await TemplateFile.find();
-//
-//         const onlyFiles = templates.filter(template => template.file_id);
-//
-//         const templatesFilesIDs = onlyFiles.map(template => template.file_id.toString());
-//         const templateFiles = await FileTemplateRaw.find({ _id: templatesFilesIDs });
-//         const templateFilesTypesMap = {};
-//         onlyFiles.forEach(entry => {
-//             templateFilesTypesMap[entry.file_id.toString()] = entry.template_type;
-//         });
-//
-//         const parameter_types = [
-//             'pdb2gmx_params',
-//             'traj_params',
-//             'genion_params',
-//         ];
-//
-//         const templateValues = templates.filter(template => {
-//             return parameter_types.includes(template.template_type);
-//         });
-//
-//         // Two tables on page
-//         const tables = [];
-//
-//         // Template Files Table
-//         let headersInfo = [
-//             ['ID', 'string', 4],
-//             ['Template Type', 'string', 4],
-//             ['Filename', 'string', 4],
-//             ['Length', 'string', 3],
-//             ['Upload Time', 'string', 3],
-//             ['Content Type', 'string', 4],
-//         ];
-//
-//         let tableHeaders = headersInfo.map(e => e[0]);
-//         let tableHeadersTypes = headersInfo.map(e => e[1]);
-//         let tableColumnSizes = headersInfo.map(e => e[2]);
-//
-//         tables.push({
-//             tableName: 'Template Files',
-//             tableHeaders,
-//             tableHeadersTypes,
-//             tableColumnSizes,
-//             showDetailsButton: false,
-//             showDownloadButton: true,
-//             showDeleteButton: true,
-//             detailsRoute: '',
-//             downloadRoute: '/admin/download',
-//             deleteRoute: '/admin/files/templates/delete',
-//             afterDeleteRoute: '/admin/files/templates',
-//             tableContent: templateFiles.map(file => [
-//                 file._id,
-//                 templateFilesTypesMap[file._id.toString()],
-//                 file.filename,
-//                 file.length,
-//                 moment(file.uploadDate).format('ll'),
-//                 file.contentType,
-//             ])
-//         });
-//
-//         // Template Values Table
-//         headersInfo = [
-//             ['ID', 'string', 4],
-//             ['Template Type', 'string', 4],
-//             ['Content', 'string', 2],
-//         ];
-//
-//         tableHeaders = headersInfo.map(e => e[0]);
-//         tableHeadersTypes = headersInfo.map(e => e[1]);
-//         tableColumnSizes = headersInfo.map(e => e[2]);
-//         
-//         tables.push({
-//             tableName: 'Template Values',
-//             tableHeaders,
-//             tableHeadersTypes,
-//             tableColumnSizes,
-//             showDetailsButton: false,
-//             showDownloadButton: false,
-//             detailsRoute: '',
-//             downloadRoute: '',
-//             tableLength: 0.5,
-//             tableContent: templateValues.map(entry => [
-//                 entry._id,
-//                 entry.template_type,
-//                 entry.content,
-//             ])
-//         });
-//
-//         const templateParamsMap = templateValues.map(val => [val.template_type, val.content]);
-//
-//         const params = {
-//             selected: 'files',
-//             selectedTab: 'templates',
-//             errors: messages.error,
-//             successes: messages.success,
-//             tables,
-//             templateParamsMap,
-//             renderingAllTablesAtOnce: true
-//         };
-//
-//         res.render('general/admin/files', params);
-//
-//     } catch (err) {
-//         // console.log(err);
-//         await pushLog(err, 'getAdminFilesTemplatesPage');
-//         req.flash('error', 'Error');
-//         return res.redirect('/admin/files');
-//     }
-// }
-
-// const deleteAdminTemplateFile = async (req, res, next) => {
-//     try {
-//         const file_id = req.params.file_id;
-//         if (!mongoose.Types.ObjectId.isValid(file_id)) {
-//             req.flash('error', `No file found with such ID: ${file_id}`);
-//             return res.redirect('/admin/files/templates');
-//         }
-//
-//         const template = await TemplateFile.findOne({ file_id });
-//
-//         if (!template) {
-//             req.flash('error', `No file found with such ID: ${file_id}`);
-//             return res.redirect('/admin/files/templates');
-//         }
-//
-//         const file = await FileTemplateRaw.findById(file_id);
-//         if (!file) {
-//             req.flash('error', `No file found with such ID: ${file_id}`);
-//             await pushLog(err, 'deleteAdminTemplateFile', req.user._id);
-//             return res.redirect('/admin/files/templates');
-//         }
-//
-//         req.params.file_bucket = 'template_files';
-//         await template.remove();
-//         return next();
-//
-//     } catch (err) {
-//         // console.log(err);
-//         await pushLog(err, 'deleteAdminTemplateFile');
-//         req.flash('error', 'Error');
-//         return res.redirect('/admin/files/templates');
-//     }
-// }
-
-// const postAdminTemplateUpload = async (req, res) => {
-//     try {
-//         const template_type = req.body.template_type;
-//
-//         let newTemplate = new TemplateFile({
-//             file_id: mongoose.Types.ObjectId(req.file.id),
-//             template_type
-//         })
-//
-//         await newTemplate.save();
-//         req.flash('success', 'Successfully uploaded new template file');
-//         return res.redirect('/admin/files/templates');
-//
-//     } catch (err) {
-//         // console.log(err);
-//         await pushLog(err, 'postAdminTemplateUpload');
-//         req.flash('error', 'Error');
-//         return res.redirect('/admin/files/templates');
-//     }
-// }
-
-// const postAdminTemplateEdit = async (req, res) => {
-//     try {
-//         Object.entries(req.body).forEach(async ([key, value]) => {
-//             const param = await TemplateFile.findOne({ template_type: key });
-//             param.content = value;
-//             await param.save();
-//         });
-//         req.flash('success', 'Successfully changed template parameters');
-//         return res.redirect('/admin/files/templates');
-//     } catch (err) {
-//         // console.log(err);
-//         await pushLog(err, 'postAdminTemplateEdit');
-//         req.flash('error', 'Error');
-//         return res.redirect('/admin/files/templates');
-//     }
-// }
 
 const getAdminLogsPage = async (req, res) => {
     try {
@@ -1370,6 +1187,7 @@ const getAdminLogsPage = async (req, res) => {
         const tableHeaders = headersInfo.map(e => e[0]);
         const tableHeadersTypes = headersInfo.map(e => e[1]);
         const tableColumnSizes = headersInfo.map(e => e[2]);
+        const tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const tables = [{
             detailsRoute: '',
@@ -1378,6 +1196,7 @@ const getAdminLogsPage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             showDetailsButton: false,
             showDownloadButton: false,
             showDeleteButton: true,
@@ -1458,6 +1277,7 @@ const getAdminQueuePage = async (req, res) => {
         const tableHeaders = headersInfo.map(e => e[0]);
         const tableHeadersTypes = headersInfo.map(e => e[1]);
         const tableColumnSizes = headersInfo.map(e => e[2]);
+        const tableColumnSizesSum = tableColumnSizes.reduce((acc, cur) => acc + cur);
 
         const statusColors = {
             'Initial': 'green',
@@ -1474,6 +1294,7 @@ const getAdminQueuePage = async (req, res) => {
             tableHeaders,
             tableHeadersTypes,
             tableColumnSizes,
+            tableColumnSizesSum,
             showDetailsButton: false,
             showDownloadButton: false,
             showDeleteButton: true,
@@ -1527,7 +1348,7 @@ const deleteAdminQueueEntry = async (req, res) => {
             return res.redirect('/admin/queue');
         }
 
-        await QueueEntry.deleteOne({ _id: firstEntry._id });
+        await QueueEntry.deleteOne({ _id: queue_entry_id });
         req.flash('success', 'Queue entry successfully deleted');
         res.redirect('/admin/queue');
     } catch (err) {
@@ -1607,11 +1428,6 @@ module.exports = {
     deleteAdminDemoFile,
     postAdminDemoUpload,
     
-    // getAdminFilesTemplatesPage,
-    // deleteAdminTemplateFile,
-    // postAdminTemplateUpload,
-    // postAdminTemplateEdit,
-
     getAdminLogsPage,
     deleteAdminLog,
 

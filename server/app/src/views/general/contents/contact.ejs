@@ -1,0 +1,60 @@
+<div class="h-full w-full py-10 px-40 font-quicksand flex flex-col gap-5 text-gray-700">
+    <div class="w-full bg-white rounded-xl flex flex-col px-10 py-6 shadow-xl gap-6">
+        <div class="flex flex-row gap-16">
+            <form action="/contact" method="post" class="flex flex-col gap-4 w-full">
+                <p class="text-4xl">Contact Us</p>
+                <div class="flex flex-row gap-4 w-full">
+                    <div class="flex flex-col gap-2 w-full">
+                        <label class="whitespace-nowrap" for="first_name">First name</label>
+                        <input id="first_name" name="first_name" type="text" required class="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-2">
+                    </div>
+                    <div class="flex flex-col gap-2 w-full">
+                        <label class="whitespace-nowrap" for="second_name">Second name</label>
+                        <input id="second_name" name="second_name" type="text" required class="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-2">
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="whitespace-nowrap" for="email">Email</label>
+                    <input id="email" name="email" type="email" required class="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-2">
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="whitespace-nowrap" for="message">Message</label>
+                    <textarea id="message" name="message" required class="resize-none h-64 border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-2" maxlength="1000"></textarea>
+                    <p id="chars_len_text" class="self-end text-gray-500"><span id="chars_len_span"></span>/1000</p>
+                </div>
+
+                <button type="submit" class="bg-blue-500 rounded-lg text-white py-2 hover:bg-blue-600">Send message</button>
+
+            </form>
+            <div class="w-full flex flex-col gap-4">
+                <p class="text-2xl text-gray-500 mb-8">Contact information</p>
+                <p class="w-full text-lg">We aim to respond to all inquiries promptly. Our team will review your message and get back to you as soon as possible.</p>
+                <p class="text-lg text-gray-500">Email: <span class="text-gray-700"><%= mailerSenderAddress %></span></p>
+                <p class="text-lg text-gray-500">Website: <span class="text-gray-700"><%= serverAddress %></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const message = document.getElementById('message');
+    const chars_len_span = document.getElementById('chars_len_span');
+    const chars_len_text = document.getElementById('chars_len_text');
+
+    const updateCharsLenSpan = () => {
+        const len = message.value.length;
+        chars_len_span.textContent = len;
+        if (len >= 1000) {
+            chars_len_text.classList.add('text-red-500');
+            chars_len_text.classList.remove('text-gray-500');
+        } else {
+            chars_len_text.classList.remove('text-red-500');
+            chars_len_text.classList.add('text-gray-500');
+        }
+    }
+
+    message.addEventListener('input', updateCharsLenSpan);
+
+    updateCharsLenSpan();
+
+</script>

@@ -1,16 +1,32 @@
 <%- include('components/title.ejs', { p: 'Sign Up' }) %>
 
-<%- include('components/input.ejs', { p: 'Username', type: 'text', name: 'username', required: true, value: credentials.username}) %>
-<%- include('components/input.ejs', { p: 'Email', type: 'email', name: 'email', required: true, value: credentials.email}) %>
-<%- include('components/input.ejs', { p: 'Password', type: 'password', name: 'password', required: true, value: '' }) %>
-<%- include('components/input.ejs', { p: 'Repeat Password', type: 'password', name: 'password_confirmation', required: true, value: '' }) %>
+<div>
+    <label for="email">Email</label>
+    <input id="email" type="email" name="email" required autocomplete="username" class="border border-gray-300 rounded p-1 w-full focus:outline-none focus:ring-2">
+</div>
 
-<%- include('components/button.ejs', { p: 'Sign Up' }) %>
+<div>
+    <label for="username">Username</label>
+    <input id="username" type="text" name="username" required autocomplete="new-password" class="border border-gray-300 rounded p-1 w-full focus:outline-none focus:ring-2">
+</div>
 
-<%- include('components/separator.ejs') %>
+<div>
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" required autocomplete="current-password" class="border border-gray-300 rounded p-1 w-full focus:outline-none focus:ring-2">
+</div>
 
-<%- include('components/subtitle.ejs', { p: "Already have an account?" }) %>
-<%- include('components/link.ejs', { p: 'Sign In', destination: 'login' }) %>
+<div>
+    <label for="password_confirmation">Repeat Password</label>
+    <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" class="border border-gray-300 rounded p-1 w-full focus:outline-none focus:ring-2">
+</div>
 
-<%- include('components/subtitle.ejs', { p: "Return to Home"}) %>
-<%- include('components/link.ejs', { p: 'Home', destination: 'home' }) %>
+<button type="submit" class="mt-6 bg-orange-500 border border-orange-500 rounded-lg text-white font-quicksand font-medium
+py-1 w-40 hover:bg-orange-600 hover:border-orange-600 self-center">Sign Up</button>
+
+<div class="border-t border-orange-500 mt-2"></div>
+
+<p class="text-base text-center">Already have an account?</p>
+<a href="/login" class="-mt-2 bg-white border border-orange-500 rounded-lg text-orange-500 font-quicksand font-medium py-1 self-center w-40 hover:text-white hover:bg-orange-600 hover:border-orange-600 text-center">Sign In</a>
+
+<p class="text-base text-center">Return to Home</p>
+<a href="/home" class="-mt-2 bg-white border border-orange-500 rounded-lg text-orange-500 font-quicksand font-medium py-1 self-center w-40 hover:text-white hover:bg-orange-600 hover:border-orange-600 text-center">Home</a>

@@ -1,13 +1,14 @@
-// const TemplateFile = require('../db/models/templateFile')
 const DemoFile = require('../db/models/demoFile')
 const Project = require('../db/models/project')
 const QueueEntry = require('../db/models/queueEntry')
+const ContactMessage = require('../db/models/contactMessage')
 const pushLog = require('../logging')
 const mongoose = require('mongoose')
 const serverAddress = process.env.SERVER_ADDRESS;
+const mailerSenderAddress = process.env.MAILER_SENDER_ADDRESS;
 const moment = require('moment');
 const path = require('path');
-const { sendGuestProjectIsWaiting } = require('../mailing');
+const { sendGuestProjectIsWaiting, sendContactMessageConfirmation } = require('../mailing');
 const { gfsDeleteFile } = require('../gfs')
 
 const getHomePage = (req, res) => {
@@ -16,21 +17,6 @@ const getHomePage = (req, res) => {
     const successes = messages.success
     res.render('general/_home', { logged: req.isAuthenticated(), selected: 'Home', errors, successes })
 }
-
-// const getDownloadTemplate = async (req, res, next) => {
-//     try {
-//         const templateType = req.params.template
-//         const template = await TemplateFile.findOne({ template_type: templateType })
-//         req.fileToDownloadId = template.file_id
-//         res.attachment(templateType + '.mdp');
-//         next()
-//     } catch (err) {
-//         // console.log(err)
-//         await pushLog(err, 'getDownloadTemplate');
-//         req.flash('error', 'Error while downloading template');
-//         return res.redirect('/')
-//     }
-// }
 
 const getDownloadDemo = async (req, res, next) => {
     try {
@@ -443,6 +429,16 @@ const getQueue = async (req, res) => {
             .populate({ path: "project_id", model: Project });
 
         if (!curEntry || !curEntry.project_id) {
+            if (project.status === 'Finished' || project.status === 'Error') {
+                const finishedProject = {
+                    id: project_id,
+                    status: project.status,
+                    details_url: project.owner_id ? `/project?id=${project_id}` : `/guest_simulation/${project_id}`,
+                    results_url: project.owner_id ? `/project/results?id=${project_id}` : `/guest_simulation/results/${project_id}`,
+                }
+                req.finishedProject = finishedProject;
+                return getQueueGeneral(req, res);
+            }
             req.flash('error', 'This project is not requested to queue');
             return res.redirect('/');
         }
@@ -500,7 +496,7 @@ const getQueue = async (req, res) => {
         const messages = req.flash();
         const params = {
             logged: !!req.user,
-            selected: '',
+            selected: 'Queue',
             entries,
             entriesLen,
             curEntry,
@@ -567,7 +563,7 @@ const getQueueGeneral = async (req, res) => {
         const messages = req.flash();
         const params = {
             logged: !!req.user,
-            selected: '',
+            selected: 'Queue',
             entries,
             entriesLen,
             listLen,
@@ -575,6 +571,7 @@ const getQueueGeneral = async (req, res) => {
             processingProjectsNumber,
             successes: messages.success,
             errors: messages.error,
+            finishedProject: req.finishedProject || null,
         }
         res.render('general/_queue_general', params); 
     } catch (err) {
@@ -592,9 +589,81 @@ const getHelpPage = async (req, res) => {
     res.render('general/_help', { logged: req.isAuthenticated(), selected: 'Help', errors, successes })
 }
 
+const getContactPage = async (req, res) => {
+    const messages = req.flash();
+    const params = {
+        logged: req.isAuthenticated(),
+        selected: 'Contact',
+        errors: messages.error,
+        successes: messages.success,
+        serverAddress,
+        mailerSenderAddress,
+    };
+    res.render('general/_contact', params)
+}
+
+const postContact = async (req, res) => {
+    try {
+        const newContactMessage = new ContactMessage({
+            firstName: req.body.first_name,
+            secondName: req.body.second_name,
+            email: req.body.email,
+            message: req.body.message,
+            timestamp: Date.now(),
+        });
+
+        if (req.user?._id) {
+            newContactMessage.associatedUserId = mongoose.Types.ObjectId(req.user?._id);
+        }
+
+        const error = await newContactMessage.validateSync();
+
+        if (error) {
+            Object.entries(error.errors).forEach(([ label, { message } ]) => {
+                req.flash('error', `Wrong ${ label }: ${ message }`)
+            });
+            return res.redirect('back');
+        }
+        await newContactMessage.save();
+
+        sendContactMessageConfirmation(newContactMessage._doc);
+
+        req.flash('success', "Thank you for contacting us! We'll try our best to answear as soon as possible");
+
+        return res.redirect('back');
+    } catch (err) {
+        // console.log(err);
+        await pushLog(err, 'postContact', req.user?._id);
+        req.flash('error', 'Failed to send a message');
+        return res.redirect('/');
+    }
+}
+
+const getTest = async (req, res) => {
+    const params = {
+        firstName: 'First',
+        secondName: 'Second',
+        message: 'Your message',
+        serverAddress,
+        
+        username: 'Username1',
+        url: serverAddress,
+
+        url_project_details: 'url_project_details',
+        url_project_results: 'url_project_results',
+
+        url_project: 'url_project',
+    };
+    // res.render("components/mailing/_account_confirmation.ejs", params); // done
+    // res.render("components/mailing/_contact_message_confirmation_to_user.ejs", params); // done
+    // res.render("components/mailing/_guest_simulation.ejs", params); // done
+    // res.render("components/mailing/_notification_error.ejs", params); // done
+    // res.render("components/mailing/_notification_finished.ejs", params); // done
+    // res.render("components/mailing/_reset_password.ejs", params); // done
+}
+
 module.exports = {
     getHomePage,
-    // getDownloadTemplate,
     getGuestSimulationPage,
     postGuestSimulation,
     getGuestProject,
@@ -607,4 +676,7 @@ module.exports = {
     getQueue,
     getQueueGeneral,
     getHelpPage,
+    getContactPage,
+    postContact,
+    getTest,
 }

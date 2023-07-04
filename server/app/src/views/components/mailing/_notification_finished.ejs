@@ -1,21 +1,19 @@
-<div>
-    <% if (username) { %>
-    <h2>Hello <%= username %>!</h2>
-    <% } else { %>
-    <h2>Hello!</h2>
-    <% } %>
-    <p>Your recent simulation has been processed successfully!</p>
-    <% if (username) { %>
-    <!-- not guest -->
-    <p>You can check results by logging in to our site and after that clicking 'Project' link below</p>
-    <% } else { %>
-    <!-- guest -->
-    <p>You can check results by clicking 'Project results' link below</p>
-    <% } %>
-    <p>
-        <a href="<%= url %>">ProProtein</a>
-    </p>
-    <p>
-        <a href="<%= url_project %>">Project results</a>
-    </p>
-</div>
+<% if (username) { %>
+<h2>Hello <%= username %>!</h2>
+<% } else { %>
+<h2>Hello!</h2>
+<% } %>
+<p>Your recent simulation has been processed successfully!</p>
+<% if (username) { %>
+<!-- not guest -->
+<p>You can check simulation results by logging in to our website <a href="<%= url %>">ProProtein</a> and clicking the link: <a href="<%= url_project %>">Project results</a>.</p>
+<% } else { %>
+<!-- guest -->
+<p>You can check results by clicking link: <a href="<%= url_project %>">Project results</a>.</p>
+<% } %>
+
+<p>
+Best regards,<br>
+ProProtein Team
+</p>
+

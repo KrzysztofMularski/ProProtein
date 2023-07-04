@@ -110,8 +110,15 @@
     }
 
     const onChangedStructure = filepath => {
-        structure_visible.value = filepath.split('\\').at(-1);
-        checkInputsAndDisableSubmitButton();
+        const size = input_file?.files[0]?.size;
+        if (size > 2*1024*1024) {
+            alert("File is too large. (Max 2MB)");
+            input_file.value = "";
+            structure_visible.value = "";
+        } else {
+            structure_visible.value = filepath.split('\\').at(-1);
+            checkInputsAndDisableSubmitButton();
+        }
     }
 
     const onSubmit = (e) => {

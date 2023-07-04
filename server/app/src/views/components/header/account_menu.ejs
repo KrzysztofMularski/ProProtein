@@ -10,6 +10,7 @@
                 <%- include ('../../../../public/icons/profile.svg') %>
             </div>
         </div>
+        <% if (!logged) { %>
         <a id="login" href="/login" class="_account_menu_element">
             <p>Sign In</p>
             <div class="w-6">
@@ -22,6 +23,7 @@
                 <%- include ('../../../../public/icons/sign-up.svg') %>
             </div>
         </a>
+        <% } else { %>
         <a id="profile" href="/profile" class="_account_menu_element">
             <p>Profile</p>
             <div class="w-6">
@@ -36,24 +38,11 @@
                 </div>
             </button>
         </form>
+        <% } %>
     </div>
 </div>
 <script>
-    const logged = '<%= logged %>'
-
     const menu = document.getElementById('_account_menu')
-    const login = document.getElementById('login')
-    const register = document.getElementById('register')
-    const profile = document.getElementById('profile')
-    const logout = document.getElementById('logout')
-
-    if (logged === 'true') {
-        login.classList.add('hidden')
-        register.classList.add('hidden')
-    } else {
-        profile.classList.add('hidden')
-        logout.classList.add('hidden')
-    }
 
     const accountClick = () => {
         menu.classList.toggle('translate-x-full')

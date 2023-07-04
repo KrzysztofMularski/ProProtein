@@ -110,7 +110,7 @@
                             <input type="time" name="processing_since_time" id="processing_since_time" value="<%= project.dateInputProcessingSinceTime %>" step=1 class="p-2 rounded-lg">
                         </div>
 
-                        <label for="finished_since" class="text-md">Finished since</label>
+                        <label for="finished_since" class="text-md">Finished on</label>
                         <div class="grid grid-cols-[3fr_2fr] gap-2">
                             <input type="date" name="finished_since" id="finished_since" value="<%= project.dateInputFinishedSince %>" class="p-2 rounded-lg">
                             <input type="time" name="finished_since_time" id="finished_since_time" value="<%= project.dateInputFinishedSinceTime %>" step=1 class="p-2 rounded-lg">
@@ -273,6 +273,21 @@
             <p class="text-gray-500 text-sm">Created At</p>
             <p class="text-black text-lg"><%= project.createdStr %></p>
 
+            <% if (project.waiting_since_str) { %>
+            <p class="text-gray-500 text-sm">Waiting since</p>
+            <p class="text-black text-lg"><%= project.waiting_since_str %></p>
+            <% } %>
+
+            <% if (project.processing_since_str) { %>
+            <p class="text-gray-500 text-sm">Processing since</p>
+            <p class="text-black text-lg"><%= project.processing_since_str %></p>
+            <% } %>
+
+            <% if (project.finished_since_str) { %>
+            <p class="text-gray-500 text-sm">Finished on</p>
+            <p class="text-black text-lg"><%= project.finished_since_str %></p>
+            <% } %>
+
             <% if (project.description) { %>
             <p class="text-gray-500 text-sm">Description</p>
             <p class="text-black text-lg"><%= project.description %></p>
@@ -289,29 +304,6 @@
             <% } %>
         </div>
 
-        <p class="text-xl">Simulation Files and Parameters</p>
-
-        <% if (project.waiting_since_str || project.processing_since_str || project.finished_since_str) { %>
-
-        <div class="grid grid-cols-[150px_300px] w-96 items-baseline">
-
-            <% if (project.waiting_since_str) { %>
-            <p class="text-gray-500 text-sm">Waiting since</p>
-            <p class="text-black text-lg"><%= project.waiting_since_str %></p>
-            <% } %>
-
-            <% if (project.processing_since_str) { %>
-            <p class="text-gray-500 text-sm">Processing since</p>
-            <p class="text-black text-lg"><%= project.processing_since_str %></p>
-            <% } %>
-
-            <% if (project.finished_since_str) { %>
-            <p class="text-gray-500 text-sm">Finished since</p>
-            <p class="text-black text-lg"><%= project.finished_since_str %></p>
-            <% } %>
-
-        </div>
-        <% } %>
         
         <%- include('components/table.ejs') %>
     </div>

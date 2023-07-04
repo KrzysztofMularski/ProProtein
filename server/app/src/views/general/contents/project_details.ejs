@@ -139,7 +139,7 @@ option {
                         </div>
                         <div class="flex flex-row gap-4 w-64">
                             <label class="bg-gray-500 rounded-md cursor-pointer flex px-4 hover:bg-gray-600 flex-grow">
-                                <input type="file" name="input_data" onchange="onChangedStructure(this.value)" hidden>
+                                <input id="upload_file" type="file" name="input_data" onchange="onChangedStructure(this.value)" hidden>
                                 <span class="text-white flex items-center justify-center flex-grow">Choose file..</span>
                             </label>
                             <label class="bg-gray-500 rounded-md text-white flex flex-row items-center justify-center px-4 flex-grow gap-2 hover:bg-gray-600 cursor-pointer">
@@ -348,6 +348,8 @@ option {
 
     const reset_parameters_to_default = document.getElementById('reset_parameters_to_default');
 
+    const upload_file = document.getElementById('upload_file');
+
     const update_simulation_length_span = () => {
         simulation_length_span.textContent = simulation_length.value + 'ns';
     }
@@ -368,7 +370,14 @@ option {
     }
 
     const onChangedStructure = filepath => {
-        structure_visible.value = filepath.split('\\').at(-1)
+        const size = upload_file?.files[0]?.size;
+        if (size > 2*1024*1024) {
+            alert("File is too large. (Max 2MB)");
+            upload_file.value = "";
+            structure_visible.value = "";
+        } else {
+            structure_visible.value = filepath.split('\\').at(-1);
+        }
     }
 
     const toggleUploadFile = () => {
@@ -379,12 +388,10 @@ option {
 
     const on_change_force_field = value => {
         let number = parseInt(value);
-        // water_model_placeholder.classList.add('hidden');
         water_model_1.classList.add('hidden');
         water_model_2.classList.add('hidden');
         water_model_3.classList.add('hidden');
         water_model_4.classList.add('hidden');
-        // water_model_placeholder.disabled = true;
         water_model_1.disabled = true;
         water_model_2.disabled = true;
         water_model_3.disabled = true;
@@ -499,5 +506,7 @@ option {
     populateDates();
     populateInputs();
     checkIfInputsAreDefaultsAndDisableButton();
+
+    document.get
 
 </script>

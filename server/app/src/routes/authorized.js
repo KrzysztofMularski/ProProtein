@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs')
 const pushLog = require('../logging')
 const path = require('path');
 const { gfsDeleteProjectWithFiles, gfsDeleteFile } = require('../gfs')
+const project = require('../db/models/project')
 
 const setPagination = (query, route) => {
 
@@ -71,6 +72,9 @@ const getPagination = (rowsPerPage, currentPage, route, contentLength) => {
 }
 
 const short = description => {
+    if (!description) {
+        description = '';
+    }
     if (description.length > 12)
         return description.substring(0, 12) + '...'
     return description
@@ -106,14 +110,17 @@ const pullProjects = async (route, req, res) => {
 
         let projects = await Project.find(dbQuery, 'name created status description _id').sort({created: 'desc'});
 
-        projects = projects.map(project => ({
-            name: project.name,
-            creationDate: moment(project.created).format('YYYY-MM-DD'),
-            status: project.status,
-            description: short(project.description),
-            id: project._id.toString(),
-            description_full: project.description
-        }))
+        projects = projects.map(project => {
+            const a = {
+                name: project.name,
+                creationDate: moment(project.created).format('YYYY-MM-DD'),
+                status: project.status,
+                description: short(project.description),
+                id: project._id.toString(),
+                description_full: project.description
+            }
+            return a
+        });
 
         const { pg, errorRoute } = getPagination(rowsPerPage, currentPage, route, projects.length)
 

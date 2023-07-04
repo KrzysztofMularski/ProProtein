@@ -16,7 +16,7 @@
         <!-- tabs -->
         <div class="flex flex-row gap-4">
             <a href="/admin/files" class="hover:text-gray-900 hover:border-b-2 hover:border-gray-900 <%= selectedTab === '' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500' %>">User files</a>
-            <a href="/admin/files/demos" class="hover:text-gray-900 hover:border-b-2 hover:border-gray-900 <%= selectedTab === 'demos' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500' %>">Demos</a>
+            <a href="/admin/files/demos" class="hover:text-gray-900 hover:border-b-2 hover:border-gray-900 <%= selectedTab === 'demos' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500' %>">Example files</a>
         </div>
 
         <!-- action buttons -->
@@ -33,7 +33,7 @@
                 <div class="w-6">
                     <%- include('components/icons/upload.svg') %>
                 </div>
-                <p>Upload new Demo File</p>
+                <p>Upload new Example File</p>
             </button>
             <% } %>
         </div>
@@ -80,7 +80,7 @@
                     <%- include('components/icons/upload.svg') %>
                 </div>
 
-                <p class="text-lg text-center">Upload new Demo File</p>
+                <p class="text-lg text-center">Upload new Example File</p>
                 <input type="file" name="file">
 
                 <div class="flex flex-row gap-2">

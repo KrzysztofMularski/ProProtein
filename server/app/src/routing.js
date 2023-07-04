@@ -35,6 +35,10 @@ router.get('/download/example/:example', free.getDownloadDemo, midd.downloadFile
 router.get('/queue/:project_id', free.getQueue);
 router.get('/queue', free.getQueueGeneral);
 router.get('/help', free.getHelpPage);
+router.get('/contact', free.getContactPage);
+router.post('/contact', free.postContact);
+
+// router.get('/test', free.getTest);
 
 // guest access
 router.get('/guest_simulation', midd.checkNotAuthenticated, free.getGuestSimulationPage);
@@ -132,9 +136,6 @@ router.delete('/admin/queue/delete/:queue_entry_id', midd.checkAuthenticated, mi
 
 // router.get('/admin/make_super_admin', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminMakeSuperAdmin);
 // router.get('/admin/all_super_admins', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminConsoleLogSuperAdmin);
-
 // router.get('/make_me_admin', admin.getMakeMeAdmin)
-
-// router.get('/admin/')
 
 module.exports = router

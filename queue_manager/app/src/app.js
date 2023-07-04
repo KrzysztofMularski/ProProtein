@@ -250,6 +250,8 @@ const start = async () => {
 
         await Project.updateMany({status: 'Processing'}, {'$set': {status: 'Waiting'}, '$unset': {processing_since: 1}}); 
 
+	// todo: should clear all queue entries and for all 'Waiting' projects, create queue entries
+        // should also clear out simulation_dir directory
         const scheduler = new ToadScheduler();
 
         // handle simulation

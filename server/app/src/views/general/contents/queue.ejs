@@ -47,22 +47,22 @@
         <table class="w-full">
 
             <tr class="w-full border-y border-gray-200">
-                <th class="border-l border-gray-200 pl-4 w-4 py-2"></th>
-                <th class="border-r border-gray-200 pr-2 py-2">No.</th>
+                <th class="border-x border-gray-200 pl-4 w-4 py-2"></th>
+                <th class="border-x border-gray-200 pr-2 py-2">No.</th>
                 <th class="border-x border-gray-200 px-2 py-2">Job ID</th>
                 <th class="border-x border-gray-200 px-2 py-2">Status</th>
                 <th class="border-x border-gray-200 px-2 py-2">Waiting/Processing since</th>
             </tr>
             <% entries.forEach(entry => { %>
             <tr class="even:bg-gray-100 <%= entry.is_current && "font-bold" %> border border-gray-200">
-                <td class="border-l border-gray-200 pl-4 py-2 text-center">
+                <td class="border-x border-gray-200 pl-4 py-2 text-center">
                     <% if (entry.is_current) { %>
                     <div class="w-3 text-gray-800">
                         <%- include (`../../../../public/icons/right.svg`) %>
                     </div>
                     <% } %>
                 </td>
-                <td class="border-r border-gray-200 pr-2 py-2 text-center"><%= entry.status === "Waiting" ? entry.id : ""%></td>
+                <td class="border-x border-gray-200 pr-2 py-2 text-center"><%= entry.status === "Waiting" ? entry.id : ""%></td>
                 <td class="border-x border-gray-200 px-2 py-2 text-center"><%= entry.job_id %></td>
                 <td class="border-x border-gray-200 px-2 py-2 text-center">
                     <div class="flex flex-row items-center justify-center">
@@ -74,6 +74,14 @@
                         <div class="rounded-full px-3 bg-purple-300 text-purple-800">
                             <%= entry.status %>
                             <div class="lds-dual-ring"></div>
+                        </div>
+                        <% } else if (entry.status === 'Finished') { %>
+                        <div class="rounded-full px-3 bg-gray-300 text-gray-800">
+                            <%= entry.status %>
+                        </div>
+                        <% } else if (entry.status === 'Error') { %>
+                        <div class="rounded-full px-3 bg-red-300 text-red-800">
+                            <%= entry.status %>
                         </div>
                         <% } %>
                     </div>
@@ -98,12 +106,12 @@
                 </tr>
                 <% } %>
             <tr class="bg-gray-100 font-bold border-y border-gray-200">
-                <td class="border-l border-gray-200 pl-4 w-4 py-2 text-center">
+                <td class="border-x border-gray-200 pl-4 w-4 py-2 text-center">
                     <div class="w-3 text-gray-800">
                         <%- include (`../../../../public/icons/right.svg`) %>
                     </div>
                 </td>
-                <td class="border-r border-gray-200 pr-2 py-2 text-center"><%= curProjectPos %></td>
+                <td class="border-x border-gray-200 pr-2 py-2 text-center"><%= curProjectPos %></td>
                 <td class="border-x border-gray-200 px-2 py-2 text-center"><%= curEntry.job_id %></td>
                 <td class="border-x border-gray-200 px-2 py-2 text-center">
                     <div class="flex flex-row items-center justify-center">

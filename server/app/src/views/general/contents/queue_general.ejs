@@ -38,6 +38,30 @@
             </a>
         </div>
 
+        <% if (finishedProject) { %> 
+        <% if (finishedProject.status === "Finished") { %>
+        <div class="flex flex-row bg-green-200 items-center text-lg px-6 py-2">
+            <p class="font-bold">Your simulation is finished</p>
+            <div class="w-10 text-gray-800">
+                <%- include (`../../../../public/icons/dot.svg`) %>
+            </div>
+            <a href="<%= finishedProject.details_url %>" class="underline text-blue-700 hover:text-blue-800 cursor-pointer">Check simulation details</a>
+            <div class="w-10 text-gray-800">
+                <%- include (`../../../../public/icons/dot.svg`) %>
+            </div>
+            <a href="<%= finishedProject.results_url %>" class="underline text-blue-700 hover:text-blue-800 cursor-pointer">Check results</a>
+        </div>
+        <% } else if (finishedProject.status === "Error") { %>
+        <div class="flex flex-row bg-red-200 items-center text-lg px-6 py-2">
+            <p class="font-bold">Your simulation finished with errors</p>
+            <div class="w-10 text-gray-800">
+                <%- include (`../../../../public/icons/dot.svg`) %>
+            </div>
+            <a href="<%= finishedProject.details_url %>" class="underline text-blue-700 hover:text-blue-800 cursor-pointer">Check simulation details</a>
+        </div>
+        <% } %>
+        <% } %>
+
         <table class="w-full">
 
             <tr class="w-full border-y border-gray-200">
@@ -60,6 +84,14 @@
                         <div class="rounded-full px-3 bg-purple-300 text-purple-800">
                             <%= entry.status %>
                             <div class="lds-dual-ring"></div>
+                        </div>
+                        <% } else if (entry.status === 'Finished') { %>
+                        <div class="rounded-full px-3 bg-gray-300 text-gray-800">
+                            <%= entry.status %>
+                        </div>
+                        <% } else if (entry.status === 'Error') { %>
+                        <div class="rounded-full px-3 bg-red-300 text-red-800">
+                            <%= entry.status %>
                         </div>
                         <% } %>
                     </div>
