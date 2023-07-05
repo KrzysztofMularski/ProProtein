@@ -1254,12 +1254,11 @@ const deleteAdminLog = async (req, res) => {
 const getAdminQueuePage = async (req, res) => {
     try {
         const messages = req.flash();
-        const queueEntries = await QueueEntry
+        let queueEntries = await QueueEntry
             .find()
             .sort({ created: 'asc' })
             .populate({ path: 'project_id', model: Project });
 
-        
         const headersInfo = [
             ['ID', 'string', 2],
             ['Guest/Regular', 'string', 2],
@@ -1300,14 +1299,23 @@ const getAdminQueuePage = async (req, res) => {
             showDeleteButton: true,
             links,
             statusColors,
-            tableContent: queueEntries.map(qe => [
-                qe._id,
-                qe.project_id.owner_id ? 'Regular' : 'Guest',
-                qe.project_id.status,
-                qe.project_id.owner_id,
-                qe.project_id._id,
-                moment(qe.project_id.status === "Waiting" ? qe.project_id.waiting_since : qe.project_id.processing_since).format('lll'),
-            ])
+            tableContent: queueEntries.map(qe =>
+                qe.project_id ? [
+                    qe._id,
+                    qe.project_id.owner_id ? 'Regular' : 'Guest',
+                    qe.project_id.status,
+                    qe.project_id.owner_id,
+                    qe.project_id._id,
+                    moment(qe.project_id.status === "Waiting" ? qe.project_id.waiting_since : qe.project_id.processing_since).format('lll'),
+                ] : [
+                    qe._id,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                ]
+            )
         }];
 
         const params = {
@@ -1343,7 +1351,8 @@ const deleteAdminQueueEntry = async (req, res) => {
             req.flash('error', `No queue entry found with such ID: ${queue_entry_id}`);
             return res.redirect('/admin/queue');
         }
-        if (queue_entry.project_id.status === 'Processing') {
+
+        if (queue_entry?.project_id?.status === 'Processing') {
             req.flash('error', 'Cannot delete queue entry, because simulation is being currently processing');
             return res.redirect('/admin/queue');
         }
