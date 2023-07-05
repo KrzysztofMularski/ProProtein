@@ -166,12 +166,12 @@ const postNotifyFinished = async (req, res) => {
 
         const filenames = fs.readdirSync(path.join(appDir, volume, dirName));
         
-        let output = '===============\nQueue server\n===============\n';
-        output += `\n exit code: ${exitCode}`;
-        output += `\n projectId: ${projectId}`;
-        output += `\n dir name: ${dirName}`;
-        output += `\n status: ${status}`;
-        output += `\n generated files: ${filenames}`;
+        let output = '\n=============== Queue server ===============\n\n';
+        output += `exit code: ${exitCode}\n`;
+        output += `projectId: ${projectId}\n`;
+        output += `dir name: ${dirName}\n`;
+        output += `status: ${status}\n`;
+        output += `generated files: ${JSON.stringify(filenames, null, 2)}\n`;
 
         fs.appendFileSync(path.join(appDir, volume, dirName, 'simulation_logs.txt'), output);
 

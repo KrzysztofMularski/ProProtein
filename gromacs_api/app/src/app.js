@@ -5,6 +5,7 @@ const fs = require('fs');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const express = require('express');
 const app = express();
+// todo: port from env
 const port = 4000;
 
 const appDir = process.env.APP_DIR;
@@ -18,6 +19,7 @@ const getAll = (_, res) => {
     res.send('Hello');
 }
 
+// todo: calling this function in admin panel
 const killCurrentProcess = (_, res) => {
     try {
         if (current_process) {
@@ -35,13 +37,11 @@ const killCurrentProcess = (_, res) => {
 const postDefault = async (req, res) => {
     try { 
         res.sendStatus(200);
-        // console.log("start - req.body:", req.body);
 
         const inputDirectory = path.join(appDir, volume, req.body.dir_name);
         const simulationTemplatesDirectory = path.join(appDir, 'src/simulation_templates');
-        // const { dir_name, project_id } = req.body;
 
-        // const input = {
+        // input = {
         //     structure: 'structure.pdb',
         //     ions: 'ions.mdp',
         //     md: 'md.mdp',
@@ -51,6 +51,15 @@ const postDefault = async (req, res) => {
         // };
 
         const params = req.body.simulation_parameters;
+
+        // params: {
+        //     force_field,
+        //     water_model,
+        //     simulation_length,
+        //     saving_step,
+        //     spheres_allocation_frame,
+        //     rmsd_threshold,
+        // }
 
         const md_mdp_params = {
             nsteps: parseInt(params.simulation_length)*500000,
@@ -76,14 +85,6 @@ BEGIN {
     }
 }
 '`;
-
-        // params:
-        // - force_field,
-        // - water_model,
-        // - simulation_length,
-        // - saving_step,
-        // - spheres_allocation_frame,
-        // - rmsd_threshold,
 
         const output = {
             trajectory: 'trajectory.pdb',
@@ -139,37 +140,61 @@ BEGIN {
             logRMSD: `echo 'Calculating rmsd:\nrmsd ${output.trajectory} ${output.residues_indexes} ${params.spheres_allocation_frame} ${params.rmsd_threshold}'`,
             calculateRMSD: `rmsd ${output.trajectory} ${output.residues_indexes} ${params.spheres_allocation_frame} ${params.rmsd_threshold}`,
             renameFiles: Object.entries(renamingMap).map(([oldName, newName]) => `mv ${oldName} ${newName}`).join(' && '),
-            logFinish: `echo 'Finished'`,
+            logStart: 'echo Start: && date',
+            logTimestamp: 'echo Timestamp: && date',
+            logFinish: 'echo Finished: && date',
         }
 
         const commandsDefault = [
+            other.logStart,
             other.copyTemplates,
             other.cd,
             other.changingMdParameters,
             cmdsGromacs.grep,
+            other.logTimestamp,
             cmdsGromacs.pdb2gmx,
+            other.logTimestamp,
             cmdsGromacs.editconf,
+            other.logTimestamp,
             cmdsGromacs.solvate,
+            other.logTimestamp,
             cmdsGromacs.grompp1,
+            other.logTimestamp,
             cmdsGromacs.genion,
+            other.logTimestamp,
             cmdsGromacs.grompp2,
+            other.logTimestamp,
             cmdsGromacs.mdrun1,
+            other.logTimestamp,
             cmdsGromacs.energy1,
+            other.logTimestamp,
             cmdsGromacs.grompp3,
+            other.logTimestamp,
             cmdsGromacs.mdrun2,
+            other.logTimestamp,
             cmdsGromacs.energy2,
+            other.logTimestamp,
             cmdsGromacs.grompp4,
+            other.logTimestamp,
             cmdsGromacs.mdrun3,
+            other.logTimestamp,
             cmdsGromacs.energy3,
+            other.logTimestamp,
             cmdsGromacs.energy4,
+            other.logTimestamp,
             cmdsGromacs.grompp5,
+            other.logTimestamp,
             cmdsGromacs[gpuEnable ? 'mdrun4_gpu' : 'mdrun4'],
+            other.logTimestamp,
             cmdsGromacs.trjconv,
+            other.logTimestamp,
             other.convertToPng,
+            other.logTimestamp,
             other.logRMSD,
             other.calculateRMSD,
+            other.logTimestamp,
             other.renameFiles,
-            other.logFinish
+            other.logFinish,
         ];
 
         // const tester = {
