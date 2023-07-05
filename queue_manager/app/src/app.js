@@ -58,6 +58,10 @@ const handleSimulation = async () => {
         if (!firstEntry) {
             return;
         }
+        if (!firstEntry.project_id) {
+            await QueueEntry.deleteOne({ _id: firstEntry._id });
+            return handleSimulation();
+        }
         const firstProject = await Project.findById(firstEntry.project_id._id);
 
         if (firstProject.status === 'Waiting') {
@@ -109,10 +113,14 @@ const queueWatcher = async () => {
             .sort({ created: 1 })
             .populate({ path: "project_id", model: Project });
 
-        if (!firstEntry) {
+        if (!firstEntry || !firstEntry.project_id) {
             return;
         }
         const firstProject = await Project.findById(firstEntry.project_id?._id || firstEntry.project_id);
+
+        if (!firstProject) {
+            return;
+        }
 
         if (Date.now() - firstProject.processing_since > LIMIT_SIMULATION_TIME_IN_DAYS * 24 * 60 * 60 * 1000) {
             // checking simulation time, if exceeds x, then remove this simulation from queue and kill gromacs process
