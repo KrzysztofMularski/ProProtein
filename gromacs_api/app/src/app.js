@@ -128,7 +128,7 @@ BEGIN {
             grompp5: `gmx grompp -f md.mdp -c npt.gro -t npt.cpt -p topol.top -o md_0_1.tpr`,
             mdrun4: `gmx mdrun -deffnm md_0_1`,
             mdrun4_gpu: `gmx mdrun -nb gpu -pin on -deffnm md_0_1`,
-            trjconv: `echo "1\n0\n" | gmx trjconv -s md_0_1.tpr -f md_0_1.xtc -o trajectory.pdb -pbc mol -center`,
+            trjconv: `echo "1\n1\n" | gmx trjconv -s md_0_1.tpr -f md_0_1.xtc -o trajectory.pdb -pbc mol -center`,
         };
 
         const other = {
