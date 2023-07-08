@@ -526,10 +526,10 @@ const getAdminProjectDetailsPage = async (req, res) => {
         project.dateInputProcessingSince = project.processing_since ? moment(project.processing_since).format('YYYY-MM-DD') : '';
         project.dateInputFinishedSince = project.finished_since ? moment(project.finished_since).format('YYYY-MM-DD') : '';
 
-        project.dateInputTime = project.created ? moment(project.created).format('hh:mm:ss') : '';
-        project.dateInputWaitingSinceTime = project.waiting_since ? moment(project.waiting_since).format('hh:mm:ss') : '';
-        project.dateInputProcessingSinceTime = project.processing_since ? moment(project.processing_since).format('hh:mm:ss') : '';
-        project.dateInputFinishedSinceTime = project.finished_since ? moment(project.finished_since).format('hh:mm:ss') : '';
+        project.dateInputTime = project.created ? moment(project.created).format('HH:mm:ss') : '';
+        project.dateInputWaitingSinceTime = project.waiting_since ? moment(project.waiting_since).format('HH:mm:ss') : '';
+        project.dateInputProcessingSinceTime = project.processing_since ? moment(project.processing_since).format('HH:mm:ss') : '';
+        project.dateInputFinishedSinceTime = project.finished_since ? moment(project.finished_since).format('HH:mm:ss') : '';
 
         project.createdStr = project.created ? moment(project.created).format('lll') : '';
         project.waiting_since_str = project.waiting_since ? moment(project.waiting_since).format('lll') : '';
@@ -594,6 +594,8 @@ const postAdminProjectEdit = async (req, res) => {
                 return res.redirect(`/admin/projects/${project_id}`);
             }
             project.owner_id = mongoose.Types.ObjectId(body.owner_id);
+        } else {
+            project.owner_id = undefined;
         }
 
         project.name = body.name;

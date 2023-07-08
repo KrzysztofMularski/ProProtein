@@ -685,9 +685,22 @@ const getDownloadFile = async (req, res, next) => {
 
 const getMolstar = async (req, res) => {
     try {
-        const fileType = req.query.filetype
         const projectId = req.query.project
+
+        if (!mongoose.isValidObjectId(projectId)) {
+            req.flash('error', 'Invalid project id');
+            return res.redirect('/');
+        }
+        const fileType = req.query.filetype
+        if (fileType !== 'structure' && fileType !== 'trajectory') {
+            req.flash('error', 'Invalid file type');
+            return res.redirect('/');
+        }
         const project = await Project.findById(projectId)
+        if (!project) {
+            req.flash('error', 'Cannot find project');
+            return res.redirect('/');
+        }
         if (project.owner_id.toString() !== req.user._id.toString())
             return res.redirect('/')
         if (fileType !== 'structure' && fileType !== 'trajectory')
