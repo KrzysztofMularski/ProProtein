@@ -520,21 +520,15 @@ const getAdminProjectDetailsPage = async (req, res) => {
 
         project.statusColor = statusColors[project.status];
         
+        project.dateInput = project.created ? moment(project.created).format('YYYY-MM-DDTHH:mm:ss') : '';
+        project.dateInputWaitingSince = project.waiting_since ? moment(project.waiting_since).format('YYYY-MM-DDTHH:mm:ss') : '';
+        project.dateInputProcessingSince = project.processing_since ? moment(project.processing_since).format('YYYY-MM-DDTHH:mm:ss') : '';
+        project.dateInputFinishedSince = project.finished_since ? moment(project.finished_since).format('YYYY-MM-DDTHH:mm:ss') : '';
 
-        project.dateInput = project.created ? moment(project.created).format('YYYY-MM-DD') : '';
-        project.dateInputWaitingSince = project.waiting_since ? moment(project.waiting_since).format('YYYY-MM-DD') : '';
-        project.dateInputProcessingSince = project.processing_since ? moment(project.processing_since).format('YYYY-MM-DD') : '';
-        project.dateInputFinishedSince = project.finished_since ? moment(project.finished_since).format('YYYY-MM-DD') : '';
-
-        project.dateInputTime = project.created ? moment(project.created).format('HH:mm:ss') : '';
-        project.dateInputWaitingSinceTime = project.waiting_since ? moment(project.waiting_since).format('HH:mm:ss') : '';
-        project.dateInputProcessingSinceTime = project.processing_since ? moment(project.processing_since).format('HH:mm:ss') : '';
-        project.dateInputFinishedSinceTime = project.finished_since ? moment(project.finished_since).format('HH:mm:ss') : '';
-
-        project.createdStr = project.created ? moment(project.created).format('lll') : '';
-        project.waiting_since_str = project.waiting_since ? moment(project.waiting_since).format('lll') : '';
-        project.processing_since_str = project.processing_since ? moment(project.processing_since).format('lll') : '';
-        project.finished_since_str = project.finished_since ? moment(project.finished_since).format('lll') : '';
+        project.createdStr = project.created ? moment(project.created).format('ll HH:mm:ss') : '';
+        project.waiting_since_str = project.waiting_since ? moment(project.waiting_since).format('ll HH:mm:ss') : '';
+        project.processing_since_str = project.processing_since ? moment(project.processing_since).format('ll HH:mm:ss') : '';
+        project.finished_since_str = project.finished_since ? moment(project.finished_since).format('ll HH:mm:ss') : '';
         
         const demos = (await DemoFile.find()).map(demo => ({
             file_id: demo.file_id,

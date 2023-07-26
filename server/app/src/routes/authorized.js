@@ -329,6 +329,12 @@ const getProject = async (req, res) => {
         const errors = messages.error;
         const successes = messages.success;
 
+        project.created_str = project.created ? moment(project.created).format('ll HH:mm:ss') : '';
+        project.waiting_since_str = project.waiting_since ? moment(project.waiting_since).format('ll HH:mm:ss') : '';
+        project.processing_since_str = project.processing_since ? moment(project.processing_since).format('ll HH:mm:ss') : '';
+        project.finished_since_str = project.finished_since ? moment(project.finished_since).format('ll HH:mm:ss') : '';
+        // todo:
+
         const params = {
             logged: true,
             selected: 'Projects',

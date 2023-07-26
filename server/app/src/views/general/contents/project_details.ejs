@@ -65,7 +65,7 @@ option {
             <p class="text-xl text-gray-600 whitespace-normal"><%=project.description%></p>
         </div>
 
-        <p class="text-lg">Project created: <span id="created_date"></span></p>
+        <p class="text-lg">Project created: <%= project.created_str %></p>
 
         <hr>
 
@@ -424,16 +424,6 @@ option {
         return `${day}.${month}.${year} ${hours}:${minutes}`
     }
 
-    const populateDates = () => {
-        created_date.textContent = makeDate('<%= project.created %>')
-        if ('<%= project.waiting_since %>')
-            waiting_since.textContent = makeDate('<%= project.waiting_since %>')
-        if ('<%= project.processing_since %>')
-            processing_since.textContent = makeDate('<%= project.processing_since %>')
-        if ('<%= project.finished_since %>')
-            finished_since.textContent = makeDate('<%= project.finished_since %>')
-    }
-
     const populateInputs = () => {
         if ('<%= project.input.extra.force_field %>') {
             force_field.value = '<%= project.input.extra.force_field %>';
@@ -503,10 +493,7 @@ option {
     }
 
     setDefaultParameters();
-    populateDates();
     populateInputs();
     checkIfInputsAreDefaultsAndDisableButton();
-
-    document.get
 
 </script>

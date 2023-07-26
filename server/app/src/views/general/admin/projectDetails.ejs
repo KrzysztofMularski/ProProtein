@@ -92,29 +92,17 @@
 
                     <div class="grid grid-cols-[120px_300px] items-center content-start gap-y-2">
 
-                        <label for="created" class="text-md">Created At</label>
-                        <div class="grid grid-cols-[3fr_2fr] gap-2">
-                            <input type="date" name="created" id="created" value="<%= project.dateInput %>" class="p-2 rounded-lg">
-                            <input type="time" name="created_time" id="created_time" value="<%= project.dateInputTime %>" step=1 class="p-2 rounded-lg">
-                        </div>
+                        <label for="created" class="text-md">Created At (Test)</label>
+                        <input type="datetime-local" name="created" id="created" step=1 value="<%= project.dateInput %>" class="p-2 rounded-lg">
 
                         <label for="waiting_since" class="text-md">Waiting since</label>
-                        <div class="grid grid-cols-[3fr_2fr] gap-2">
-                            <input type="date" name="waiting_since" id="waiting_since" value="<%= project.dateInputWaitingSince %>" class="p-2 rounded-lg">
-                            <input type="time" name="waiting_since_time" id="waiting_since_time" value="<%= project.dateInputWaitingSinceTime %>" step=1 class="p-2 rounded-lg">
-                        </div>
+                        <input type="datetime-local" name="waiting_since" id="waiting_since" step=1 value="<%= project.dateInputWaitingSince %>" class="p-2 rounded-lg">
 
                         <label for="processing_since" class="text-md">Processing since</label>
-                        <div class="grid grid-cols-[3fr_2fr] gap-2">
-                            <input type="date" name="processing_since" id="processing_since" value="<%= project.dateInputProcessingSince %>" class="p-2 rounded-lg">
-                            <input type="time" name="processing_since_time" id="processing_since_time" value="<%= project.dateInputProcessingSinceTime %>" step=1 class="p-2 rounded-lg">
-                        </div>
+                        <input type="datetime-local" name="processing_since" id="processing_since" step=1 value="<%= project.dateInputProcessingSince %>" class="p-2 rounded-lg">
 
                         <label for="finished_since" class="text-md">Finished on</label>
-                        <div class="grid grid-cols-[3fr_2fr] gap-2">
-                            <input type="date" name="finished_since" id="finished_since" value="<%= project.dateInputFinishedSince %>" class="p-2 rounded-lg">
-                            <input type="time" name="finished_since_time" id="finished_since_time" value="<%= project.dateInputFinishedSinceTime %>" step=1 class="p-2 rounded-lg">
-                        </div>
+                        <input type="datetime-local" name="finished_since" id="finished_since" step=1 value="<%= project.dateInputFinishedSince %>" class="p-2 rounded-lg">
                     </div>
 
                 </div>

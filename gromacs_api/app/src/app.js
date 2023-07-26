@@ -110,7 +110,7 @@ BEGIN {
 
         const cmdsGromacs = {
             grep: `grep -v HOH structure.pdb > structure_clean.pdb`,
-            pdb2gmx: `echo "${params.force_field}\n${params.water_model}\n" | gmx pdb2gmx -f structure_clean.pdb -o structure_processed.gro`,
+            pdb2gmx: `echo "${params.force_field}\n${params.water_model}\n" | gmx pdb2gmx -f structure_clean.pdb -o structure_processed.gro -ignh`,
             editconf: `gmx editconf -f structure_processed.gro -o structure_newbox.gro -c -d 1.0 -bt dodecahedron`,
             solvate: `gmx solvate -cp structure_newbox.gro -cs spc216.gro -o structure_solv.gro -p topol.top`,
             grompp1: `gmx grompp -f ions.mdp -c structure_solv.gro -p topol.top -o ions.tpr`,

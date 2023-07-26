@@ -147,17 +147,18 @@ input[type=number] {
         </div>
         <% } %>
 
-        <p class="text-lg">Project created: <span id="created_date"></span></p>
+        <p class="text-lg">Project created: <%= project.created_str %></p>
+
         <% if (project.waiting_since) { %>
-        <p class="text-lg">Waiting for processing since: <span id="waiting_since"></span></p>
+        <p class="text-lg">Waiting for processing since: <%= project.waiting_since_str %></p>
         <% } %>
 
         <% if (project.processing_since) { %>
-        <p class="text-lg">Simulation processing started on: <span id="processing_since"></span></p>
+        <p class="text-lg">Simulation processing started on: <%= project.processing_since_str %></p>
         <% } %>
 
         <% if (project.finished_since) { %>
-        <p class="text-lg">Simulation finished on: <span id="finished_since"></span></p>
+        <p class="text-lg">Simulation finished on: <%= project.finished_since_str %></p>
         <% } %>
 
         <hr>
@@ -446,7 +447,7 @@ input[type=number] {
         on_change_force_field(force_field.value);
     }
 
-    populateDates();
+    // populateDates();
     populateInputs();
 
     <% if (!isGuest) { %>
