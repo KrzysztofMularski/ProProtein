@@ -827,6 +827,63 @@ const deleteAdminProject = async (req, res, next) => {
     }
 }
 
+const postAdminProjectRequestSimulation = async (req, res) => {
+    try {
+        const project_id = req.params.project_id;
+
+        if (!mongoose.Types.ObjectId.isValid(project_id)) {
+            req.flash('error', `No project found with such ID: ${project_id}`);
+            return res.redirect(`/admin/projects`);
+        }
+
+        const project = await Project.findById(project_id);
+
+        if (!project) {
+            req.flash('error', `No project found with such ID: ${project_id}`);
+            return res.redirect(`/admin/projects`);
+        }
+
+        if (project.status !== 'Initial') {
+            req.flash('error', 'Cannot request simulation when project is not in "Initial" status');
+            return res.redirect('back');
+        }
+
+        if (!project.input.files.structure.filename) {
+            req.flash('error', 'Cannot request simulation with no structure file. You can find example structures here under "Molecular Structure" -> "Change file.." -> "Example" -> "Select"')
+            return res.redirect('back');
+        }
+        const now = Date.now();
+        project.waiting_since = now;
+        project.status = 'Waiting';
+        
+        const error = await project.validateSync();
+
+        if (error) {
+            Object.entries(error.errors).forEach(([ label, { message } ]) => {
+                req.flash('error', `Wrong ${ label }: ${ message }`)
+            });
+            return res.redirect('back');
+        }
+        await project.save();
+        
+        const queueEntry = new QueueEntry({
+            project_id,
+            created: now,
+        });
+
+        await queueEntry.save();
+
+        req.flash('success', 'Simulation requested successfully');
+        return res.redirect('back');
+
+    } catch (err) {
+        // console.log(err);
+        await pushLog(err, 'postAdminProjectRequestSimulation');
+        req.flash('error', 'Error');
+        return res.redirect(`/admin/projects`);
+    }
+}
+
 const getAdminFilesPage = async (req, res) => {
     try {
         const messages = req.flash();
@@ -1424,6 +1481,7 @@ module.exports = {
     postAdminProjectEditFiles,
     postAdminProjectEditParameters,
     deleteAdminProject,
+    postAdminProjectRequestSimulation,
 
     getAdminFilesPage,
     deleteAdminFile,

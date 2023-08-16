@@ -117,6 +117,7 @@ router.post('/admin/projects/edit_files/:project_id', midd.checkAuthenticated, m
 ]), admin.postAdminProjectEditFiles, midd.adminDeleteProjectFiles);
 router.post('/admin/projects/edit_parameters/:project_id', midd.checkAuthenticated, midd.checkIsAdmin, admin.postAdminProjectEditParameters);
 router.delete('/admin/projects/delete/:project_id', midd.checkAuthenticated, midd.checkIsAdmin, admin.deleteAdminProject, midd.adminDeleteProjectFiles);
+router.get('/admin/projects/request/:project_id', midd.checkAuthenticated, midd.checkIsAdmin, admin.postAdminProjectRequestSimulation);
 
 router.get('/admin/files', midd.checkAuthenticated, midd.checkIsAdmin, admin.getAdminFilesPage);
 router.delete('/admin/files/delete/:file_id', midd.checkAuthenticated, midd.checkIsAdmin, admin.deleteAdminFile, midd.adminDeleteFile);
