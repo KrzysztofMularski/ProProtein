@@ -1,7 +1,7 @@
 FROM node:17-alpine3.14
 
 RUN apk update
-RUN apk install shadow
+RUN apk add shadow
 RUN useradd -ms /bin/bash appuser
 
 RUN mkdir -p /home/app
