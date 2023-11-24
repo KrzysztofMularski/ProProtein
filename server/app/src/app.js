@@ -71,7 +71,6 @@ const start = async () => {
             
             const httpsServer = https.createServer(credentials, app)
             httpsServer.on('secureConnection', (cleartextStream, _) => {
-                console.log(new Date(), "secureConnection");
                 cleartextStream.on('SNICallback', (_, cb) => {
                     console.log(new Date(), "SNICallback");
                     credentials = {
