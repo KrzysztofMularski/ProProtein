@@ -7,6 +7,7 @@ RUN mkdir -p /home/app
 COPY app /home/app
 
 WORKDIR /home/app
+RUN apt-get install passwd -y
 
 RUN npm install
 RUN npm run build-css-minified
