@@ -71,9 +71,9 @@ const start = async () => {
             
             const httpsServer = https.createServer(credentials, app)
             httpsServer.on('secureConnection', (cleartextStream, _) => {
-                console.log("SecureConnection");
+                console.log(new Date(), "secureConnection");
                 cleartextStream.on('SNICallback', (_, cb) => {
-                    console.log("SNICallback");
+                    console.log(new Date(), "SNICallback");
                     credentials = {
                         key: fs.readFileSync(path.join(__dirname, process.env.PRIVKEY_PATH), 'utf-8'),
                         cert: fs.readFileSync(path.join(__dirname, process.env.FULLCHAIN_PATH), 'utf-8')
