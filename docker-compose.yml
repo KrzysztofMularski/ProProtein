@@ -12,7 +12,7 @@ services:
     container_name: server
     restart: unless-stopped
     volumes:
-      - /etc/letsencrypt:/home/app/letsencrypt
+      - /etc/letsencrypt:/home/app/letsencrypt:rw
   gromacs_api:
     build: gromacs_api
     image: gromacs_api:1.0
