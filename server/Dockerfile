@@ -1,5 +1,6 @@
 FROM node:17-alpine3.14
 
+RUN apt-get install passwd -y
 RUN useradd -ms /bin/bash appuser
 
 RUN mkdir -p /home/app
@@ -7,7 +8,6 @@ RUN mkdir -p /home/app
 COPY app /home/app
 
 WORKDIR /home/app
-RUN apt-get install passwd -y
 
 RUN npm install
 RUN npm run build-css-minified
