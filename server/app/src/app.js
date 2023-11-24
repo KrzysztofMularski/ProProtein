@@ -64,11 +64,26 @@ const start = async () => {
         scheduler.addSimpleIntervalJob(job);
 
         if (process.env.NODE_ENV === 'production') {
-            options = {
+            credentials = {
                 key: fs.readFileSync(path.join(__dirname, process.env.PRIVKEY_PATH), 'utf-8'),
                 cert: fs.readFileSync(path.join(__dirname, process.env.FULLCHAIN_PATH), 'utf-8')
             };
-            https.createServer(options, app).listen(port, () => {
+            
+            const httpsServer = https.createServer(credentials, app)
+            httpsServer.on('secureConnection', (cleartextStream, _) => {
+                console.log("SecureConnection");
+                cleartextStream.on('SNICallback', (_, cb) => {
+                    console.log("SNICallback");
+                    credentials = {
+                        key: fs.readFileSync(path.join(__dirname, process.env.PRIVKEY_PATH), 'utf-8'),
+                        cert: fs.readFileSync(path.join(__dirname, process.env.FULLCHAIN_PATH), 'utf-8')
+                    };
+
+                    cb(null, credentials);
+              });
+            });
+
+            httpsServer.listen(port, () => {
                 console.log(`Server listening on port ${port}/`)
             })
         } else {
