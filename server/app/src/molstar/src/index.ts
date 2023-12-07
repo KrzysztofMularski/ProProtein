@@ -89,9 +89,9 @@ class BasicWrapper {
         setSpecialIds(frames.map(frame => [[frame.shift()], frame]) as number[][][])
     }
 
-    update() {
-        this.coloring.applySpecial2();
-        this.coloring.applySpecial();
+    async update() {
+        await this.coloring.applySpecial2();
+        await this.coloring.applySpecial();
     }
 
     modelFirst() {
