@@ -5,7 +5,7 @@
  */
 
 import { BuiltInTrajectoryFormat } from '../mol-plugin-state/formats/trajectory';
-import { createPlugin } from '../mol-plugin-ui';
+import { createPluginUI } from '../mol-plugin-ui/react18';
 import { PluginUIContext } from '../mol-plugin-ui/context';
 import { DefaultPluginUISpec } from '../mol-plugin-ui/spec';
 import { PluginCommands } from '../mol-plugin/commands';
@@ -17,13 +17,19 @@ import { setSpecialIds } from './coloring';
 import './index.html';
 require('mol-plugin-ui/skin/light.scss');
 
+import { PluginStateObject } from '../mol-plugin-state/objects';
+import { StateTransforms } from '../mol-plugin-state/transforms';
+import { StateTransformer } from '../mol-state';
+import { ModelFromTrajectory } from '../mol-plugin-state/transforms/model';
+import { UpdateTrajectory } from '../mol-plugin-state/actions/structure';
+
 type LoadParams = { url: string, format?: BuiltInTrajectoryFormat, isBinary?: boolean, assemblyId?: string }
 
 class BasicWrapper {
     plugin: PluginUIContext;
 
-    init(target: string | HTMLElement) {
-        this.plugin = createPlugin(typeof target === 'string' ? document.getElementById(target)! : target, {
+    async init(target: string | HTMLElement) {
+        this.plugin = await createPluginUI(typeof target === 'string' ? document.getElementById(target)! : target, {
             ...DefaultPluginUISpec(),
             layout: {
                 initial: {
@@ -80,7 +86,86 @@ class BasicWrapper {
     setSpecialArray(arrStr: string) {
         const arr = arrStr.replace('\r', '')
         const frames = arr.split('\n').map(frame => frame.split(' ').map(numStr => parseInt(numStr)))
-        setSpecialIds(frames.map(frame => [[frame.shift()], frame]))
+        setSpecialIds(frames.map(frame => [[frame.shift()], frame]) as number[][][])
+    }
+
+    update() {
+        this.coloring.applySpecial2();
+        this.coloring.applySpecial();
+    }
+
+    modelFirst() {
+        PluginCommands.State.ApplyAction(this.plugin, {
+            state: this.plugin.state.data,
+            action: UpdateTrajectory.create({ action: 'reset' })
+        });
+    }
+
+    modelPrev() {
+        PluginCommands.State.ApplyAction(this.plugin, {
+            state: this.plugin.state.data,
+            action: UpdateTrajectory.create({ action: 'advance', by: -1 })
+        });
+    }
+
+    modelNext() {
+        PluginCommands.State.ApplyAction(this.plugin, {
+            state: this.plugin.state.data,
+            action: UpdateTrajectory.create({ action: 'advance', by: 1 })
+        });
+    }
+
+    modelLast() {
+        const { current, all } = this.getCurrentModelAndNumberOfModels()!;
+
+        PluginCommands.State.ApplyAction(this.plugin, {
+            state: this.plugin.state.data,
+            action: UpdateTrajectory.create({ action: 'advance', by: all - current })
+        });
+    }
+
+    goTo(modelNumber: number) {
+
+        const { current } = this.getCurrentModelAndNumberOfModels()!;
+
+        PluginCommands.State.ApplyAction(this.plugin, {
+            state: this.plugin.state.data,
+            action: UpdateTrajectory.create({ action: 'advance', by: modelNumber - current })
+        });
+    }
+
+    getCurrentModelAndNumberOfModels(): { current: number; all: number } {
+        const state = this.plugin.state.data;
+
+        const models = state.selectQ(q => q.ofTransformer(StateTransforms.Model.ModelFromTrajectory));
+
+        if (models.length === 0) {
+            return { current: 0, all: 0 };
+        }
+
+        let label = '', count = 0;
+        const parents = new Set<string>();
+        for (const m of models) {
+            if (!m.sourceRef) continue;
+            const parent = state.cells.get(m.sourceRef)!.obj as PluginStateObject.Molecule.Trajectory;
+
+            if (!parent) continue;
+            if (parent.data.frameCount > 1) {
+                if (parents.has(m.sourceRef)) {
+                    // do not show the controls if there are 2 models of the same trajectory present
+                    return { current: 0, all: 0 };
+                }
+
+                parents.add(m.sourceRef);
+                count++;
+                if (!label) {
+                    const idx = (m.transform.params! as StateTransformer.Params<ModelFromTrajectory>).modelIndex;
+                    label = `Model ${idx + 1} / ${parent.data.frameCount}`;
+                    return { current: idx + 1, all: parent.data.frameCount };
+                }
+            }
+        }
+        return { current: 0, all: 0 };
     }
 
     coloring = {

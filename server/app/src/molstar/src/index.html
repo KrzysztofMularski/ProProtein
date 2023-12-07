@@ -1,184 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-        <title>Molstar Viewer</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
 
-            body, html {
-                width: 100%;
-                height: 100%;
-            }
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Molstar Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-            #wrapper {
-                display: flex;
-                position: relative;
-                width: 100%;
-                height: 100%;
-            }
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+        }
 
-            #app {
-                position: absolute;
-                left: 200px;
-                top: 0;
-                width: calc(100% - 200px);
-                height: 100%;
-            }
+        #wrapper {
+            display: flex;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
 
-            #controls {
-                display: flex;
-                flex-direction: column;
-                padding-top: 10px;
-                width: 200px;
-                
-            }
+        #app {
+            position: absolute;
+            left: 200px;
+            top: 0;
+            width: calc(100% - 200px);
+            height: 100%;
+        }
 
-            .filename {
-                font-family: "Quicksand", sans-serif;
-                font-weight: 300;
-                padding: 10px;
-                justify-content: center;
-                word-wrap: break-word;
-                text-align: center;
-            }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            padding-top: 10px;
+            width: 200px;
 
-            .text-xl {
-                font-size: 1.25rem/* 20px */;
-                line-height: 1.75rem/* 28px */;
-            }
+        }
 
-            #buttons {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                padding: 10px 33px;
-            }
+        .filename {
+            font-family: "Quicksand", sans-serif;
+            font-weight: 300;
+            padding: 10px;
+            justify-content: center;
+            word-wrap: break-word;
+            text-align: center;
+        }
 
-            .return_link {
-                display: flex;
-                color: white;
-                background-color: rgba(107, 114, 128, 1);
-                cursor: pointer;
-                padding: 0.5rem 0.75rem;
-                border-radius: 0.375rem;
-                font-family: "Quicksand", sans-serif;
-                font-weight: 300;
-                text-decoration: none;
-                font-size: 16px;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-            }
+        .text-xl {
+            font-size: 1.25rem
+                /* 20px */
+            ;
+            line-height: 1.75rem
+                /* 28px */
+            ;
+        }
 
-            .return_link:hover {
-                background-color: rgba(75, 85, 99, 1);
-            }
+        #buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 33px;
+        }
 
-            #coloring_button {
-                display: flex;
-                color: white;
-                background-color: rgba(107, 114, 128, 1);
-                cursor: pointer;
-                padding: 0.5rem 0.75rem;
-                border-radius: 0.375rem;
-                font-family: "Quicksand", sans-serif;
-                font-weight: 300;
-                text-decoration: none;
-                font-size: 16px;
-                align-items: center;
-                justify-content: center;
-                border: none;
-            }
+        .return_link,
+        button {
+            display: flex;
+            color: white;
+            background-color: rgba(107, 114, 128, 1);
+            cursor: pointer;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-family: "Quicksand", sans-serif;
+            font-weight: 300;
+            text-decoration: none;
+            font-size: 16px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: none;
+        }
 
-            #coloring_button:hover {
-                background-color: rgba(75, 85, 99, 1);
-            }
+        .return_link:hover,
+        button:hover {
+            background-color: rgba(75, 85, 99, 1);
+        }
 
-        </style>
-        <link rel="stylesheet" type="text/css" href="./molstar_bundle/molstar.css" />
-        <script type="text/javascript" src="./molstar_bundle/index.min.js"></script>
-    </head>
-    <body>
-        <div id="wrapper">
-            <div id="controls">
-                <span class="filename text-xl">Structure File:</span>
-                <span class="filename"><%= filename %></span>
-                <div id="buttons">
-                    <a class="return_link" href="<%= backRoute %>">Go back</a>
-                    <% if (fileType === 'trajectory') { %>
-                        <button id="coloring_button" onclick="toggleColoring()">Coloring</button>
+        #modelId {
+            width: 100%;
+        }
+
+        .model-input-container {
+            display: flex;
+            width: 100%;
+            gap: 6px;
+        }
+
+        .model-input-container>input {
+            padding-left: 0.5rem;
+        }
+
+        .model-input-container>button {
+            padding: 0.2rem 0.5rem;
+        }
+
+        .nav-model-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-model-container>button {
+            padding: 0;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="./molstar_bundle/molstar.css" />
+    <script type="text/javascript" src="./molstar_bundle/index.min.js"></script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="controls">
+            <span class="filename text-xl">Structure File:</span>
+            <span class="filename">
+                <%= filename %>
+            </span>
+            <div id="buttons">
+                <a class="return_link" href="<%= backRoute %>">Go back</a>
+                <% if (fileType==='trajectory' ) { %>
+                    <button id="coloring_button" onclick="toggleColoring()">Coloring</button>
+                    <p style="margin-top:10px;">
+                        Choose model:
+                    </p>
+                    <span id="modelLabel">1 / ?</span>
+
+                    <div class="nav-model-container">
+                        <button onclick="modelFirst()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M8.5 5v14h-2V5h2Zm9.164 1.75L12.414 12l5.25 5.25l-1.414 1.414L9.586 12l6.664-6.664l1.414 1.414Z" />
+                            </svg></button>
+                        <button onclick="modelPrev()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="m15.914 17.5l-5.5-5.5l5.5-5.5L14.5 5.086L7.586 12l6.914 6.914l1.414-1.414Z" />
+                            </svg></button>
+                        <button onclick="modelNext()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="m8.086 17.5l5.5-5.5l-5.5-5.5L9.5 5.086L16.414 12L9.5 18.914L8.086 17.5Z" />
+                            </svg></button>
+                        <button onclick="modelLast()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M17.5 5v14h-2V5h2Zm-9.75.336L14.414 12L7.75 18.664L6.336 17.25l5.25-5.25l-5.25-5.25L7.75 5.336Z" />
+                            </svg></button>
+                    </div>
+                    <div class="model-input-container">
+                        <input type="number" step="1" min="0" value="1" id="modelId">
+                        <button onclick="modelGoTo()">Go</button>
+                    </div>
                     <% } %>
-                </div>
             </div>
-            <div id="app"></div>
         </div>
-        <script>
-            // function $(id) { return document.getElementById(id); }
-            const project_id = '<%= projectId %>'
-            const structure_url = '<%= structureUrl %>'
-            const server_address = '<%= serverAddress %>'
-            const file_type = '<%= fileType %>'
-            const isStructure = file_type === 'structure' ? true : false;
-            const isTrajectory = file_type === 'trajectory' ? true : false;
-             
-            let isColoring = false
+        <div id="app"></div>
+    </div>
+    <script>
+        // function $(id) { return document.getElementById(id); }
+        const project_id = '<%= projectId %>'
+        const structure_url = '<%= structureUrl %>'
+        const server_address = '<%= serverAddress %>'
+        const file_type = '<%= fileType %>'
+        const isStructure = file_type === 'structure' ? true : false;
+        const isTrajectory = file_type === 'trajectory' ? true : false;
 
-            BasicMolStarWrapper.init('app');
-            BasicMolStarWrapper.setBackground(0xffffff);
-            // BasicMolStarWrapper.load({ url: 'https://files.rcsb.org/download/1AKI.pdb', format: 'pdb' })
-            BasicMolStarWrapper.load({ url: `${server_address}/${structure_url}`, format: 'pdb' })
-            
-            if (isTrajectory) {
-                const residuesIndexesPath = `download/file/${project_id}/residues_indexes`
-                BasicMolStarWrapper.downloadAndSetResiduesIndexes(`${server_address}/${residuesIndexesPath}`)
+        const modelIdInput = document.getElementById('modelId');
+        const modelLabelSpan = document.getElementById('modelLabel');
+
+        let isColoring = false
+
+        BasicMolStarWrapper.init('app');
+        BasicMolStarWrapper.setBackground(0xffffff);
+        // BasicMolStarWrapper.load({ url: 'https://files.rcsb.org/download/1AKI.pdb', format: 'pdb' })
+        BasicMolStarWrapper.load({ url: `${server_address}/${structure_url}`, format: 'pdb' })
+
+        if (isTrajectory) {
+            const residuesIndexesPath = `download/file/${project_id}/residues_indexes`
+            BasicMolStarWrapper.downloadAndSetResiduesIndexes(`${server_address}/${residuesIndexesPath}`)
+        }
+
+        // function toggleColoring() {
+        //     if (!isColoring) {
+        //         BasicMolStarWrapper.coloring.applySpecial2()
+        //         BasicMolStarWrapper.coloring.applySpecial()
+        //     } else {
+        //         BasicMolStarWrapper.coloring.applyDefault()
+        //         setTimeout(() => BasicMolStarWrapper.coloring.applyDefault(), 20)
+        //     }
+        //     isColoring = !isColoring
+        // }
+
+        function updateModelLabel() {
+            const { current, all } = BasicMolStarWrapper.getCurrentModelAndNumberOfModels();
+            modelLabelSpan.textContent = `${current} / ${all}`;
+        }
+
+        function modelGoTo() {
+            BasicMolStarWrapper.goTo(modelIdInput.value);
+            updateModelLabel();
+        }
+
+        function modelFirst() {
+            BasicMolStarWrapper.modelFirst();
+            updateModelLabel();
+        }
+
+        function modelPrev() {
+            BasicMolStarWrapper.modelPrev();
+            updateModelLabel();
+        }
+
+        function modelNext() {
+            BasicMolStarWrapper.modelNext();
+            updateModelLabel();
+        }
+
+        function modelLast() {
+            BasicMolStarWrapper.modelLast();
+            updateModelLabel();
+        }
+
+        function toggleColoring() {
+            if (!isColoring) {
+                BasicMolStarWrapper.coloring.applySpecial();
+            } else {
+                BasicMolStarWrapper.coloring.applyDefault();
             }
+            BasicMolStarWrapper.update();
+            isColoring = !isColoring
+        }
 
-            function toggleColoring() {
-                if (!isColoring) {
-                    BasicMolStarWrapper.coloring.applySpecial2()
-                    BasicMolStarWrapper.coloring.applySpecial()
-                } else {
-                    BasicMolStarWrapper.coloring.applyDefault()
-                    setTimeout(() => BasicMolStarWrapper.coloring.applyDefault(), 20)
-                }
-                isColoring = !isColoring                
+        let interval
+        if (isTrajectory)
+            interval = setInterval(checkingButtons, 100)
+
+        function checkingButtons() {
+            const len = document.getElementsByClassName('msp-btn').length
+            if (len === 8) {
+                clearInterval(interval)
+                buttons()
             }
+        }
 
-            let interval
-            if (isTrajectory)
-                interval = setInterval(checkingButtons, 100)
+        function buttons() {
+            const onlyNavButtonsTitles = ['First Model', 'Previous Model', 'Next Model']
+            let navButtonsCollection = document.getElementsByClassName('msp-btn')
+            let navButtons = [].slice.call(navButtonsCollection)
+            navButtons = navButtons.filter(button => onlyNavButtonsTitles.includes(button.title))
+            navButtons.forEach(button => button.addEventListener('click', BasicMolStarWrapper.update()))
+            BasicMolStarWrapper.update();
+            updateModelLabel();
+        }
 
-            function checkingButtons() {
-                const len = document.getElementsByClassName('msp-btn').length
-                if (len === 8) {
-                    clearInterval(interval)
-                    buttons()
-                }
-            }
+        // function refresh() {
+        //     if (!isColoring)
+        //         return
+        //     setTimeout(() => {
+        //         BasicMolStarWrapper.coloring.applySpecial2()
+        //         BasicMolStarWrapper.coloring.applySpecial()
+        //     }, 70)
+        // }
 
-            function buttons() {
-                const onlyNavButtonsTitles = ['First Model', 'Previous Model', 'Next Model']
-                let navButtonsCollection = document.getElementsByClassName('msp-btn')
-                let navButtons = [].slice.call(navButtonsCollection)
-                navButtons = navButtons.filter(button => onlyNavButtonsTitles.includes(button.title))
-                navButtons.forEach(button => button.addEventListener('click', refresh))
-            }
+    </script>
+</body>
 
-            function refresh() {
-                if (!isColoring)
-                    return
-                setTimeout(() => {
-                    BasicMolStarWrapper.coloring.applySpecial2()
-                    BasicMolStarWrapper.coloring.applySpecial()
-                }, 70)
-            }
-
-        </script>
-    </body>
 </html>
