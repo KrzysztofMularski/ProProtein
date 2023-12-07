@@ -182,11 +182,11 @@
 
         let isColoring = false
 
-        BasicMolStarWrapper.init('app');
-        BasicMolStarWrapper.setBackground(0xffffff);
-        // BasicMolStarWrapper.load({ url: 'https://files.rcsb.org/download/1AKI.pdb', format: 'pdb' })
-        BasicMolStarWrapper.load({ url: `${server_address}/${structure_url}`, format: 'pdb' })
-
+        BasicMolStarWrapper.init('app').then(() => {
+            BasicMolStarWrapper.setBackground(0xffffff);
+            // BasicMolStarWrapper.load({ url: 'https://files.rcsb.org/download/1AKI.pdb', format: 'pdb' })
+            BasicMolStarWrapper.load({ url: `${server_address}/${structure_url}`, format: 'pdb' })
+        });
         if (isTrajectory) {
             const residuesIndexesPath = `download/file/${project_id}/residues_indexes`
             BasicMolStarWrapper.downloadAndSetResiduesIndexes(`${server_address}/${residuesIndexesPath}`)
