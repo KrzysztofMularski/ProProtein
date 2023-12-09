@@ -42,7 +42,8 @@ class BasicWrapper {
             },
             config: [
                 [PluginConfig.Viewport.ShowExpand, false],
-                [PluginConfig.Viewport.ShowAnimation, true]
+                [PluginConfig.Viewport.ShowAnimation, true],
+                [PluginConfig.Viewport.ShowTrajectoryControls, false],
             ]
         });
 
@@ -94,44 +95,59 @@ class BasicWrapper {
         await this.coloring.applySpecial();
     }
 
-    modelFirst() {
-        PluginCommands.State.ApplyAction(this.plugin, {
+    async modelFirst(isColoring: boolean) {
+        await PluginCommands.State.ApplyAction(this.plugin, {
             state: this.plugin.state.data,
             action: UpdateTrajectory.create({ action: 'reset' })
         });
+        if (isColoring) {
+            await this.update();
+        }
     }
 
-    modelPrev() {
-        PluginCommands.State.ApplyAction(this.plugin, {
+    async modelPrev(isColoring: boolean) {
+        await PluginCommands.State.ApplyAction(this.plugin, {
             state: this.plugin.state.data,
             action: UpdateTrajectory.create({ action: 'advance', by: -1 })
         });
+        if (isColoring) {
+            await this.update();
+        }
     }
 
-    modelNext() {
-        PluginCommands.State.ApplyAction(this.plugin, {
+    async modelNext(isColoring: boolean) {
+        await PluginCommands.State.ApplyAction(this.plugin, {
             state: this.plugin.state.data,
             action: UpdateTrajectory.create({ action: 'advance', by: 1 })
         });
+        if (isColoring) {
+            await this.update();
+        }
     }
 
-    modelLast() {
+    async modelLast(isColoring: boolean) {
         const { current, all } = this.getCurrentModelAndNumberOfModels()!;
 
-        PluginCommands.State.ApplyAction(this.plugin, {
+        await PluginCommands.State.ApplyAction(this.plugin, {
             state: this.plugin.state.data,
             action: UpdateTrajectory.create({ action: 'advance', by: all - current })
         });
+        if (isColoring) {
+            await this.update();
+        }
     }
 
-    goTo(modelNumber: number) {
+    async goTo(modelNumber: number, isColoring: boolean) {
 
         const { current } = this.getCurrentModelAndNumberOfModels()!;
 
-        PluginCommands.State.ApplyAction(this.plugin, {
+        await PluginCommands.State.ApplyAction(this.plugin, {
             state: this.plugin.state.data,
             action: UpdateTrajectory.create({ action: 'advance', by: modelNumber - current })
         });
+        if (isColoring) {
+            await this.update();
+        }
     }
 
     getCurrentModelAndNumberOfModels(): { current: number; all: number } {

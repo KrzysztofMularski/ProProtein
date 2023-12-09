@@ -52,7 +52,7 @@ const adminDownload = async (req, res) => {
             req.flash('error', `No file found with such ID: ${fileId}`);
             return res.redirect('/admin/files');
         }
-        
+
         const file = await FileRaw.findById(fileId);
         if (!file) {
             req.flash('error', `No file found with such ID: ${fileId}`);
@@ -60,7 +60,7 @@ const adminDownload = async (req, res) => {
         }
         res.attachment(file.filename);
         gfs.openDownloadStream(file._id).pipe(res);
-        
+
     } catch (err) {
         // console.log(err);
         await pushLog(err, 'adminDownload', req.user._id);
@@ -129,12 +129,12 @@ const validateFileGuest = async (req, res, next) => {
         if (!req.file) {
             return next();
         }
-        if (req.file.size > 2*1024*1024) {
+        if (req.file.size > 2 * 1024 * 1024) {
             req.fileNotCorrect = true;
             req.errorMsg = "File is too large. (Max 2MB)";
             return next();
         }
-        const {is_ok, error_msg} = await fileCorrect(req.file.id, true);
+        const { is_ok, error_msg } = await fileCorrect(req.file.id, true);
         if (!is_ok) {
             req.fileNotCorrect = true;
             req.errorMsg = error_msg;
@@ -152,12 +152,12 @@ const validateFile = async (req, res, next) => {
         if (!req.file) {
             return next();
         }
-        if (req.file.size > 2*1024*1024) {
+        if (req.file.size > 2 * 1024 * 1024) {
             req.fileNotCorrect = true;
             req.errorMsg = "File is too large. (Max 2MB)";
             return next();
         }
-        const {is_ok, error_msg} = await fileCorrect(req.file.id, false);
+        const { is_ok, error_msg } = await fileCorrect(req.file.id, false);
         if (!is_ok) {
             req.fileNotCorrect = true;
             req.errorMsg = error_msg;
@@ -200,12 +200,12 @@ END {
         awkProcess.on('close', (_) => {
             const num = parseInt(output);
             if (isGuest && num > 120) {
-                return resolve({is_ok: false, error_msg: `For guest simulation, number of amino acids cannot be greater than 120, got: ${num}`});
+                return resolve({ is_ok: false, error_msg: `For guest simulation, number of amino acids cannot be greater than 120, got: ${num}` });
             }
             if (!isGuest && num > 250) {
-                return resolve({is_ok: false, error_msg: `For regular simulation, number of amino acids cannot be greater than 250, got: ${num}`});
+                return resolve({ is_ok: false, error_msg: `For regular simulation, number of amino acids cannot be greater than 250, got: ${num}` });
             }
-            return resolve({is_ok: true});
+            return resolve({ is_ok: true });
         });
     });
 }
@@ -223,7 +223,7 @@ module.exports = {
     checkAuthenticated,
     checkNotAuthenticated,
     checkIsAdmin,
-    
+
     validateFileGuest,
     validateFile,
 }

@@ -131,6 +131,7 @@
             <div id="buttons">
                 <a class="return_link" href="<%= backRoute %>">Go back</a>
                 <% if (fileType==='trajectory' ) { %>
+
                     <button id="coloring_button" onclick="toggleColoring()">Coloring</button>
                     <p style="margin-top:10px;">
                         Choose model:
@@ -182,97 +183,69 @@
 
         let isColoring = false
 
-        BasicMolStarWrapper.init('app').then(() => {
+        BasicMolStarWrapper.init('app').then(async () => {
             BasicMolStarWrapper.setBackground(0xffffff);
-            // BasicMolStarWrapper.load({ url: 'https://files.rcsb.org/download/1AKI.pdb', format: 'pdb' })
-            BasicMolStarWrapper.load({ url: `${server_address}/${structure_url}`, format: 'pdb' })
+            // await BasicMolStarWrapper.load({ url: 'https://files.rcsb.org/download/1AKI.pdb', format: 'pdb' })
+            await BasicMolStarWrapper.load({ url: `${server_address}/${structure_url}`, format: 'pdb' })
+            // await BasicMolStarWrapper.load({ url: 'http://localhost:3000/molstar_bundle/trajectory.pdb', format: 'pdb' })
+            updateModelLabel();
         });
         if (isTrajectory) {
             const residuesIndexesPath = `download/file/${project_id}/residues_indexes`
             BasicMolStarWrapper.downloadAndSetResiduesIndexes(`${server_address}/${residuesIndexesPath}`)
+            // BasicMolStarWrapper.downloadAndSetResiduesIndexes('http://localhost:3000/molstar_bundle/residues_indexes.txt')
         }
-
-        // function toggleColoring() {
-        //     if (!isColoring) {
-        //         BasicMolStarWrapper.coloring.applySpecial2()
-        //         BasicMolStarWrapper.coloring.applySpecial()
-        //     } else {
-        //         BasicMolStarWrapper.coloring.applyDefault()
-        //         setTimeout(() => BasicMolStarWrapper.coloring.applyDefault(), 20)
-        //     }
-        //     isColoring = !isColoring
-        // }
 
         function updateModelLabel() {
             const { current, all } = BasicMolStarWrapper.getCurrentModelAndNumberOfModels();
             modelLabelSpan.textContent = `${current} / ${all}`;
         }
 
-        function modelGoTo() {
-            BasicMolStarWrapper.goTo(modelIdInput.value);
+        async function modelGoTo() {
+            await BasicMolStarWrapper.goTo(modelIdInput.value, isColoring);
             updateModelLabel();
         }
 
-        function modelFirst() {
-            BasicMolStarWrapper.modelFirst();
+        async function modelFirst() {
+            await BasicMolStarWrapper.modelFirst(isColoring);
             updateModelLabel();
         }
 
-        function modelPrev() {
-            BasicMolStarWrapper.modelPrev();
+        async function modelPrev() {
+            await BasicMolStarWrapper.modelPrev(isColoring);
             updateModelLabel();
         }
 
-        function modelNext() {
-            BasicMolStarWrapper.modelNext();
+        async function modelNext() {
+            await BasicMolStarWrapper.modelNext(isColoring);
             updateModelLabel();
         }
 
-        function modelLast() {
-            BasicMolStarWrapper.modelLast();
+        async function modelLast() {
+            await BasicMolStarWrapper.modelLast(isColoring);
             updateModelLabel();
         }
 
-        function toggleColoring() {
+        async function update() {
+            if (isColoring) {
+                await BasicMolStarWrapper.coloring.applySpecial2();
+                await BasicMolStarWrapper.coloring.applySpecial();
+            }
+        }
+
+        async function toggleColoring() {
             if (!isColoring) {
-                BasicMolStarWrapper.coloring.applySpecial();
+                await BasicMolStarWrapper.coloring.applySpecial2();
+                await BasicMolStarWrapper.coloring.applySpecial();
             } else {
-                BasicMolStarWrapper.coloring.applyDefault();
+                // redundant, but somehow works
+                await BasicMolStarWrapper.coloring.applySpecial2();
+                await BasicMolStarWrapper.coloring.applySpecial();
+                await BasicMolStarWrapper.coloring.applyDefault();
+                await BasicMolStarWrapper.coloring.applyDefault();
             }
-            BasicMolStarWrapper.update();
-            isColoring = !isColoring
+            isColoring = !isColoring;
         }
-
-        let interval
-        if (isTrajectory)
-            interval = setInterval(checkingButtons, 100)
-
-        function checkingButtons() {
-            const len = document.getElementsByClassName('msp-btn').length
-            if (len === 8) {
-                clearInterval(interval)
-                buttons()
-            }
-        }
-
-        function buttons() {
-            const onlyNavButtonsTitles = ['First Model', 'Previous Model', 'Next Model']
-            let navButtonsCollection = document.getElementsByClassName('msp-btn')
-            let navButtons = [].slice.call(navButtonsCollection)
-            navButtons = navButtons.filter(button => onlyNavButtonsTitles.includes(button.title))
-            navButtons.forEach(button => button.addEventListener('click', BasicMolStarWrapper.update()))
-            BasicMolStarWrapper.update();
-            updateModelLabel();
-        }
-
-        // function refresh() {
-        //     if (!isColoring)
-        //         return
-        //     setTimeout(() => {
-        //         BasicMolStarWrapper.coloring.applySpecial2()
-        //         BasicMolStarWrapper.coloring.applySpecial()
-        //     }, 70)
-        // }
 
     </script>
 </body>
